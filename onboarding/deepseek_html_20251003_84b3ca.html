@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entity Configuration Script Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .scope-tab {
+            display: none;
+        }
+        .scope-tab.active {
+            display: block;
+        }
+        .nav-tabs .nav-link {
+            cursor: pointer;
+            position: relative;
+            padding-right: 30px;
+        }
+        .nav-tabs .nav-link .close-tab {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .nav-tabs .nav-link:hover .close-tab {
+            opacity: 1;
+        }
+        .nav-tabs .nav-link .close-tab:hover {
+            color: #dc3545;
+        }
+        .settings-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .settings-section h5 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .scope-checkbox {
+            margin-bottom: 10px;
+        }
+        .code-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .conditional-field {
+            display: none;
+        }
+        .conditional-field.show {
+            display: block;
+        }
+        .service-settings {
+            margin-left: 20px;
+            padding-left: 15px;
+            border-left: 2px solid #dee2e6;
+        }
+        .service-group {
+            margin-bottom: 20px;
+        }
+        .service-group-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .service-group-checkboxes {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .setting-info {
+            margin-left: 5px;
+            color: #6c757d;
+            cursor: help;
+        }
+        .tab-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .collapse-toggle {
+            cursor: pointer;
+        }
+        .collapse-toggle .bi-chevron-down {
+            transition: transform 0.3s;
+        }
+        .collapse-toggle.collapsed .bi-chevron-down {
+            transform: rotate(-90deg);
+        }
+        .form-check-label {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+            cursor: pointer;
+        }
+
+        .card-header {
+            background-color: #e9ecef;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Entity Configuration Script Generator</h1>
+        
+        <!-- Import/Export Controls -->
+        <div class="card mb-4">
+            <div class="card-header collapse-toggle" data-bs-toggle="collapse" data-bs-target="#importExportCollapse">
+                <span class="mb-0">
+                    <i class="bi bi-chevron-down"></i> Import/Export Configuration
+                </span>
+            </div>
+            <div class="collapse show" id="importExportCollapse">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="importFile" class="form-label">Import Configuration</label>
+                                <input type="file" class="form-control" id="importFile" accept=".json">
+                            </div>
+                            <button id="importConfig" class="btn btn-outline-primary">Import Configuration</button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Export Configuration</label>
+                            </div>
+                            <button id="exportConfig" class="btn btn-outline-success">Export Configuration</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Basic Entity Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span>Basic Entity Information</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="parentName" class="form-label">Parent Entity Name</label>
+                            <input type="text" class="form-control" id="parentName" placeholder="Enter parent entity name">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="website" class="form-label">Website URL</label>
+                            <input type="text" class="form-control" id="website" placeholder="http://www.example.com">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="integratorEmail" class="form-label">Integrator Email</label>
+                            <input type="email" class="form-control" id="integratorEmail" placeholder="development@bitventure.co.za">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="crsEnquiryBy" class="form-label">CRS CPB Enquiry Done By</label>
+                            <input type="text" class="form-control" id="crsEnquiryBy" placeholder="Enter name for CRS enquiries">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="createDeviceUser">
+                            <label class="form-check-label" for="createDeviceUser">
+                                Create Device User
+                            </label>
+                        </div>
+                        <div class="conditional-field" id="deviceUserFields">
+                            <div class="mb-3">
+                                <label for="deviceUsername" class="form-label">Device User Username</label>
+                                <input type="text" class="form-control" id="deviceUsername" placeholder="Enter device username">
+                            </div>
+                            <div class="mb-3">
+                                <label for="devicePassword" class="form-label">Device User Password</label>
+                                <input type="password" class="form-control" id="devicePassword" placeholder="Enter device password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="createIntegrator" checked>
+                            <label class="form-check-label" for="createIntegrator">
+                                Create Integrator
+                            </label>
+                        </div>
+                        <div class="conditional-field" id="integratorFields">
+                            <div class="mb-3">
+                                <label for="integratorName" class="form-label">Integrator Name</label>
+                                <input type="text" class="form-control" id="integratorName" placeholder="Integrator name will be auto-generated">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scope Selection -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span>Select Scopes</span>
+            </div>
+            <div class="card-body">
+                <div class="row" id="scopeCheckboxes">
+                    <!-- Scope checkboxes will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scope Settings Tabs -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="scopeTabs" role="tablist">
+                    <!-- Scope tabs will be populated here -->
+                </ul>
+            </div>
+            <div class="card-body">
+                <div id="scopeTabContent">
+                    <!-- Scope tab content will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Generate Script Button -->
+        <div class="mb-4">
+            <button id="generateScript" class="btn btn-primary">Generate SQL Script</button>
+        </div>
+        
+        <!-- Generated Script Output -->
+        <div class="card">
+            <div class="card-header">
+                <span>Generated SQL Script</span>
+            </div>
+            <div class="card-body">
+                <div class="code-output" id="scriptOutput">
+                    <!-- Generated script will appear here -->
+                </div>
+                <button id="copyScript" class="btn btn-secondary mt-3">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Setting descriptions for tooltips
+        const settingDescriptions = {
+            'ocs.ed.ws.gc': 'Easy Debit Group Code for web service authentication',
+            'ocs.ed.ws.usr': 'Username for Easy Debit web service',
+            'ocs.ed.ws.pwd': 'Password for Easy Debit web service',
+            'ocs.df.scheme': 'Default scheme name for Easy Debit',
+            'ocs.ed.sc.gc.map': 'Mapping between scheme names and group codes',
+            'ocs.ed.ul.gc.map': 'Mapping for ultimate creditor to group code',
+            'ocs.ed.do.sc.gc.map': 'Mapping for debit order scheme to group code',
+            'ocs.ed.do.gc': 'Group code for debit order operations',
+            'ocs.ed.passthrough': 'Whether to pass through transactions directly',
+            'ocs.webhook.url.mandate': 'Webhook URL for mandate notifications',
+            'ocs.webhook.url.collection': 'Webhook URL for collection notifications',
+            'ocs.easy.loan.webhook.url': 'Webhook URL for Easy Loan integration',
+            'bss.webhook.url': 'Webhook URL for Bank Statement Service notifications',
+            'crs.cpb.enquiry.done.by': 'Name to show for CPB enquiries in CRS',
+            'fvs.liveness.sms.header': 'SMS header for liveness verification',
+            'fvs.liveness.sms.footer': 'SMS footer for liveness verification',
+            'fvs.liveness.redirect.url': 'Redirect URL after liveness verification',
+            'fvs.liveness.webhook.url': 'Webhook URL for liveness verification results',
+            'fvs.liveness.logo': 'Logo to display during liveness verification',
+            'webservice.username': 'Username for general web service authentication',
+            'webservice.password': 'Password for general web service authentication',
+            'webservice.groupCode': 'Group code for web service operations',
+            'tca.application.key': 'Application key for Transaction Card Authorization',
+            'tca.merchant.id': 'Merchant ID for Transaction Card Authorization',
+            'tca.merchant.username': 'Merchant username for Transaction Card Authorization',
+            'app.mandate.authentication.enabled': 'Enable mandate authentication feature',
+            'app.mandate.creation.enabled': 'Enable mandate creation feature',
+            'app.payments.enabled': 'Enable payments feature',
+            'app.manual.payments.enabled': 'Enable manual payments feature',
+            'app.transaction.history.enabled': 'Enable transaction history feature',
+            'manual.payments.reference.config': 'Configuration for manual payment references',
+            'app.mandate.creation.fields': 'Fields to show during mandate creation',
+            'external.status.webhook.url': 'Webhook URL for external status updates',
+            'pca.entity.webhook.url': 'Webhook URL for PCA entity updates'
+        };
+
+        // Scope definitions with their services and settings
+        const scopes = {
+            'AML': {
+                name: 'Anti-Money Laundering',
+                services: [
+                    {
+                        name: 'aml.service.aml',
+                        description: 'Anti-Money Laundering Service',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'AVS': {
+                name: 'Account Verification',
+                services: [
+                    {
+                        name: 'avs.services.avs',
+                        description: 'Account Verification',
+                        settings: [
+                            'entity.avs.webhook.url'
+                        ]
+                    }
+                ],
+                settings: []
+            },
+            'BIVS': {
+                name: 'Batch IVS',
+                services: [
+                    {
+                        name: 'bivs.services.bivs',
+                        description: 'Batch IVS',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'BMS': {
+                name: 'Bitventure Messaging Service',
+                services: [
+                    {
+                        name: 'bms.services.bms',
+                        description: 'Bitventure Messaging Service',
+                        settings: [
+                            'message.header',
+                            'message.footer',
+                            'entity.webhook.url'
+                        ]
+                    },
+                    {
+                        name: 'bms.services.ems',
+                        description: 'Emailing Service',
+                        settings: [
+                            'message.header',
+                            'message.footer',
+                            'entity.webhook.url'
+                        ]
+                    }
+                ],
+                settings: []
+            },
+            'BPS': {
+                name: 'Realtime Payments',
+                services: [
+                    {
+                        name: 'bps.services.rtc',
+                        description: 'Realtime Payments',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'BSS': {
+                name: 'Bank Statements Service',
+                services: [
+                    {
+                        name: 'bss.services.bss',
+                        description: 'Bank Statements Service',
+                        settings: [
+                            'bss.sms.header',
+                            'bss.sms.footer',
+                            'bss.redirect.url',
+                            'bss.webhook.url',
+                            'bss.logo',
+                            'entity.bss.redirect.url',
+                            'entity.bss.webhook.url'
+                        ]
+                    }
+                ],
+                settings: []
+            },
+            'BVS': {
+                name: 'Biometric Verification',
+                services: [
+                    {
+                        name: 'bvs.services.bvs',
+                        description: 'Biometric Verification',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'CDS': {
+                name: 'Card Disbursement',
+                services: [
+                    {
+                        name: 'cds.services.cds',
+                        description: 'Card Disbursement',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'CDVS': {
+                name: 'Check-Digit Validation Service',
+                services: [
+                    {
+                        name: 'cdvs.services.cdvs',
+                        description: 'Check-Digit Validation Service',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'CMS': {
+                name: 'Client Management Service',
+                services: [
+                    {
+                        name: 'cms.services.entity',
+                        description: 'Entity Management',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'COVS': {
+                name: 'Company Verification',
+                services: [
+                    {
+                        name: 'covs.services.covs',
+                        description: 'Company Verification',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'CRS': {
+                name: 'Credit Score Service',
+                services: [
+                    {
+                        name: 'crs.services.crs',
+                        description: 'Credit Score Service',
+                        settings: [
+                            'crs.crs.webhook.url',
+                            'crs.crs.logo',
+                            'crs.crs.redirect.url'
+                        ]
+                    },
+                    {
+                        name: 'crs.services.report',
+                        description: 'Credit Report Service',
+                        settings: []
+                    },
+                    {
+                        name: 'crs.service.afa',
+                        description: 'Affordability Assessment Service',
+                        settings: []
+                    }
+                ],
+                settings: [
+                    'crs.cpb.enquiry.done.by'
+                ]
+            },
+            'CVS': {
+                name: 'Contact Verification Service',
+                services: [
+                    {
+                        name: 'cvs.services.cvs',
+                        description: 'Contact Verification Service',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'FMS': {
+                name: 'Fingerprint Matching',
+                services: [
+                    {
+                        name: 'fms.services.match',
+                        description: 'Fingerprint Matching',
+                        settings: []
+                    },
+                    {
+                        name: 'fms.services.match.extended',
+                        description: 'Fingerprint Matching With Extended Metadata',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'FVS': {
+                name: 'Facial Verification',
+                services: [
+                    {
+                        name: 'fvs.services.fvs',
+                        description: 'Facial Verification',
+                        settings: []
+                    },
+                    {
+                        name: 'fvs.services.liveness',
+                        description: 'Liveness Verification',
+                        settings: [
+                            'fvs.liveness.sms.header',
+                            'fvs.liveness.sms.footer',
+                            'fvs.liveness.redirect.url',
+                            'fvs.liveness.webhook.url',
+                            'fvs.liveness.logo',
+                            'entity.liveness.redirect.url',
+                            'entity.liveness.webhook.url'
+                        ]
+                    },
+                    {
+                        name: 'fvs.services.liveness.noivs',
+                        description: 'No IVS Liveness Verification',
+                        settings: []
+                    }
+                ],
+                settings: [
+                    'fvs.expiry.time'
+                ]
+            },
+            'IVS': {
+                name: 'Identity Verification',
+                services: [
+                    {
+                        name: 'ivs.services.ivs',
+                        description: 'Identity Verification',
+                        settings: []
+                    },
+                    {
+                        name: 'ivs.services.photo',
+                        description: 'IVS Photo',
+                        settings: []
+                    },
+                    {
+                        name: 'ivs.services.data',
+                        description: 'IVS Data',
+                        settings: []
+                    },
+                    {
+                        name: 'ivs.services.ivsf',
+                        description: 'Identity Verification Foreigner',
+                        settings: []
+                    },
+                    {
+                        name: 'ivs.services.lineage',
+                        description: 'IVS Lineage',
+                        settings: []
+                    },
+                    {
+                        name: 'ivs.services.deceased',
+                        description: 'IVS Deceased',
+                        settings: []
+                    },
+                    {
+                        name: 'ivs.services.bvs',
+                        description: 'IVS Biometric Verification',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'LMS': {
+                name: 'Loan Management',
+                services: [
+                    {
+                        name: 'lms.services.lms',
+                        description: 'Loan Management',
+                        settings: [
+                            'lms.ed.ws.usr',
+                            'lms.ed.ws.pwd'
+                        ]
+                    }
+                ],
+                settings: []
+            },
+            'OCS': {
+                name: 'Online Collection Service',
+                services: [
+                    {
+                        name: 'ocs.services.mandate',
+                        description: 'Mandate Creation',
+                        sharedSettings: true
+                    },
+                    {
+                        name: 'ocs.services.collection',
+                        description: 'Collection',
+                        sharedSettings: true
+                    },
+                    {
+                        name: 'ocs.services.debitorder',
+                        description: 'Debit Order',
+                        sharedSettings: true
+                    }
+                ],
+                sharedSettings: [
+                    'ocs.ed.ws.gc',
+                    'ocs.ed.ws.usr',
+                    'ocs.ed.ws.pwd',
+                    'ocs.df.scheme',
+                    'ocs.ed.sc.gc.map',
+                    'ocs.ed.ul.gc.map',
+                    'ocs.ed.do.sc.gc.map',
+                    'ocs.ed.do.gc',
+                    'ocs.ed.passthrough',
+                    'ocs.webhook.url.mandate',
+                    'ocs.webhook.url.collection',
+                    'ocs.easy.loan.webhook.url',
+                    'ocs.ned.cre.bra.cde',
+                    'ocs.ned.cre.acc.num',
+                    'ocs.ned.cre.ema.det',
+                    'ocs.ned.cre.tel.det',
+                    'ocs.ned.cre.abr.sho.nme',
+                    'ocs.ned.cli.pro',
+                    'ocs.ned.chg.acc',
+                    'ocs.ned.cre.nme',
+                    'ocs.ned.pro.acc'
+                ],
+                settings: []
+            },
+            'OPS': {
+                name: 'Payment Operations',
+                services: [
+                    {
+                        name: 'ops.services.ieft',
+                        description: 'Initiate Instant EFT',
+                        settings: [
+                            'ops.ieft.ozow.sitecode',
+                            'iveri.auth.app.id',
+                            'iveri.auth.certificate.id'
+                        ]
+                    },
+                    {
+                        name: 'ops.services.cps',
+                        description: 'Card Payment',
+                        settings: [
+                            'ops.cps.sms.header',
+                            'ops.cps.sms.footer',
+                            'ops.cps.redirect.url'
+                        ]
+                    },
+                    {
+                        name: 'ops.services.tokenization',
+                        description: 'Tokenization Service',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'PUI': {
+                name: 'Phoenix Entity Details Service',
+                services: [
+                    {
+                        name: 'pui.services.entity',
+                        description: 'Phoenix Entity Details Service',
+                        settings: [
+                            'pui.logo'
+                        ]
+                    }
+                ],
+                settings: []
+            },
+            'PVS': {
+                name: 'Person Verification',
+                services: [
+                    {
+                        name: 'pvs.services.pvs',
+                        description: 'Person Verification',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'SDS': {
+                name: 'Strike Date Optimization',
+                services: [
+                    {
+                        name: 'sds.services.sds',
+                        description: 'Strike Date Optimization',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'SSV': {
+                name: 'SIM Swap Verification',
+                services: [
+                    {
+                        name: 'ssv.services.ssv',
+                        description: 'SIM Swap Verification',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'TCA': {
+                name: 'Transaction Card Authorisation',
+                services: [
+                    {
+                        name: 'tca.services.mca',
+                        description: 'Search, Retrieve and Authenticate Mandate',
+                        settings: [
+                            'webservice.username',
+                            'webservice.password',
+                            'webservice.groupCode',
+                            'tca.application.key',
+                            'tca.merchant.id',
+                            'tca.merchant.username',
+                            'app.mandate.authentication.enabled',
+                            'app.mandate.creation.enabled',
+                            'app.payments.enabled',
+                            'app.manual.payments.enabled',
+                            'app.transaction.history.enabled',
+                            'manual.payments.reference.config',
+                            'app.mandate.creation.fields',
+                            'external.status.webhook.url',
+                            'pca.entity.webhook.url'
+                        ]
+                    },
+                    {
+                        name: 'tca.services.pca',
+                        description: 'Authorize Payment',
+                        settings: []
+                    },
+                    {
+                        name: 'tca.services.rcp',
+                        description: 'Recurring Card Payment',
+                        settings: []
+                    }
+                ],
+                settings: []
+            },
+            'VMS': {
+                name: 'VerifyMe Service',
+                services: [
+                    {
+                        name: 'verifyme.services.verifyme',
+                        description: 'VerifyMe',
+                        settings: []
+                    }
+                ],
+                settings: []
+            }
+        };
+
+        // Initialize the UI
+        $(document).ready(function() {
+            // Handle conditional fields
+            $('#createDeviceUser').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#deviceUserFields').addClass('show');
+                } else {
+                    $('#deviceUserFields').removeClass('show');
+                }
+            });
+            
+            $('#createIntegrator').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#integratorFields').addClass('show');
+                } else {
+                    $('#integratorFields').removeClass('show');
+                }
+            });
+            
+            // Auto-generate integrator name
+            $('#parentName').on('input', function() {
+                const parentName = $(this).val();
+                if (parentName) {
+                    $('#integratorName').val(parentName + ' :Integrator');
+                } else {
+                    $('#integratorName').val('');
+                }
+            });
+
+            // Populate scope checkboxes
+            const scopeCheckboxesContainer = $('#scopeCheckboxes');
+            Object.keys(scopes).forEach(scope => {
+                const scopeData = scopes[scope];
+                const checkboxHtml = `
+                    <div class="col-md-4 scope-checkbox">
+                        <div class="form-check">
+                            <input class="form-check-input scope-checkbox-input" type="checkbox" value="${scope}" id="scope-${scope}">
+                            <label class="form-check-label" for="scope-${scope}">
+                                ${scope} - ${scopeData.name}
+                            </label>
+                        </div>
+                    </div>
+                `;
+                scopeCheckboxesContainer.append(checkboxHtml);
+            });
+
+            // Create tabs and content for each scope
+            const scopeTabsContainer = $('#scopeTabs');
+            const scopeTabContentContainer = $('#scopeTabContent');
+            
+            Object.keys(scopes).forEach(scope => {
+                const scopeData = scopes[scope];
+                
+                // Create tab
+                const tabHtml = `
+                    <li class="nav-item">
+                        <a class="nav-link scope-tab-link" id="${scope}-tab" data-bs-toggle="tab" href="#${scope}" role="tab" aria-controls="${scope}" aria-selected="false">
+                            ${scope}
+                            <span class="close-tab"><i class="bi bi-x"></i></span>
+                        </a>
+                    </li>
+                `;
+                scopeTabsContainer.append(tabHtml);
+                
+                // Create tab content
+                let tabContentHtml = `<div class="tab-pane fade scope-tab" id="${scope}" role="tabpanel" aria-labelledby="${scope}-tab">`;
+                
+                // Entity Linking section
+                tabContentHtml += `
+                    <div class="settings-section">
+                        <h5>Entity Linking</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="${scope}-link-parent" checked>
+                                    <label class="form-check-label" for="${scope}-link-parent">
+                                        Link to Parent Entity
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="${scope}-link-device-user">
+                                    <label class="form-check-label" for="${scope}-link-device-user">
+                                        Link to Device User
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="${scope}-link-integrator">
+                                    <label class="form-check-label" for="${scope}-link-integrator">
+                                        Link to Integrator
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                        </div>
+                    </div>
+                `;
+                
+                // Rate limit section
+                tabContentHtml += `
+                    <div class="settings-section">
+                        <h5>Rate Limit Settings</h5>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="${scope}-rate-limit" checked>
+                            <label class="form-check-label" for="${scope}-rate-limit">
+                                Enable Rate Limiting
+                            </label>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="${scope}-limit-count" class="form-label">Limit Count</label>
+                                    <input type="number" class="form-control" id="${scope}-limit-count" placeholder="Leave empty for no limit">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="${scope}-limit-period" class="form-label">Limit Period (hours)</label>
+                                    <input type="number" class="form-control" id="${scope}-limit-period" placeholder="Leave empty for no period">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Services section
+                if (scopeData.services.length > 0) {
+                    tabContentHtml += `<div class="settings-section">
+                        <h5>Services</h5>`;
+                    
+                    // Check if this scope has shared settings
+                    if (scopeData.sharedSettings) {
+                        // Group services with shared settings
+                        tabContentHtml += `<div class="service-group">`;
+                        tabContentHtml += `<div class="service-group-header"><h6>OCS Services (Shared Settings)</h6></div>`;
+                        tabContentHtml += `<div class="service-group-checkboxes">`;
+                        
+                        scopeData.services.forEach(service => {
+                            tabContentHtml += `
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="${scope}-${service.name}" checked>
+                                    <label class="form-check-label" for="${scope}-${service.name}">
+                                        ${service.description}
+                                    </label>
+                                </div>
+                            `;
+                        });
+                        
+                        tabContentHtml += `</div>`;
+                        
+                        // Shared settings
+                        if (scopeData.sharedSettings.length > 0) {
+                            tabContentHtml += `<div class="service-settings">`;
+                            scopeData.sharedSettings.forEach(setting => {
+                                const description = settingDescriptions[setting] || 'No description available';
+                                tabContentHtml += `
+                                    <div class="mb-3">
+                                        <label for="${scope}-${setting}" class="form-label">
+                                            ${setting}
+                                            <i class="bi bi-info-circle setting-info" title="${description}"></i>
+                                        </label>
+                                        <input type="text" class="form-control" id="${scope}-${setting}" placeholder="Enter value for ${setting}">
+                                    </div>
+                                `;
+                            });
+                            tabContentHtml += `</div>`;
+                        }
+                        
+                        tabContentHtml += `</div>`;
+                    } else {
+                        // Regular services with individual settings
+                        scopeData.services.forEach(service => {
+                            tabContentHtml += `
+                                <div class="service-group">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="${scope}-${service.name}" checked>
+                                        <label class="form-check-label" for="${scope}-${service.name}">
+                                            ${service.description}
+                                        </label>
+                                    </div>
+                            `;
+                            
+                            // Service-specific settings
+                            if (service.settings && service.settings.length > 0) {
+                                tabContentHtml += `<div class="service-settings">`;
+                                service.settings.forEach(setting => {
+                                    const description = settingDescriptions[setting] || 'No description available';
+                                    tabContentHtml += `
+                                        <div class="mb-3">
+                                            <label for="${scope}-${service.name}-${setting}" class="form-label">
+                                                ${setting}
+                                                <i class="bi bi-info-circle setting-info" title="${description}"></i>
+                                            </label>
+                                            <input type="text" class="form-control" id="${scope}-${service.name}-${setting}" placeholder="Enter value for ${setting}">
+                                        </div>
+                                    `;
+                                });
+                                tabContentHtml += `</div>`;
+                            }
+                            
+                            tabContentHtml += `</div>`;
+                        });
+                    }
+                    
+                    tabContentHtml += `</div>`;
+                }
+                
+                // Scope-level settings section
+                if (scopeData.settings.length > 0) {
+                    tabContentHtml += `<div class="settings-section">
+                        <span>Scope Settings</span>
+                        <div class="row">`;
+                    
+                    scopeData.settings.forEach(setting => {
+                        const description = settingDescriptions[setting] || 'No description available';
+                        tabContentHtml += `
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="${scope}-${setting}" class="form-label">
+                                        ${setting}
+                                        <i class="bi bi-info-circle setting-info" title="${description}"></i>
+                                    </label>
+                                    <input type="text" class="form-control" id="${scope}-${setting}" placeholder="Enter value for ${setting}">
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    tabContentHtml += `</div></div>`;
+                }
+                
+                tabContentHtml += `</div>`;
+                scopeTabContentContainer.append(tabContentHtml);
+            });
+
+            // Handle scope checkbox changes
+            $('.scope-checkbox-input').change(function() {
+                const scope = $(this).val();
+                const isChecked = $(this).is(':checked');
+                
+                // Show/hide the corresponding tab
+                if (isChecked) {
+                    $(`#${scope}-tab`).parent().show();
+                    $(`#${scope}`).addClass('tab-slide-in');
+                    
+                    // Remove animation class after animation completes
+                    setTimeout(() => {
+                        $(`#${scope}`).removeClass('tab-slide-in');
+                    }, 300);
+                } else {
+                    $(`#${scope}-tab`).parent().hide();
+                    // $(`#${scope}`).removeClass('active');
+                }
+            });
+
+            // Handle tab close button clicks
+            $(document).on('click', '.close-tab', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const tab = $(this).closest('.nav-link');
+                const scope = tab.attr('id').replace('-tab', '');
+                
+                // Uncheck the corresponding checkbox
+                $(`#scope-${scope}`).prop('checked', false);
+                
+                // Hide the tab
+                tab.parent().hide();
+                $(`#${scope}`).removeClass('active');
+            });
+
+            // Initialize tooltips for info icons
+            $(document).ready(function() {
+                $('.setting-info').tooltip();
+            });
+
+            // Initially hide all tabs
+            $('.scope-tab-link').parent().hide();
+            $('.scope-tab').removeClass('active');
+
+            // Generate script button click handler
+            $('#generateScript').click(function() {
+                generateScript();
+            });
+
+            // Copy script button click handler
+            $('#copyScript').click(function() {
+                const scriptText = $('#scriptOutput').text();
+                navigator.clipboard.writeText(scriptText).then(function() {
+                    alert('Script copied to clipboard!');
+                }, function(err) {
+                    console.error('Could not copy text: ', err);
+                });
+            });
+
+            // Import configuration button click handler
+            $('#importConfig').click(function() {
+                const fileInput = $('#importFile')[0];
+                if (fileInput.files.length === 0) {
+                    alert('Please select a JSON file to import');
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const config = JSON.parse(e.target.result);
+                        importConfiguration(config);
+                        alert('Configuration imported successfully!');
+                    } catch (error) {
+                        alert('Error parsing JSON file: ' + error.message);
+                    }
+                };
+                
+                reader.readAsText(file);
+            });
+
+            // Export configuration button click handler
+            $('#exportConfig').click(function() {
+                const config = exportConfiguration();
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "entity_configuration.json");
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            });
+        });
+
+        // Function to import configuration from JSON
+        function importConfiguration(config) {
+            // Basic entity information
+            if (config.parentName) $('#parentName').val(config.parentName);
+            if (config.website) $('#website').val(config.website);
+            if (config.integratorEmail) $('#integratorEmail').val(config.integratorEmail);
+            if (config.crsEnquiryBy) $('#crsEnquiryBy').val(config.crsEnquiryBy);
+            
+            // Device user settings
+            if (config.createDeviceUser !== undefined) {
+                $('#createDeviceUser').prop('checked', config.createDeviceUser);
+                if (config.createDeviceUser) {
+                    $('#deviceUserFields').addClass('show');
+                    if (config.deviceUsername) $('#deviceUsername').val(config.deviceUsername);
+                    if (config.devicePassword) $('#devicePassword').val(config.devicePassword);
+                }
+            }
+            
+            // Integrator settings
+            if (config.createIntegrator !== undefined) {
+                $('#createIntegrator').prop('checked', config.createIntegrator);
+                if (config.createIntegrator) {
+                    $('#integratorFields').addClass('show');
+                    if (config.integratorName) $('#integratorName').val(config.integratorName);
+                }
+            }
+            
+            // Scope settings
+            if (config.scopes) {
+                // Clear all scope selections first
+                $('.scope-checkbox-input').prop('checked', false);
+                $('.scope-tab-link').parent().hide();
+                $('.scope-tab').removeClass('active');
+                
+                // Set selected scopes
+                Object.keys(config.scopes).forEach(scope => {
+                    $(`#scope-${scope}`).prop('checked', true);
+                    $(`#${scope}-tab`).parent().show();
+                    $(`#${scope}`).addClass('active tab-slide-in');
+                    
+                    // Remove animation class after animation completes
+                    setTimeout(() => {
+                        $(`#${scope}`).removeClass('tab-slide-in');
+                    }, 300);
+                    
+                    const scopeConfig = config.scopes[scope];
+                    
+                    // Rate limiting
+                    if (scopeConfig.rateLimit !== undefined) {
+                        $(`#${scope}-rate-limit`).prop('checked', scopeConfig.rateLimit);
+                    }
+                    if (scopeConfig.limitCount !== undefined) {
+                        $(`#${scope}-limit-count`).val(scopeConfig.limitCount);
+                    }
+                    if (scopeConfig.limitPeriod !== undefined) {
+                        $(`#${scope}-limit-period`).val(scopeConfig.limitPeriod);
+                    }
+                    
+                    // Entity linking
+                    if (scopeConfig.linkParent !== undefined) {
+                        $(`#${scope}-link-parent`).prop('checked', scopeConfig.linkParent);
+                    }
+                    if (scopeConfig.linkDeviceUser !== undefined) {
+                        $(`#${scope}-link-device-user`).prop('checked', scopeConfig.linkDeviceUser);
+                    }
+                    if (scopeConfig.linkIntegrator !== undefined) {
+                        $(`#${scope}-link-integrator`).prop('checked', scopeConfig.linkIntegrator);
+                    }
+                    
+                    // Services
+                    if (scopeConfig.services) {
+                        Object.keys(scopeConfig.services).forEach(service => {
+                            if (scopeConfig.services[service].enabled !== undefined) {
+                                $(`#${scope}-${service}`).prop('checked', scopeConfig.services[service].enabled);
+                            }
+                            
+                            // Service settings
+                            if (scopeConfig.services[service].settings) {
+                                Object.keys(scopeConfig.services[service].settings).forEach(setting => {
+                                    $(`#${scope}-${service}-${setting}`).val(scopeConfig.services[service].settings[setting]);
+                                });
+                            }
+                        });
+                    }
+                    
+                    // Scope settings
+                    if (scopeConfig.settings) {
+                        Object.keys(scopeConfig.settings).forEach(setting => {
+                            $(`#${scope}-${setting}`).val(scopeConfig.settings[setting]);
+                        });
+                    }
+                    
+                    // Shared settings (for OCS)
+                    if (scopeConfig.sharedSettings) {
+                        Object.keys(scopeConfig.sharedSettings).forEach(setting => {
+                            $(`#${scope}-${setting}`).val(scopeConfig.sharedSettings[setting]);
+                        });
+                    }
+                });
+            }
+            
+            // Re-initialize tooltips
+            $('.setting-info').tooltip();
+        }
+
+        // Function to export configuration to JSON
+        function exportConfiguration() {
+            const config = {
+                parentName: $('#parentName').val(),
+                website: $('#website').val(),
+                integratorEmail: $('#integratorEmail').val(),
+                crsEnquiryBy: $('#crsEnquiryBy').val(),
+                createDeviceUser: $('#createDeviceUser').is(':checked'),
+                deviceUsername: $('#deviceUsername').val(),
+                devicePassword: $('#devicePassword').val(),
+                createIntegrator: $('#createIntegrator').is(':checked'),
+                integratorName: $('#integratorName').val(),
+                scopes: {}
+            };
+            
+            // Collect scope configurations
+            $('.scope-checkbox-input:checked').each(function() {
+                const scope = $(this).val();
+                const scopeData = scopes[scope];
+                
+                config.scopes[scope] = {
+                    rateLimit: $(`#${scope}-rate-limit`).is(':checked'),
+                    limitCount: $(`#${scope}-limit-count`).val() || null,
+                    limitPeriod: $(`#${scope}-limit-period`).val() || null,
+                    linkParent: $(`#${scope}-link-parent`).is(':checked'),
+                    linkDeviceUser: $(`#${scope}-link-device-user`).is(':checked'),
+                    linkIntegrator: $(`#${scope}-link-integrator`).is(':checked'),
+                    services: {},
+                    settings: {}
+                };
+                
+                // Service configurations
+                scopeData.services.forEach(service => {
+                    config.scopes[scope].services[service.name] = {
+                        enabled: $(`#${scope}-${service.name}`).is(':checked'),
+                        settings: {}
+                    };
+                    
+                    // Service settings (for non-shared settings)
+                    if (service.settings && service.settings.length > 0) {
+                        service.settings.forEach(setting => {
+                            const value = $(`#${scope}-${service.name}-${setting}`).val();
+                            if (value) {
+                                config.scopes[scope].services[service.name].settings[setting] = value;
+                            }
+                        });
+                    }
+                });
+                
+                // Scope settings
+                scopeData.settings.forEach(setting => {
+                    const value = $(`#${scope}-${setting}`).val();
+                    if (value) {
+                        config.scopes[scope].settings[setting] = value;
+                    }
+                });
+                
+                // Shared settings (for OCS)
+                if (scopeData.sharedSettings) {
+                    config.scopes[scope].sharedSettings = {};
+                    scopeData.sharedSettings.forEach(setting => {
+                        const value = $(`#${scope}-${setting}`).val();
+                        if (value) {
+                            config.scopes[scope].sharedSettings[setting] = value;
+                        }
+                    });
+                }
+            });
+            
+            return config;
+        }
+
+        // Function to generate the SQL script
+        function generateScript() {
+            const parentName = $('#parentName').val() || 'TEST';
+            const website = $('#website').val() || 'http://www.bitventure.co.za';
+            const integratorEmail = $('#integratorEmail').val() || 'development@bitventure.co.za';
+            const crsEnquiryBy = $('#crsEnquiryBy').val() || parentName;
+            const createDeviceUser = $('#createDeviceUser').is(':checked');
+            const deviceUsername = $('#deviceUsername').val();
+            const devicePassword = $('#devicePassword').val();
+            const createIntegrator = $('#createIntegrator').is(':checked');
+            const integratorName = $('#integratorName').val() || parentName + ' :Integrator';
+            
+            // Collect selected scopes and their settings
+            const selectedScopes = [];
+            $('.scope-checkbox-input:checked').each(function() {
+                const scope = $(this).val();
+                const rateLimit = $(`#${scope}-rate-limit`).is(':checked');
+                const limitCount = $(`#${scope}-limit-count`).val() || 'null';
+                const limitPeriod = $(`#${scope}-limit-period`).val() || 'null';
+                const linkParent = $(`#${scope}-link-parent`).is(':checked');
+                const linkDeviceUser = $(`#${scope}-link-device-user`).is(':checked');
+                const linkIntegrator = $(`#${scope}-link-integrator`).is(':checked');
+                
+                selectedScopes.push({
+                    scope: scope,
+                    rateLimit: rateLimit,
+                    limitCount: limitCount,
+                    limitPeriod: limitPeriod,
+                    linkParent: linkParent,
+                    linkDeviceUser: linkDeviceUser,
+                    linkIntegrator: linkIntegrator
+                });
+            });
+            
+            // Build the entity_service_types array
+            let entityServiceTypesArray = 'array[';
+            selectedScopes.forEach((scopeObj, index) => {
+                if (scopeObj.linkParent) {
+                    entityServiceTypesArray += `\n\t['${scopeObj.scope}', '${scopeObj.rateLimit}', ${scopeObj.limitCount}, ${scopeObj.limitPeriod}]`;
+                    if (index < selectedScopes.length - 1) {
+                        entityServiceTypesArray += ',';
+                    }
+                }
+            });
+            entityServiceTypesArray += '\n];';
+            
+            // Build the script
+            let script = `-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";\n\n`;
+            script += `DO $$\n`;
+            script += `-- These need to be supplied\n`;
+            script += `DECLARE parent_description TEXT := '${parentName}';\n`;
+            script += `DECLARE entity_website TEXT := '${website}';\n`;
+            script += `DECLARE entity_service_types TEXT[] := ${entityServiceTypesArray}\n\n`;
+            
+            // Add OCS settings if OCS is selected
+            const ocsScope = selectedScopes.find(s => s.scope === 'OCS');
+            if (ocsScope) {
+                script += `-- OCS Settings \n`;
+                // Collect OCS settings from the form
+                const ocsEdWsGc = $('#OCS-ocs.ed.ws.gc').val() || 'CHIUNION6';
+                const ocsEdWsUsr = $('#OCS-ocs.ed.ws.usr').val() || 'LipingCarolina';
+                const ocsEdWsPwd = $('#OCS-ocs.ed.ws.pwd').val() || '9f65a1d9d91ff2d5a23ab273c30f80239b854f8f3eec64a6658046c083b3527c';
+                const ocsDfScheme = $('#OCS-ocs.df.scheme').val() || 'CHIUNION6';
+                const ocsEdScGcMap = $('#OCS-ocs.ed.sc.gc.map').val() || '[{"map": "CHIUNION6", "gc": "CHIUNION6"}]';
+                const ocsEdDoScGcMap = $('#OCS-ocs.ed.do.sc.gc.map').val() || '[{"map": "CU6EFT", "gc": "CU6EFT"}]';
+                const ocsEdDoGc = $('#OCS-ocs.ed.do.gc').val() || 'CU6EFT';
+                const ocsEdPassthrough = $('#OCS-ocs.ed.passthrough').val() || 'true';
+                const ocsWebhookUrlMandate = $('#OCS-ocs.webhook.url.mandate').val() || '';
+                const ocsWebhookUrlCollection = $('#OCS-ocs.webhook.url.collection').val() || '';
+                
+                script += `DECLARE ocs_ed_ws_gc TEXT := '${ocsEdWsGc}';\n`;
+                script += `DECLARE ocs_ed_ws_usr TEXT := '${ocsEdWsUsr}';\n`;
+                script += `DECLARE ocs_ed_ws_pwd TEXT := '${ocsEdWsPwd}';\n`;
+                script += `DECLARE ocs_df_scheme TEXT := '${ocsDfScheme}';\n`;
+                script += `DECLARE ocs_ed_sc_gc_map TEXT:= '${ocsEdScGcMap}';\n`;
+                script += `DECLARE ocs_ed_ul_gc_map TEXT;\n`;
+                script += `DECLARE ocs_ed_do_sc_gc_map TEXT:= '${ocsEdDoScGcMap}';\n`;
+                script += `DECLARE ocs_ed_do_gc TEXT:= '${ocsEdDoGc}';\n`;
+                script += `DECLARE ocs_ed_passthrough TEXT:= '${ocsEdPassthrough}';\n`;
+                script += `DECLARE ocs_webhook_url_mandate TEXT := '${ocsWebhookUrlMandate}';\n`;
+                script += `DECLARE ocs_webhook_url_collection TEXT := '${ocsWebhookUrlCollection}';\n\n`;
+            }
+            
+            // Add BSS settings if BSS is selected
+            const bssScope = selectedScopes.find(s => s.scope === 'BSS');
+            if (bssScope) {
+                const bssWebhookUrl = $('#BSS-bss.services.bss-bss.webhook.url').val() || '';
+                script += `-- BSS Settings \n`;
+                script += `DECLARE bss_webhook_url TEXT := '${bssWebhookUrl}';\n\n`;
+            }
+            
+            // Add CRS settings if CRS is selected
+            const crsScope = selectedScopes.find(s => s.scope === 'CRS');
+            if (crsScope) {
+                script += `-- CRS Settings \n`;
+                script += `DECLARE crs_cpb_enquiry_done_by TEXT := '${crsEnquiryBy}';\n\n`;
+            }
+            
+            // Add the rest of the script template
+            script += `-- These are generated / used within the script !! DONT CHANGE !!!\n`;
+            script += `DECLARE parent_identifier TEXT;\n`;
+            script += `DECLARE entity_identifier TEXT;\n`;
+            script += `DECLARE entity_description TEXT;\n`;
+            script += `DECLARE entity_password TEXT;\n`;
+            script += `DECLARE entity_service_type TEXT[];\n`;
+            script += `DECLARE entity_scopes TEXT := '';\n\n`;
+            script += `-- entity_service_types array elements !! DONT CHANGE !!!\n`;
+            script += `DECLARE scope_identifier TEXT;\n`;
+            script += `DECLARE rate_limit BOOLEAN;\n`;
+            script += `DECLARE limit_count INTEGER;\n`;
+            script += `DECLARE limit_period TEXT;\n\n`;
+            script += `BEGIN\n`;
+            script += `\t\n`;
+            script += `\tSELECT parent_description || ' :Integrator' into entity_description;\n`;
+            script += `\tSELECT UPPER(uuid_generate_v4()::varchar) into parent_identifier;\n`;
+            script += `    SELECT uuid_generate_v4()::varchar into entity_identifier;\n`;
+            script += `    SELECT uuid_generate_v4()::varchar into entity_password;\n`;
+            script += `    \t\t\n`;
+            script += `\t-- Parent Entity \n`;
+            script += `\t-- Only insert a parent record if the "parent_description" is not already in public.entity \n`;
+            script += `\tINSERT INTO public.entity (description, identifier, lookup_entity_type_id, active)\n`;
+            script += `\t\tSELECT parent_description, parent_identifier, 1, true\n`;
+            script += `\t\tWHERE NOT EXISTS(\n`;
+            script += `\t\t\tSELECT id FROM public.entity WHERE lower(description) = lower(parent_description)\n`;
+            script += `\t\t);\n`;
+            script += `\t\t\n`;
+            script += `\t-- Regardless of the insert statement outcome, we need to get identifier related to the "parent_description"\n`;
+            script += `\tSELECT identifier INTO parent_identifier FROM public.entity WHERE lower(description) = lower(parent_description);\n`;
+            script += `\t\t\n`;
+            
+            // Integrator entity creation
+            if (createIntegrator) {
+                script += `\t-- Entity (Integrator Entity Type)\n`;
+                script += `\t-- Only insert a record if the "entity_description" is not already in public.entity\n`;
+                script += `\tINSERT INTO public.entity (description, identifier, lookup_entity_type_id, active, parent_id)\n`;
+                script += `\tSELECT\tentity_description\n`;
+                script += `\t\t\t,entity_identifier\n`;
+                script += `\t\t\t,(select id from lookup_entity_type where description = 'Integrator') as lookupEntityTypeId\n`;
+                script += `\t\t\t,true\n`;
+                script += `\t\t\t,(select id from entity where identifier = parent_identifier) as entityParentId\n`;
+                script += `\tWHERE NOT EXISTS(\n`;
+                script += `        SELECT id FROM public.entity WHERE lower(description) = lower(entity_description)\n`;
+                script += `    );\n`;
+                script += `\n`;
+                script += `\t-- Regardless of the insert statement outcome, we need to get identifier related to the "entity_description"\n`;
+                script += `\tSELECT identifier INTO entity_identifier FROM public.entity WHERE lower(description) = lower(entity_description);\n`;
+                script += `   \t\t\n`;
+                script += `\t-- Entity (Integrator)\n`;
+                script += `\tINSERT INTO public.integrator (entity_id, client_secret, email_address, active)\n`;
+                script += `\tselect \t(select id from entity where identifier = entity_identifier) as entityId\n`;
+                script += `\t\t\t,(select encode(digest(entity_password,'sha256'),'base64')) as client_secret\n`;
+                script += `\t\t\t,'${integratorEmail}'\n`;
+                script += `\t\t\t,true \n`;
+                script += `\tWHERE NOT EXISTS(\n`;
+                script += `        SELECT i.id FROM public.integrator i \n`;
+                script += `\t\t\tINNER JOIN public.entity e ON e.id = i.entity_id\n`;
+                script += `\t\tWHERE lower(e.identifier) = lower(entity_identifier)\n`;
+                script += `    );\n`;
+            }
+            
+            // Device user creation
+            if (createDeviceUser && deviceUsername && devicePassword) {
+                script += `\t-- Device User Entity\n`;
+                script += `\tINSERT INTO public.entity (description, identifier, lookup_entity_type_id, active, parent_id)\n`;
+                script += `\tSELECT\t'${deviceUsername}'\n`;
+                script += `\t\t\t,uuid_generate_v4()::varchar\n`;
+                script += `\t\t\t,(select id from lookup_entity_type where description = 'User') as lookupEntityTypeId\n`;
+                script += `\t\t\t,true\n`;
+                script += `\t\t\t,(select id from entity where identifier = parent_identifier) as entityParentId\n`;
+                script += `\tWHERE NOT EXISTS(\n`;
+                script += `        SELECT id FROM public.entity WHERE lower(description) = lower('${deviceUsername}')\n`;
+                script += `    );\n`;
+                script += `\n`;
+                script += `\t-- Device User Credentials\n`;
+                script += `\tINSERT INTO public.user (entity_id, username, password, email_address, active)\n`;
+                script += `\tselect \t(select id from entity where description = '${deviceUsername}') as entity_id\n`;
+                script += `\t\t\t,'${deviceUsername}' as username\n`;
+                script += `\t\t\t,(select encode(digest('${devicePassword}'::bytea,'sha256'),'base64')) as password\n`;
+                script += `\t\t\t,'${integratorEmail}' as email_address\n`;
+                script += `\t\t\t,true as active \n`;
+                script += `\tWHERE NOT EXISTS(\n`;
+                script += `        SELECT i.id FROM public.user i \n`;
+                script += `\t\t\tINNER JOIN public.entity e ON e.id = i.entity_id\n`;
+                script += `\t\tWHERE lower(e.description) = lower('${deviceUsername}')\n`;
+                script += `    );\n`;
+            }
+            
+            script += `\t\t\n`;
+            script += `\tFOREACH entity_service_type SLICE 1 IN ARRAY entity_service_types\n`;
+            script += `\tLOOP\n`;
+            script += `\t\n`;
+            script += `\t\tSELECT upper(entity_service_type[1]) into scope_identifier;\n`;
+            script += `\t\tSELECT entity_service_type[2]::BOOLEAN into rate_limit;\n`;
+            script += `\t\tSELECT entity_service_type[3]::INTEGER into limit_count;\n`;
+            script += `\t\tSELECT entity_service_type[4] into limit_period;\n`;
+            script += `\t\t\n`;
+            script += `\t\tRAISE notice 'Adding: % % % %', scope_identifier, rate_limit, limit_count, limit_period;\n`;
+            script += `\t\t\n`;
+            script += `\t\tSELECT entity_scopes || ' ' || lower(scope_identifier) into entity_scopes; \n`;
+            script += `\t\t\n`;
+            script += `\t\t-- PARENT ENTITY\n`;
+            script += `\t\tRAISE notice 'Configuring Parent Entity: %', parent_identifier;\n`;
+            script += `\t\t\n`;
+            script += `\t\t-- Add the Service Type to the parent entity if it does not exist\n`;
+            script += `\t\tWITH serviceType (id) AS (\n`;
+            script += `\t\t\tSELECT id FROM service_type st WHERE upper(st.identifier) = upper(scope_identifier)\n`;
+            script += `\t\t)\n`;
+            script += `\t\tINSERT INTO public.entity_service_type (entity_id, service_type_id, active)\n`;
+            script += `\t\t\tSELECT \t(SELECT e.ID FROM entity e WHERE identifier = parent_identifier) as entityId\n`;
+            script += `\t\t\t\t\t,st.id \n`;
+            script += `\t\t\t\t\t,true\n`;
+            script += `\t\t\tFROM \tserviceType st\n`;
+            script += `\t\t\tWHERE NOT EXISTS(\n`;
+            script += `\t\t\t\tSELECT e.id FROM entity e \n`;
+            script += `\t\t\t\t\tINNER JOIN entity_service_type est ON est.entity_id = e.id\n`;
+            script += `\t\t\t\t\tINNER JOIN service_type st2 ON st2.id = est.service_type_id\n`;
+            script += `\t\t\t\tWHERE e.identifier = parent_identifier\n`;
+            script += `\t\t\t\t\tAND upper(st2.identifier) = upper(scope_identifier)\n`;
+            script += `\t\t\t);\n`;
+            script += `\t\t\t\n`;
+            
+            // Add service types to integrator if linked
+            selectedScopes.forEach(scopeObj => {
+                if (scopeObj.linkIntegrator && createIntegrator) {
+                    script += `\t\t-- Add ${scopeObj.scope} to Integrator\n`;
+                    script += `\t\tWITH serviceType (id) AS (\n`;
+                    script += `\t\t\tSELECT id FROM service_type st WHERE upper(st.identifier) = upper('${scopeObj.scope}')\n`;
+                    script += `\t\t)\n`;
+                    script += `\t\tINSERT INTO public.entity_service_type (entity_id, service_type_id, active, rate_limit, rate_limit_count, rate_limit_period)\n`;
+                    script += `\t\t\tSELECT \t(SELECT e.ID FROM entity e WHERE identifier = entity_identifier) as entityId\n`;
+                    script += `\t\t\t\t\t,st.id \n`;
+                    script += `\t\t\t\t\t,true\n`;
+                    script += `\t\t\t\t\t,${scopeObj.rateLimit}\n`;
+                    script += `\t\t\t\t\t,${scopeObj.limitCount}\n`;
+                    script += `\t\t\t\t\t,${scopeObj.limitPeriod}\n`;
+                    script += `\t\t\tFROM \tserviceType st\n`;
+                    script += `\t\t\tWHERE NOT EXISTS(\n`;
+                    script += `\t\t\t\tSELECT e.id FROM entity e \n`;
+                    script += `\t\t\t\t\tINNER JOIN entity_service_type est ON est.entity_id = e.id\n`;
+                    script += `\t\t\t\t\tINNER JOIN service_type st2 ON st2.id = est.service_type_id\n`;
+                    script += `\t\t\t\tWHERE e.identifier = entity_identifier\n`;
+                    script += `\t\t\t\t\tAND upper(st2.identifier) = upper('${scopeObj.scope}')\n`;
+                    script += `\t\t\t);\n`;
+                }
+            });
+            
+            // Add service types to device user if linked
+            if (createDeviceUser && deviceUsername) {
+                selectedScopes.forEach(scopeObj => {
+                    if (scopeObj.linkDeviceUser) {
+                        script += `\t\t-- Add ${scopeObj.scope} to Device User\n`;
+                        script += `\t\tWITH serviceType (id) AS (\n`;
+                        script += `\t\t\tSELECT id FROM service_type st WHERE upper(st.identifier) = upper('${scopeObj.scope}')\n`;
+                        script += `\t\t)\n`;
+                        script += `\t\tINSERT INTO public.entity_service_type (entity_id, service_type_id, active, rate_limit, rate_limit_count, rate_limit_period)\n`;
+                        script += `\t\t\tSELECT \t(SELECT e.ID FROM entity e WHERE description = '${deviceUsername}') as entityId\n`;
+                        script += `\t\t\t\t\t,st.id \n`;
+                        script += `\t\t\t\t\t,true\n`;
+                        script += `\t\t\t\t\t,${scopeObj.rateLimit}\n`;
+                        script += `\t\t\t\t\t,${scopeObj.limitCount}\n`;
+                        script += `\t\t\t\t\t,${scopeObj.limitPeriod}\n`;
+                        script += `\t\t\tFROM \tserviceType st\n`;
+                        script += `\t\t\tWHERE NOT EXISTS(\n`;
+                        script += `\t\t\t\tSELECT e.id FROM entity e \n`;
+                        script += `\t\t\t\t\tINNER JOIN entity_service_type est ON est.entity_id = e.id\n`;
+                        script += `\t\t\t\t\tINNER JOIN service_type st2 ON st2.id = est.service_type_id\n`;
+                        script += `\t\t\t\tWHERE e.description = '${deviceUsername}'\n`;
+                        script += `\t\t\t\t\tAND upper(st2.identifier) = upper('${scopeObj.scope}')\n`;
+                        script += `\t\t\t);\n`;
+                    }
+                });
+            }
+            
+            script += `\tEND LOOP;\n`;
+            script += `\t\t\n`;
+            script += `\t-- Website\n`;
+            script += `\tINSERT INTO public.entity_website (entity_id, website)\n`;
+            script += `\tSELECT \t(SELECT e.ID FROM entity e WHERE identifier = parent_identifier) as entityId\n`;
+            script += `\t\t\t,entity_website\n`;
+            script += `\tWHERE NOT EXISTS(\n`;
+            script += `\t\tSELECT id FROM public.entity_website WHERE entity_id = (SELECT e.ID FROM entity e WHERE identifier = parent_identifier)\n`;
+            script += `\t);\n`;
+            script += `\t\t\n`;
+            
+            // OAuth Client for integrator
+            if (createIntegrator) {
+                script += `\t-- OAuth Client\n`;
+                script += `\tINSERT INTO public.oauth_client_details (\n`;
+                script += `\t\tclient_id, resource_ids, client_secret, scope, \n`;
+                script += `\t\tauthorized_grant_types, web_server_redirect_uri, authorities, access_token_validity, \n`;
+                script += `\t\trefresh_token_validity, additional_information, autoapprove\n`;
+                script += `\t)\n`;
+                script += `\tSELECT \tentity_identifier\n`;
+                script += `\t\t\t,'oauth2-resource'\n`;
+                script += `\t\t\t,(select encode(digest(entity_password,'sha256'),'base64'))\n`;
+                script += `\t\t\t,trim(entity_scopes)\n`;
+                script += `\t\t\t,'client_credentials,password,refresh_token,authorization_code'\n`;
+                script += `\t\t\t,entity_website\n`;
+                script += `\t\t\t,'ROLE_CLIENT'\n`;
+                script += `\t\t\t,86400\n`;
+                script += `\t\t\t,2592000\n`;
+                script += `\t\t\t,'{}'\n`;
+                script += `\t\t\t,'true'\n`;
+                script += `\tWHERE NOT EXISTS(\n`;
+                script += `\t\tSELECT client_id FROM public.oauth_client_details WHERE client_id = entity_identifier\n`;
+                script += `\t);\n`;
+            }
+            
+            script += `\t\t\n`;
+            script += `\t-- Output the credentials\n`;
+            script += `\tRAISE notice 'Parent Entity ID: %', parent_identifier;\n`;
+            if (createIntegrator) {
+                script += `\tRAISE notice 'Client ID: %', entity_identifier;\n`;
+                script += `\tRAISE notice 'Client Secret: %', entity_password;\n`;
+            }
+            if (createDeviceUser && deviceUsername) {
+                script += `\tRAISE notice 'Device User: %', '${deviceUsername}';\n`;
+            }
+            script += `\t\t\n`;
+            script += `END $$;\n`;
+            
+            // Display the script
+            $('#scriptOutput').text(script);
+        }
+    </script>
+</body>
+</html>

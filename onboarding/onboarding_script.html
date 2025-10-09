@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Onboarding Script Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+        .header {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            background-color: #e9ecef;
+            font-weight: 600;
+        }
+        .form-section {
+            margin-bottom: 25px;
+        }
+        .form-section h5 {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        .btn-generate {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .btn-copy {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .btn-reset {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            border: none;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .result-container {
+            display: none;
+            margin-top: 30px;
+        }
+        .sql-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .form-check-label {
+            font-weight: 500;
+        }
+        .required:after {
+            content: " *";
+            color: #dc3545;
+        }
+        .help-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header text-center">
+            <h1><i class="fas fa-database me-2"></i>SQL Onboarding Script Generator</h1>
+            <p class="lead mb-0">Generate customized SQL onboarding scripts based on your requirements</p>
+        </div>
+
+        <form id="scriptForm">
+            <!-- Basic Configuration Section -->
+            <div class="card">
+                <div class="card-header">Basic Configuration</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parentName" class="form-label required">Parent Name</label>
+                                <input type="text" class="form-control" id="parentName" required>
+                                <div class="help-text">Name of the parent entity (check ENTITY table first)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="entityWebsite" class="form-label required">Entity Website</label>
+                                <input type="url" class="form-control" id="entityWebsite" value="http://www.bitventure.co.za" required>
+                                <div class="help-text">Needed for BSS & FVS settings</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="createIntegrationEntity" checked>
+                                    Create Integration Entity
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="createDeviceUser" checked>
+                                    Create Device User
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device User Settings -->
+            <div class="card" id="deviceUserSection">
+                <div class="card-header">Device User Settings</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="deviceUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="deviceUsername" value="test_user">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="devicePassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="devicePassword" value="Password@123">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="deviceEmail" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="deviceEmail" value="development@bitventure.co.za">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="deviceUserActive" checked>
+                            Device User Active
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Types -->
+            <div class="card">
+                <div class="card-header">Service Types</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="serviceCMS" value="CMS" checked>
+                            <label class="form-check-label" for="serviceCMS">CMS</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="serviceTCA" value="TCA" checked>
+                            <label class="form-check-label" for="serviceTCA">TCA</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="serviceOCS" value="OCS" checked>
+                            <label class="form-check-label" for="serviceOCS">OCS</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OCS Settings -->
+            <div class="card">
+                <div class="card-header">OCS Settings</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ocsEdWsGc" class="form-label">ED WS Group Code</label>
+                                <input type="text" class="form-control" id="ocsEdWsGc" value="TESTGROUP">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ocsEdWsUsr" class="form-label">ED WS Username</label>
+                                <input type="text" class="form-control" id="ocsEdWsUsr" value="WS0000">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ocsEdWsPwd" class="form-label">ED WS Password</label>
+                                <input type="text" class="form-control" id="ocsEdWsPwd" value="c2c9c9190d3e2d9a1626cf8aa1a8ee5b83f42cebf547a8284c64e38625f3ceef">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ocsDfScheme" class="form-label">Default Scheme</label>
+                                <input type="text" class="form-control" id="ocsDfScheme" value="TESTGROUP">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ocsEdScGcMap" class="form-label">ED SC Group Code Map</label>
+                        <textarea class="form-control" id="ocsEdScGcMap" rows="2">[{"map": "TESTGROUP", "gc": "TESTGROUP"}]</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ocsEdDoScGcMap" class="form-label">ED DO SC Group Code Map</label>
+                        <textarea class="form-control" id="ocsEdDoScGcMap" rows="2">[{"map": "TEST4EFT", "gc": "TEST4EFT"}]</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ocsEdDoGc" class="form-label">ED DO Group Code</label>
+                                <input type="text" class="form-control" id="ocsEdDoGc" value="TEST4EFT">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-check-label mt-4">
+                                    <input type="checkbox" class="form-check-input" id="ocsEdPassthrough" checked>
+                                    ED Passthrough
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mandate Defaults -->
+            <div class="card">
+                <div class="card-header">Mandate Defaults</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="ocsDefaultMandateType" class="form-label">Default Mandate Type</label>
+                                <select class="form-select" id="ocsDefaultMandateType">
+                                    <option value="Usage">Usage</option>
+                                    <option value="Variable">Variable</option>
+                                    <option value="Fixed">Fixed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="ocsDefaultDebitClassification" class="form-label">Debit Classification</label>
+                                <input type="text" class="form-control" id="ocsDefaultDebitClassification" value="LRM">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="ocsDefaultMaxInstallmentAmount" class="form-label">Max Installment Amount</label>
+                                <input type="number" class="form-control" id="ocsDefaultMaxInstallmentAmount" value="10000">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="ocsDefaultFrequency" class="form-label">Frequency</label>
+                                <select class="form-select" id="ocsDefaultFrequency">
+                                    <option value="MONTHLY" selected>MONTHLY</option>
+                                    <option value="WEEKLY">WEEKLY</option>
+                                    <option value="QUARTERLY">QUARTERLY</option>
+                                    <option value="ANNUALLY">ANNUALLY</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-check-label mt-4">
+                                    <input type="checkbox" class="form-check-input" id="ocsDefaultTrackingEnabled" checked>
+                                    Tracking Enabled
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-check-label mt-4">
+                                    <input type="checkbox" class="form-check-input" id="ocsDefaultGenerateContractReference" checked>
+                                    Generate Contract Reference
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ocsDefaultContractReferenceFormat" class="form-label">Contract Reference Format</label>
+                                <input type="text" class="form-control" id="ocsDefaultContractReferenceFormat" value="XXXXXXX_******">
+                                <div class="help-text">Only change "X". "X" (including underscore) cannot be more than 8 characters.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ocsDefaultScheme" class="form-label">Default Scheme</label>
+                                <input type="text" class="form-control" id="ocsDefaultScheme">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TCA Settings -->
+            <div class="card">
+                <div class="card-header">TCA Settings</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tcaApplicationKey" class="form-label">Application Key</label>
+                                <input type="text" class="form-control" id="tcaApplicationKey" value="52263fa1-8fbd-46ca-b3c4-c1d148c73f68">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tcaMerchantId" class="form-label">Merchant ID</label>
+                                <input type="text" class="form-control" id="tcaMerchantId" value="3094745">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tcaMerchantUsername" class="form-label">Merchant Username</label>
+                                <input type="text" class="form-control" id="tcaMerchantUsername" value="default">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="externalStatusWebhookUrl" class="form-label">External Status Webhook URL</label>
+                                <input type="url" class="form-control" id="externalStatusWebhookUrl" value="https://prod.bitventure.co.za/tca/webhook/easydebit/">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="appMandateAuthenticationEnabled" checked>
+                                    Mandate Authentication Enabled
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="appMandateCreationEnabled" checked>
+                                    Mandate Creation Enabled
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="appManualPaymentsEnabled">
+                                    Manual Payments Enabled
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="appPaymentsEnabled">
+                                    Payments Enabled
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="appTransactionHistoryEnabled">
+                                    Transaction History Enabled
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <button type="button" class="btn btn-reset me-md-2" id="resetBtn">
+                    <i class="fas fa-redo me-1"></i> Reset Form
+                </button>
+                <button type="submit" class="btn btn-generate">
+                    <i class="fas fa-cogs me-1"></i> Generate SQL Script
+                </button>
+            </div>
+        </form>
+
+        <!-- Results Section -->
+        <div class="result-container" id="resultContainer">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Generated SQL Script</span>
+                    <button class="btn btn-copy btn-sm" id="copyBtn">
+                        <i class="fas fa-copy me-1"></i> Copy to Clipboard
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="sql-output" id="sqlOutput"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Toggle device user section based on checkbox
+            $('#createDeviceUser').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#deviceUserSection').show();
+                } else {
+                    $('#deviceUserSection').hide();
+                }
+            });
+            
+            // Initialize the form state
+            if (!$('#createDeviceUser').is(':checked')) {
+                $('#deviceUserSection').hide();
+            }
+
+            // Form submission
+            $('#scriptForm').on('submit', function(e) {
+                e.preventDefault();
+                generateSQL();
+            });
+
+            // Reset form
+            $('#resetBtn').on('click', function() {
+                if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+                    document.getElementById('scriptForm').reset();
+                    $('#resultContainer').hide();
+                }
+            });
+
+            // Copy to clipboard
+            $('#copyBtn').on('click', function() {
+                const sqlText = $('#sqlOutput').text();
+                navigator.clipboard.writeText(sqlText).then(function() {
+                    // Show success feedback
+                    const originalText = $('#copyBtn').html();
+                    $('#copyBtn').html('<i class="fas fa-check me-1"></i> Copied!');
+                    setTimeout(function() {
+                        $('#copyBtn').html(originalText);
+                    }, 2000);
+                }, function(err) {
+                    console.error('Could not copy text: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+            });
+
+            // Generate SQL function
+            function generateSQL() {
+                // Collect form data
+                const parentName = $('#parentName').val();
+                const entityWebsite = $('#entityWebsite').val();
+                const createIntegrationEntity = $('#createIntegrationEntity').is(':checked');
+                const createDeviceUser = $('#createDeviceUser').is(':checked');
+                
+                // Device user settings
+                const deviceUsername = $('#deviceUsername').val();
+                const devicePassword = $('#devicePassword').val();
+                const deviceEmail = $('#deviceEmail').val();
+                const deviceUserActive = $('#deviceUserActive').is(':checked');
+                
+                // Service types
+                const serviceTypes = [];
+                if ($('#serviceCMS').is(':checked')) serviceTypes.push("'CMS'");
+                if ($('#serviceTCA').is(':checked')) serviceTypes.push("'TCA'");
+                if ($('#serviceOCS').is(':checked')) serviceTypes.push("'OCS'");
+                
+                // OCS settings
+                const ocsEdWsGc = $('#ocsEdWsGc').val();
+                const ocsEdWsUsr = $('#ocsEdWsUsr').val();
+                const ocsEdWsPwd = $('#ocsEdWsPwd').val();
+                const ocsDfScheme = $('#ocsDfScheme').val();
+                const ocsEdScGcMap = $('#ocsEdScGcMap').val();
+                const ocsEdDoScGcMap = $('#ocsEdDoScGcMap').val();
+                const ocsEdDoGc = $('#ocsEdDoGc').val();
+                const ocsEdPassthrough = $('#ocsEdPassthrough').is(':checked');
+                
+                // Mandate defaults
+                const ocsDefaultMandateType = $('#ocsDefaultMandateType').val();
+                const ocsDefaultDebitClassification = $('#ocsDefaultDebitClassification').val();
+                const ocsDefaultMaxInstallmentAmount = $('#ocsDefaultMaxInstallmentAmount').val();
+                const ocsDefaultFrequency = $('#ocsDefaultFrequency').val();
+                const ocsDefaultTrackingEnabled = $('#ocsDefaultTrackingEnabled').is(':checked');
+                const ocsDefaultGenerateContractReference = $('#ocsDefaultGenerateContractReference').is(':checked');
+                const ocsDefaultContractReferenceFormat = $('#ocsDefaultContractReferenceFormat').val();
+                const ocsDefaultScheme = $('#ocsDefaultScheme').val();
+                
+                // TCA settings
+                const tcaApplicationKey = $('#tcaApplicationKey').val();
+                const tcaMerchantId = $('#tcaMerchantId').val();
+                const tcaMerchantUsername = $('#tcaMerchantUsername').val();
+                const externalStatusWebhookUrl = $('#externalStatusWebhookUrl').val();
+                const appMandateAuthenticationEnabled = $('#appMandateAuthenticationEnabled').is(':checked');
+                const appMandateCreationEnabled = $('#appMandateCreationEnabled').is(':checked');
+                const appManualPaymentsEnabled = $('#appManualPaymentsEnabled').is(':checked');
+                const appPaymentsEnabled = $('#appPaymentsEnabled').is(':checked');
+                const appTransactionHistoryEnabled = $('#appTransactionHistoryEnabled').is(':checked');
+                
+                // Validate required fields
+                if (!parentName) {
+                    alert('Please enter a Parent Name');
+                    $('#parentName').focus();
+                    return;
+                }
+                
+                // Generate SQL script
+                let sqlScript = `-- Generated SQL Onboarding Script
+-- Date: ${new Date().toLocaleDateString()}
+-- Time: ${new Date().toLocaleTimeString()}
+
+DO $$
+DECLARE parent_name TEXT := '${parentName}';
+        entity_website TEXT := '${entityWebsite}';
+
+-- Integration Entity
+    create_integration_entity BOOLEAN:= ${createIntegrationEntity};
+
+-- Device User Specific Settings
+    create_device_user BOOLEAN:= ${createDeviceUser};
+    device_user_username TEXT:= '${deviceUsername}';
+    device_user_password TEXT:= '${devicePassword}';
+    device_user_email_address TEXT:= '${deviceEmail}';
+    device_user_is_active BOOLEAN:= ${deviceUserActive};
+
+    entity_service_types TEXT[] :=array[`;
+
+    // Add service types
+    serviceTypes.forEach((service, index) => {
+        console.log('service:', service);
+        sqlScript += `
+        ['${service.replace(/'/g, '')}', 'true', null, null]`;
+        if (index < serviceTypes.length - 1) sqlScript += ',';
+    });
+
+    sqlScript += `
+    ];
+
+    -- Entity Settings
+    entity_settings TEXT[][] := array[
+    --  | SCOPE  |Entity | Identifier                      | Value         |
+        ['CMS',   'p',    'entity.website',                '${entityWebsite}'],
+        ['CMS',   'p',    'entity.name',                   '${parentName}'],
+        ['CMS',   'p',    'entity.description',            '${parentName}'],
+        ['CMS',   'p',    'entity.active',                 'true'],`;
+
+    // Add OCS settings if selected
+    if ($('#serviceOCS').is(':checked')) {
+        sqlScript += `
+        ['OCS',   'p',    'ocs.df.scheme',                 '${ocsDfScheme}'],
+        ['OCS',   'p',    'ocs.ed.ws.gc',                  '${ocsEdWsGc}'],
+        ['OCS',   'p',    'ocs.ed.ws.usr',                 '${ocsEdWsUsr}'],
+        ['OCS',   'p',    'ocs.ed.ws.pwd',                 '${ocsEdWsPwd}'],
+        ['OCS',   'p',    'ocs.ed.sc.gc.map',              '${ocsEdScGcMap}'],
+        ['OCS',   'p',    'ocs.ed.do.sc.gc.map',           '${ocsEdDoScGcMap}'],
+        ['OCS',   'p',    'ocs.ed.do.gc',                  '${ocsEdDoGc}'],
+        ['OCS',   'p',    'ocs.ed.passthrough',            '${ocsEdPassthrough}'],
+        ['OCS',   'p',    'external.status.webhook.url',   '${externalStatusWebhookUrl}'],`;
+    }
+
+    // Add TCA settings if selected
+    if ($('#serviceTCA').is(':checked')) {
+        sqlScript += `
+        ['TCA',   'p',    'app.mandate.authentication.enabled', '${appMandateAuthenticationEnabled}'],
+        ['TCA',   'p',    'app.mandate.creation.enabled',       '${appMandateCreationEnabled}'],
+        ['TCA',   'p',    'app.manual.payments.enabled',        '${appManualPaymentsEnabled}'],
+        ['TCA',   'p',    'app.payments.enabled',               '${appPaymentsEnabled}'],
+        ['TCA',   'p',    'app.transaction.history.enabled',    '${appTransactionHistoryEnabled}'],
+        ['TCA',   'p',    'tca.application.key',                '${tcaApplicationKey}'],
+        ['TCA',   'p',    'tca.merchant.id',                    '${tcaMerchantId}'],
+        ['TCA',   'p',    'tca.merchant.username',              '${tcaMerchantUsername}'],`;
+    }
+
+    // Remove trailing comma and close the array
+    sqlScript = sqlScript.replace(/,\s*$/, '');
+    sqlScript += `
+    ];
+
+-- Mandate defaults
+    ocs_default_mandate_type TEXT:= '${ocsDefaultMandateType}';
+    ocs_default_debit_classification TEXT:= '${ocsDefaultDebitClassification}';
+    ocs_default_max_installment_amount TEXT:= '${ocsDefaultMaxInstallmentAmount}';
+    ocs_default_frequency TEXT:= '${ocsDefaultFrequency}';
+    ocs_default_tracking_enabled BOOLEAN:= ${ocsDefaultTrackingEnabled};
+    ocs_default_generate_contract_reference BOOLEAN:= ${ocsDefaultGenerateContractReference};
+    ocs_default_contract_reference_format TEXT:= '${ocsDefaultContractReferenceFormat}';
+    ocs_default_scheme TEXT:= '${ocsDefaultScheme}';
+
+-- These are generated / used within the script !! DONT CHANGE !!!
+    parent_identifier TEXT;
+    integration_entity_identifier TEXT;
+    device_user_entity_identifier TEXT;
+    integration_entity_description TEXT;
+    device_user_entity_description TEXT;
+    entity_password TEXT;
+
+BEGIN
+    -- Your SQL script logic would continue here...
+    -- This is a simplified version for demonstration
+    
+    RAISE NOTICE 'Onboarding script for % started', parent_name;
+    
+    -- The rest of the script would follow the structure of the original
+    -- including entity creation, service type assignments, etc.
+    
+END $$;
+`;
+
+                // Display the generated SQL
+                $('#sqlOutput').text(sqlScript);
+                $('#resultContainer').show();
+                
+                // Scroll to results
+                $('html, body').animate({
+                    scrollTop: $('#resultContainer').offset().top
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
