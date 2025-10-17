@@ -747,8 +747,9 @@ if (scopeData.services && scopeData.services.length > 0) {
             html += `<div class="accordion">
                         <div class="accordion-item">
                             <div class="accordion-header">
-                                <div class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#${prefix}-${safeRename(groupName)}-settings" aria-expanded="false" aria-controls="${prefix}-${safeRename(groupName)}-settings">
-                                    ${groupName}
+                                <div class="accordion-button collapsed" data-bs-toggle="collapse" aria-expanded="false">
+                                    
+                                    <div type="button" class="w-100 collapsed" data-bs-toggle="collapse" data-bs-target="#OCS-ocs-services-mandate-config" aria-expanded="false">${groupName}</div>
                                 </div>
                             </div>`;
             html += `</div>`;
