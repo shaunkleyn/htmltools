@@ -752,10 +752,73 @@ if (scopeData.services && scopeData.services.length > 0) {
                                 </div>
                             </div>
                             <div class="accordion-collapse collapse">
-                                <div class="accordion-body">
-                                </div>
-                            </div>
-                            `;
+                                <div class="accordion-body">`;
+                                groupedSettings[groupName].forEach(settingObj => {
+                console.log(settingObj);
+                const settingName = safeRename(settingObj.name);
+                const dependsOn = safeRename(settingObj.dependsOn);
+                let inputId = `${prefix}-${settingName}`;
+                if (settingObj.settingField != '' && settingObj.settingField != null) {
+                    inputId = `${inputId}___${safeRename(settingObj.settingField)}`;
+                }
+                
+                // Handle different input types
+                if (settingObj.type === 'checkbox') {
+                    html += renderCheckboxSetting(settingObj, inputId, prefix);
+                } else if (settingObj.type === 'dual-checkbox') {
+                    html += renderDualCheckboxSetting(settingObj, inputId, prefix);
+                } else if (settingObj.type === 'radio') {
+                    html += renderRadioSetting(settingObj, inputId, prefix);
+                } else if (settingObj.type ==='radio-button-group') {
+                    html += `<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="btnradio1">Radio 1</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="btnradio2">Radio 2</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="btnradio3">Radio 3</label>
+                        </div>`;
+                } else if (settingObj.type === 'radio-group') {
+                    html += `<div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+                        <label class="form-check-label" for="flexRadioDefault1">
+                            Default radio
+                        </label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
+                        <label class="form-check-label" for="flexRadioDefault2">
+                            Default checked radio
+                        </label>
+                        </div>`;
+                } else {
+                    // Default text input
+                    const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
+                    html += `
+                        <div class="mb-3 col-md-6" ${dependsOnAttr}>
+                            <label for="${inputId}" class="form-label label-sm">
+                                ${settingObj.label}
+                                ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="${inputId}" 
+                            placeholder="${settingObj.placeholder}" 
+                            value="${settingObj.defaultValue || ''}" 
+                            service-setting="${settingObj.settingName}"
+                            role="set-service-setting-value"
+                            data-service-name="${serviceName}"
+                            data-setting="${settingObj.settingName}"
+                            data-setting-table="${settingObj.settingTableName}"
+                            service-setting-field="${settingObj.settingField || ''}">
+                            ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
+                        </div>
+                    `;
+                }
+            });
+                                
+            html +=           `</div>
+                            </div>`;
             html += `</div>`;
         });
         html += `</div>`;
@@ -766,7 +829,7 @@ if (scopeData.services && scopeData.services.length > 0) {
             
             // Only show group header if it's not "General Settings" or if there are multiple groups
             if (groupName !== 'General Settings' || Object.keys(groupedSettings).length > 1) {
-                html += `<div class="settings-group-header accordion-item">${groupName}</div>`;
+                html += `<div class="settings-group-header">${groupName}</div>`;
             }
             
             html += `<div class="row">`;
