@@ -751,7 +751,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                     <div type="button" class="w-100 collapsed" data-bs-toggle="collapse" data-bs-target="${safeReplace(groupName.toLowerCase(), ' ', '_')}" aria-expanded="false">${groupName}</div>
                                 </div>
                             </div>
-                            <div class="accordion-collapse collapse">
+                            <div id="${safeReplace(groupName.toLowerCase(), ' ', '_')}" class="accordion-collapse collapse">
                                 <div class="accordion-body">`;
 
         html +=                 `</div>
