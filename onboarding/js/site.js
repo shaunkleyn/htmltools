@@ -743,6 +743,18 @@ if (scopeData.services && scopeData.services.length > 0) {
             });
         });
 
+        Object.keys(groupedSettings).forEach(groupName => {
+            html += `<div class="accordion">
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <div class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#${prefix}-${safeRename(groupName)}-settings" aria-expanded="false" aria-controls="${prefix}-${safeRename(groupName)}-settings">
+                                    ${groupName}
+                                </div>
+                            </div>`;
+            html += `</div>`;
+            html += `</div>`;
+        });
+
         // Render each group
         Object.keys(groupedSettings).forEach(groupName => {
             html += `<div class="settings-group accordion">`;
