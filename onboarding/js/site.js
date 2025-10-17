@@ -743,9 +743,9 @@ if (scopeData.services && scopeData.services.length > 0) {
             });
         });
 
+        html += `<div class="accordion">`;
         Object.keys(groupedSettings).forEach(groupName => {
-            html += `<div class="accordion">
-                        <div class="accordion-item">
+            html += `<div class="accordion-item">
                             <div class="accordion-header">
                                 <div class="accordion-button accordion-button-sm collapsed" data-bs-toggle="collapse" aria-expanded="false">
                                     
@@ -755,8 +755,8 @@ if (scopeData.services && scopeData.services.length > 0) {
                             <div class="accordion-body>
                             </div>`;
             html += `</div>`;
-            html += `</div>`;
         });
+        html += `</div>`;
 
         // Render each group
         Object.keys(groupedSettings).forEach(groupName => {
