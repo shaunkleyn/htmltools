@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Configuration Editor & Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 20px; background-color: #f8f9fa; }
+        .card { margin-bottom: 20px; }
+        .accordion-button:not(.collapsed) { color: #0c63e4; background-color: #e7f1ff; box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .125); }
+        .scope-item, .service-item, .setting-item { margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+        .scope-item { border: 1px solid #dee2e6; background-color: #fff; }
+        .service-item { background-color: #f1f4f8; border-left: 3px solid #6c757d; }
+        .setting-item { background-color: #e9ecef; border-left: 3px solid #198754; padding: 5px; margin-left: 20px; }
+        .json-output { white-space: pre-wrap; word-wrap: break-word; background-color: #e9ecef; padding: 15px; border-radius: 5px; }
+        .active-pill { min-width: 50px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="mb-4 text-center">API Configuration Manager</h1>
+
+        <ul class="nav nav-tabs mb-4" id="configTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="viewer-tab" data-bs-toggle="tab" data-bs-target="#viewer" type="button" role="tab">1. Viewer/Editor (Concept 1)</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="generator-tab" data-bs-toggle="tab" data-bs-target="#generator" type="button" role="tab">2. Payload Generator (Concept 2)</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="configTabContent">
+
+            <div class="tab-pane fade show active" id="viewer" role="tabpanel">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Payload Viewer/Editor</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="parent-details"></div>
+                        <hr>
+                        <button id="add-scope-btn" class="btn btn-success btn-sm mb-3">Add New Scope</button>
+                        <div class="accordion" id="config-tree">
+                            </div>
+                        <hr>
+                        <h5>JSON Output</h5>
+                        <button id="generate-json-btn" class="btn btn-info btn-sm mb-3">Generate Current JSON</button>
+                        <pre id="json-output-viewer" class="json-output"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="generator" role="tabpanel">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">New Payload Generator (Wizard)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="generator-wizard">
+                            <div class="step-form" id="step1">
+                                <h6>Step 1: Parent Details</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Company Name</label>
+                                    <input type="text" class="form-control" id="gen-name" value="New Company">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Company ID</label>
+                                    <input type="text" class="form-control" id="gen-id" value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                                </div>
+                                <button class="btn btn-primary" onclick="showStep(2)">Next: Add Scopes</button>
+                            </div>
+
+                            <div class="step-form" id="step2" style="display:none;">
+                                <h6>Step 2: Add Scopes/Service Groups</h6>
+                                <div id="gen-scopes-container">
+                                    </div>
+                                <button class="btn btn-success btn-sm mt-2" id="add-new-scope-gen-btn">Add Scope</button>
+                                <hr>
+                                <button class="btn btn-secondary" onclick="showStep(1)">Back</button>
+                                <button class="btn btn-primary" id="finalize-gen-btn">Finalize & Generate JSON</button>
+                            </div>
+                        </div>
+                        <hr>
+                        <h5>Generated JSON</h5>
+                        <pre id="json-output-generator" class="json-output"></pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --- 1. INITIAL PAYLOAD DATA (from parent-children.json) ---
+        let currentPayload = {
+            "parent": {
+                "name": "Company1",
+                "id": "cd70aa83-f762-4f46-b046-c3c69dc0e0a2",
+                "settings": [
+                    {
+                        "scope": "client-management-api",
+                        "services": [
+                            {
+                                "rateLimit": false,
+                                "limitCount": 0,
+                                "limitPeriod": null,
+                                "endPoint": "/entity",
+                                "hasConfiguredFields": false,
+                                "settings": [],
+                                "fields": [],
+                                "identifier": "cms.services.entity",
+                                "Description": "Entity Management",
+                                "Active": true
+                            }
+                        ],
+                        "identifier": "CMS",
+                        "Description": "Client Management Service",
+                        "Active": true
+                    },
+                    {
+                        "scope": "avs",
+                        "services": [
+                            {
+                                "rateLimit": false,
+                                "limitCount": 0,
+                                "limitPeriod": null,
+                                "endPoint": "/",
+                                "hasConfiguredFields": false,
+                                "settings": [
+                                    {"identifier": "avs.track.request", "Value": "true", "Active": true},
+                                    {"identifier": "avs.easydebit.profile", "Value": "False", "Active": true},
+                                    {"identifier": "entity.webhook.url", "Value": "https://uat.bitventure.co.za/demo/api/Webhook/VerifyMe/AccountVerification", "Active": true}
+                                ],
+                                "fields": [],
+                                "identifier": "avs.services.avs",
+                                "Description": "Can perform account verification",
+                                "Active": true
+                            }
+                        ],
+                        "identifier": "AVS",
+                        "Description": "Account Verification Service API",
+                        "Active": true
+                    },
+                    // ... other scopes like BSS, BVS, CRS, CVS, FVS ... (Truncated for brevity, but the principle is the same)
+                ]
+            }
+        };
+
+        // --- 2. CONCEPT 1: VIEWER/EDITOR FUNCTIONS ---
+
+        // Helper to generate a unique ID for dynamic elements
+        const generateUID = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
+
+        // Renders the entire payload tree
+        function renderConfigTree() {
+            const parent = currentPayload.parent;
+            $('#parent-details').html(`
+                <h5 class="text-primary">Parent Configuration</h5>
+                <p><strong>Name:</strong> <span id="parent-name">${parent.name}</span> <button class="btn btn-sm btn-outline-secondary" onclick="editParentDetail('name')">Edit</button></p>
+                <p><strong>ID:</strong> <span id="parent-id">${parent.id}</span> <button class="btn btn-sm btn-outline-secondary" onclick="editParentDetail('id')">Edit</button></p>
+            `);
+
+            const scopes = parent.settings;
+            let html = '';
+            scopes.forEach((scope, scopeIndex) => {
+                html += renderScope(scope, scopeIndex);
+            });
+            $('#config-tree').html(html);
+            $('#json-output-viewer').text(JSON.stringify(currentPayload, null, 2));
+        }
+
+        // Renders a single Scope (Level 2)
+        function renderScope(scope, scopeIndex) {
+            const id = `scope-${scopeIndex}`;
+            let servicesHtml = '';
+            scope.services.forEach((service, serviceIndex) => {
+                servicesHtml += renderService(service, scopeIndex, serviceIndex);
+            });
+
+            return `
+                <div class="accordion-item scope-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="false">
+                            <span class="badge ${scope.Active ? 'bg-success' : 'bg-danger'} active-pill me-2">${scope.Active ? 'ACTIVE' : 'INACTIVE'}</span>
+                            <strong>${scope.identifier}</strong> (${scope.scope})
+                        </button>
+                    </h2>
+                    <div id="collapse-${id}" class="accordion-collapse collapse" data-bs-parent="#config-tree">
+                        <div class="accordion-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="mb-1"><strong>Description:</strong> <span id="${id}-desc">${scope.Description}</span></p>
+                                    <p class="mb-1"><strong>Scope:</strong> ${scope.scope}</p>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editScope(${scopeIndex})">Edit Scope</button>
+                                    <button class="btn btn-sm btn-danger" onclick="removeScope(${scopeIndex})">Remove Scope</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <h6 class="text-muted">Services (${scope.services.length})</h6>
+                            <button class="btn btn-sm btn-info mb-2" onclick="addService(${scopeIndex})">Add Service</button>
+                            ${servicesHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Renders a single Service (Level 3)
+        function renderService(service, scopeIndex, serviceIndex) {
+            const id = `service-${scopeIndex}-${serviceIndex}`;
+            let settingsHtml = '';
+            service.settings.forEach((setting, settingIndex) => {
+                settingsHtml += renderSetting(setting, scopeIndex, serviceIndex, settingIndex);
+            });
+
+            return `
+                <div class="service-item card p-3 mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 text-dark">
+                            <span class="badge ${service.Active ? 'bg-success' : 'bg-danger'} active-pill me-2">${service.Active ? 'ACTIVE' : 'INACTIVE'}</span>
+                            ${service.identifier} (<small>${service.endPoint}</small>)
+                        </h6>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="editService(${scopeIndex}, ${serviceIndex})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="removeService(${scopeIndex}, ${serviceIndex})">Remove</button>
+                        </div>
+                    </div>
+                    <p class="mb-1 small">Description: ${service.Description}</p>
+                    <p class="mb-1 small text-secondary">Rate Limit: ${service.rateLimit ? 'Yes' : 'No'} | Count: ${service.limitCount}</p>
+                    <hr class="my-2">
+                    <h6 class="small text-muted mb-2">Settings (${service.settings.length})</h6>
+                    <button class="btn btn-sm btn-success mb-2" onclick="addSetting(${scopeIndex}, ${serviceIndex})">Add Setting</button>
+                    ${settingsHtml}
+                </div>
+            `;
+        }
+
+        // Renders a single Key-Value Setting (Level 4)
+        function renderSetting(setting, scopeIndex, serviceIndex, settingIndex) {
+            return `
+                <div class="setting-item d-flex justify-content-between align-items-center mb-1">
+                    <div class="small">
+                        <span class="badge ${setting.Active ? 'bg-success' : 'bg-danger'} me-2"></span>
+                        <strong>${setting.identifier}:</strong> ${setting.Value}
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-dark me-1" onclick="editSetting(${scopeIndex}, ${serviceIndex}, ${settingIndex})">E</button>
+                        <button class="btn btn-sm btn-danger" onclick="removeSetting(${scopeIndex}, ${serviceIndex}, ${settingIndex})">R</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- EDIT/ADD/REMOVE FUNCTIONS (Concept 1) ---
+
+        function editParentDetail(key) {
+            const oldValue = currentPayload.parent[key];
+            const newValue = prompt(`Edit Parent ${key}:`, oldValue);
+            if (newValue !== null && newValue.trim() !== "") {
+                currentPayload.parent[key] = newValue.trim();
+                renderConfigTree();
+            }
+        }
+
+        function removeScope(scopeIndex) {
+            if (confirm(`Are you sure you want to remove scope: ${currentPayload.parent.settings[scopeIndex].identifier}?`)) {
+                currentPayload.parent.settings.splice(scopeIndex, 1);
+                renderConfigTree();
+            }
+        }
+
+        function editScope(scopeIndex) {
+            const scope = currentPayload.parent.settings[scopeIndex];
+            const newDesc = prompt(`Edit Description for ${scope.identifier}:`, scope.Description);
+            if (newDesc !== null) scope.Description = newDesc.trim();
+            scope.Active = confirm(`Is ${scope.identifier} active? (OK for Yes, Cancel for No)`);
+            renderConfigTree();
+        }
+
+        function addScope() {
+            const identifier = prompt("Enter new Scope Identifier (e.g., NEW_SVC):");
+            if (!identifier) return;
+            const scopeName = prompt("Enter new Scope (e.g., new-service-api):");
+            if (!scopeName) return;
+
+            currentPayload.parent.settings.push({
+                "scope": scopeName.trim(),
+                "services": [],
+                "identifier": identifier.trim(),
+                "Description": "New Service Group",
+                "Active": true
+            });
+            renderConfigTree();
+            // Automatically open the new scope for immediate editing/adding services
+            const newIndex = currentPayload.parent.settings.length - 1;
+            $(`#collapse-scope-${newIndex}`).collapse('show');
+        }
+
+        function removeService(scopeIndex, serviceIndex) {
+            const scope = currentPayload.parent.settings[scopeIndex];
+            if (confirm(`Are you sure you want to remove service: ${scope.services[serviceIndex].identifier}?`)) {
+                scope.services.splice(serviceIndex, 1);
+                renderConfigTree();
+            }
+        }
+
+        function addService(scopeIndex) {
+            const scope = currentPayload.parent.settings[scopeIndex];
+            const identifier = prompt("Enter new Service Identifier (e.g., new.services.endpoint):");
+            if (!identifier) return;
+            const endpoint = prompt("Enter new Service Endpoint (e.g., /status):");
+            if (!endpoint) return;
+
+            scope.services.push({
+                "rateLimit": false,
+                "limitCount": 0,
+                "limitPeriod": null,
+                "endPoint": endpoint.trim(),
+                "hasConfiguredFields": false,
+                "settings": [],
+                "fields": [],
+                "identifier": identifier.trim(),
+                "Description": "New Service Endpoint",
+                "Active": true
+            });
+            renderConfigTree();
+        }
+
+        function removeSetting(scopeIndex, serviceIndex, settingIndex) {
+            const service = currentPayload.parent.settings[scopeIndex].services[serviceIndex];
+            if (confirm(`Are you sure you want to remove setting: ${service.settings[settingIndex].identifier}?`)) {
+                service.settings.splice(settingIndex, 1);
+                renderConfigTree();
+            }
+        }
+
+        function editSetting(scopeIndex, serviceIndex, settingIndex) {
+            const setting = currentPayload.parent.settings[scopeIndex].services[serviceIndex].settings[settingIndex];
+            const newValue = prompt(`Edit Value for ${setting.identifier}:`, setting.Value);
+            if (newValue !== null) setting.Value = newValue.trim();
+            setting.Active = confirm(`Is ${setting.identifier} active? (OK for Yes, Cancel for No)`);
+            renderConfigTree();
+        }
+
+        function addSetting(scopeIndex, serviceIndex) {
+            const service = currentPayload.parent.settings[scopeIndex].services[serviceIndex];
+            const identifier = prompt("Enter new Setting Identifier (Key):");
+            if (!identifier) return;
+            const value = prompt("Enter new Setting Value:");
+            if (value === null) return;
+
+            service.settings.push({
+                "identifier": identifier.trim(),
+                "Value": value.trim(),
+                "Active": true
+            });
+            renderConfigTree();
+        }
+
+        // Event listener to generate JSON on button click
+        $('#generate-json-btn').on('click', function() {
+            $('#json-output-viewer').text(JSON.stringify(currentPayload, null, 2));
+        });
+
+        // Event listener for adding a new scope
+        $('#add-scope-btn').on('click', addScope);
+
+        // --- 3. CONCEPT 2: PAYLOAD GENERATOR FUNCTIONS ---
+
+        let generatedPayload = { "parent": { "name": "", "id": "", "settings": [] } };
+
+        function showStep(step) {
+            $('.step-form').hide();
+            $(`#step${step}`).show();
+        }
+
+        function renderGeneratorScopes() {
+            let html = '';
+            generatedPayload.parent.settings.forEach((scope, index) => {
+                html += `
+                    <div class="scope-item" id="gen-scope-${index}">
+                        <h6 class="d-flex justify-content-between">
+                            ${scope.identifier} (${scope.scope})
+                            <button class="btn btn-danger btn-sm" onclick="removeGeneratorScope(${index})">Remove</button>
+                        </h6>
+                        <p class="small mb-1">Desc: ${scope.Description}</p>
+                        <hr class="my-2">
+                        <div id="gen-services-container-${index}">
+                            ${scope.services.map((svc, svcIndex) => renderGeneratorService(svc, index, svcIndex)).join('')}
+                        </div>
+                        <button class="btn btn-sm btn-info mt-2" onclick="addGeneratorService(${index})">Add Service to ${scope.identifier}</button>
+                    </div>
+                `;
+            });
+            $('#gen-scopes-container').html(html);
+        }
+
+        function renderGeneratorService(service, scopeIndex, serviceIndex) {
+            let settingsHtml = service.settings.map(setting => `
+                <div class="setting-item small">
+                    ${setting.identifier}: ${setting.Value}
+                </div>
+            `).join('');
+
+            return `
+                <div class="service-item p-2 mb-2">
+                    <div class="d-flex justify-content-between">
+                        <small><strong>Endpoint:</strong> ${service.endPoint} (${service.identifier})</small>
+                        <button class="btn btn-sm btn-danger py-0" onclick="removeGeneratorService(${scopeIndex}, ${serviceIndex})">X</button>
+                    </div>
+                    <div id="gen-settings-${scopeIndex}-${serviceIndex}" class="mt-2">
+                        ${settingsHtml}
+                    </div>
+                    <button class="btn btn-sm btn-success mt-1" onclick="addGeneratorSetting(${scopeIndex}, ${serviceIndex})">Add Setting</button>
+                </div>
+            `;
+        }
+
+        function addNewGeneratorScope() {
+            const identifier = prompt("Enter Scope Identifier (e.g., NEW_SVC):");
+            if (!identifier) return;
+            const scopeName = prompt("Enter Scope (e.g., new-service-api):");
+            if (!scopeName) return;
+
+            generatedPayload.parent.settings.push({
+                "scope": scopeName.trim(),
+                "services": [],
+                "identifier": identifier.trim(),
+                "Description": prompt("Enter Description:", "New Service Group"),
+                "Active": confirm("Is this scope Active?")
+            });
+            renderGeneratorScopes();
+        }
+
+        function removeGeneratorScope(index) {
+            generatedPayload.parent.settings.splice(index, 1);
+            renderGeneratorScopes();
+        }
+
+        function addGeneratorService(scopeIndex) {
+            const identifier = prompt("Enter new Service Identifier (e.g., new.services.endpoint):");
+            if (!identifier) return;
+            const endpoint = prompt("Enter new Service Endpoint (e.g., /status):");
+            if (!endpoint) return;
+
+            generatedPayload.parent.settings[scopeIndex].services.push({
+                "rateLimit": false, "limitCount": 0, "limitPeriod": null,
+                "endPoint": endpoint.trim(),
+                "hasConfiguredFields": false,
+                "settings": [], "fields": [],
+                "identifier": identifier.trim(),
+                "Description": prompt("Enter Service Description:", "New Endpoint"),
+                "Active": true
+            });
+            renderGeneratorScopes();
+        }
+
+        function removeGeneratorService(scopeIndex, serviceIndex) {
+            generatedPayload.parent.settings[scopeIndex].services.splice(serviceIndex, 1);
+            renderGeneratorScopes();
+        }
+
+        function addGeneratorSetting(scopeIndex, serviceIndex) {
+            const identifier = prompt("Enter new Setting Identifier (Key):");
+            if (!identifier) return;
+            const value = prompt("Enter new Setting Value:");
+            if (value === null) return;
+
+            generatedPayload.parent.settings[scopeIndex].services[serviceIndex].settings.push({
+                "identifier": identifier.trim(),
+                "Value": value.trim(),
+                "Active": true
+            });
+            renderGeneratorScopes();
+        }
+
+
+        // Event listeners for Generator
+        $('#add-new-scope-gen-btn').on('click', addNewGeneratorScope);
+
+        $('#finalize-gen-btn').on('click', function() {
+            generatedPayload.parent.name = $('#gen-name').val();
+            generatedPayload.parent.id = $('#gen-id').val();
+            $('#json-output-generator').text(JSON.stringify(generatedPayload, null, 2));
+        });
+
+        // --- 4. INITIALIZATION ---
+
+        $(document).ready(function() {
+            renderConfigTree();
+        });
+
+    </script>
+</body>
+</html>

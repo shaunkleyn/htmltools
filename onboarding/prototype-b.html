@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>API Configuration Editor - Add Scope</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
+.modal { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 400px; }
+.modal h2 { margin-top: 0; border-bottom: 2px solid #00bcd4; padding-bottom: 10px; margin-bottom: 20px; }
+.modal label { display: block; margin-top: 15px; font-weight: bold; }
+.modal input[type="text"], .modal select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.modal-footer { display: flex; justify-content: flex-end; margin-top: 30px; }
+.button-primary { background-color: #00bcd4; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; }
+.button-secondary { background-color: #ccc; color: #333; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; margin-left: 10px; }
+</style>
+</head>
+<body>
+
+<div class="modal">
+    <h2>Generate New Scope</h2>
+
+    <label for="scope-id">Scope API Path (e.g., `new-api-service`)</label>
+    <input type="text" id="scope-id" placeholder="Enter a unique API path">
+
+    <label for="identifier-short">Identifier (Short Code, e.g., `NEW`)</label>
+    <input type="text" id="identifier-short" placeholder="Enter a short, unique code (uppercase)">
+
+    <label for="description-long">Description</label>
+    <input type="text" id="description-long" placeholder="Enter the full description of this service group">
+
+    <label for="active-new">Active</label>
+    <select id="active-new">
+        <option value="true" selected>True</option>
+        <option value="false">False</option>
+    </select>
+
+    <div class="modal-footer">
+        <button class="button-secondary">Cancel</button>
+        <button class="button-primary">Create Scope</button>
+    </div>
+</div>
+
+</body>
+</html>

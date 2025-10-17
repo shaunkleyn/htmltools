@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Config Wizard Prototype</title>
+<style>
+  :root{--bg:#f4f6fb;--card:#fff;--accent:#0b79f7;--muted:#6b7280}
+  body{font-family:Inter,Arial,Helvetica,sans-serif;margin:0;height:100vh;background:var(--bg);display:flex;flex-direction:column}
+  header{height:64px;background:#0b1220;color:white;display:flex;align-items:center;padding:0 16px}
+  header h1{font-size:16px;margin:0}
+  .wrap{display:flex;gap:12px;padding:12px;flex:1;overflow:hidden}
+  .left{width:320px;min-width:240px;display:flex;flex-direction:column;gap:12px}
+  .right{flex:1;display:flex;flex-direction:column;gap:12px}
+  .card{background:var(--card);padding:12px;border-radius:8px;box-shadow:0 6px 16px rgba(9,12,20,0.06);overflow:auto}
+  .step{padding:10px;border-left:4px solid transparent}
+  .step.active{border-left-color:var(--accent);background:#eff6ff}
+  .steps{display:flex;flex-direction:column;gap:6px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  input[type=text], select, textarea{padding:8px;border:1px solid #e6e9ef;border-radius:6px;width:100%;box-sizing:border-box}
+  .controls{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+  button{padding:8px 10px;border-radius:6px;border:none;cursor:pointer}
+  .btn-primary{background:var(--accent);color:white}
+  .btn-ghost{background:transparent;border:1px solid #e6e9ef}
+  .jsonPreview{height:400px; font-family:monospace; font-size:13px; overflow:auto; border-radius:6px; padding:8px; background:#0f1724;color:#e6eef8}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .item{display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+  <header><h1>Config Creator — Wizard</h1></header>
+  <div class="wrap">
+    <div class="left">
+      <div class="card">
+        <strong>Wizard Steps</strong>
+        <div class="steps" id="wizardSteps" style="margin-top:8px">
+          <!-- steps built by JS -->
+        </div>
+
+        <hr/>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-ghost" onclick="importPayload()">Import JSON</button>
+          <button class="btn-primary" onclick="downloadPayload()">Export JSON</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <strong>Scopes Created</strong>
+        <div id="scopeList" style="margin-top:8px"></div>
+        <div style="margin-top:8px">
+          <button class="btn-primary" onclick="startNewScope()">+ Add Scope</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card" id="formCard">
+        <!-- form area -->
+      </div>
+
+      <div class="card">
+        <strong>Live JSON Preview</strong>
+        <pre id="preview" class="jsonPreview"></pre>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* Wizard model: payload array of scopes */
+let payload = [];
+let current = {step:0, scopeIdx:null}; // step index and which scope we're editing
+const stepsTpl = [
+  {id:'scope', title:'Scope Details', desc:'Identifier, scope name, description'},
+  {id:'services', title:'Services', desc:'Add one or more services for this scope'},
+  {id:'serviceDetails', title:'Service Details', desc:'Endpoint, description, rate limits'},
+  {id:'settings', title:'Settings', desc:'Key/value settings for selected service'},
+  {id:'review', title:'Review & Export', desc:'Preview JSON and export'}
+];
+
+function renderSteps(){
+  const root = document.getElementById('wizardSteps');
+  root.innerHTML = '';
+  stepsTpl.forEach((s,i)=>{
+    const div = document.createElement('div');
+    div.className = 'step ' + (current.step===i ? 'active':'');
+    div.innerHTML = `<div><strong>${escapeHtml(s.title)}</strong><div class="muted">${escapeHtml(s.desc)}</div></div>`;
+    div.onclick = ()=> { current.step = i; renderForm(); };
+    root.appendChild(div);
+  });
+}
+
+function startNewScope(){
+  const newS = { scope:'', identifier:'', Description:'', Active:true, services:[] };
+  payload.push(newS);
+  current.scopeIdx = payload.length-1;
+  current.step = 0;
+  renderScopeList();
+  renderSteps();
+  renderForm();
+}
+
+function renderScopeList(){
+  const el = document.getElementById('scopeList');
+  el.innerHTML = '';
+  payload.forEach((s,idx)=>{
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.marginBottom='6px';
+    row.innerHTML = `<div><strong>${escapeHtml(s.scope||'unnamed')}</strong><div class="muted">${escapeHtml(s.Description||'')}</div></div>
+      <div style="display:flex;gap:6px"><button onclick="editScope(${idx})">Open</button><button onclick="removeScope(${idx})" style="color:#b91c1c">Del</button></div>`;
+    el.appendChild(row);
+  });
+}
+
+function editScope(idx){
+  current.scopeIdx=idx;
+  current.step=0;
+  renderSteps();
+  renderForm();
+}
+
+function removeScope(idx){
+  if(!confirm('Delete scope?')) return;
+  payload.splice(idx,1);
+  current.scopeIdx = null;
+  renderScopeList();
+  renderPreview();
+}
+
+/* Render main form area depending on step */
+function renderForm(){
+  renderSteps();
+  const card = document.getElementById('formCard');
+  if(current.scopeIdx===null){
+    card.innerHTML = `<div style="padding:12px"><div class="muted">No scope selected. Click "Add Scope" to start.</div></div>`;
+    renderPreview(); return;
+  }
+  const scope = payload[current.scopeIdx];
+  if(current.step===0){
+    card.innerHTML = `
+      <strong>Scope Details</strong>
+      <div style="margin-top:8px">
+        <label>scope (name)</label>
+        <input id="f_scope" type="text" value="${escapeHtml(scope.scope||'')}" />
+        <label>identifier</label>
+        <input id="f_identifier" type="text" value="${escapeHtml(scope.identifier||'')}" />
+        <label>Description</label>
+        <input id="f_desc" type="text" value="${escapeHtml(scope.Description||'')}" />
+        <label><input id="f_active" type="checkbox" ${scope.Active? 'checked':''}/> Active</label>
+        <div class="controls">
+          <button class="btn-ghost" onclick="prev()">Back</button>
+          <button class="btn-primary" onclick="saveScope()">Next</button>
+        </div>
+      </div>`;
+  } else if(current.step===1){
+    card.innerHTML = `<strong>Services for scope: ${escapeHtml(scope.scope||'(unnamed)')}</strong>
+      <div style="margin-top:8px" class="list" id="servicesList"></div>
+      <div style="margin-top:8px" class="controls">
+        <button class="btn-ghost" onclick="prev()">Back</button>
+        <button class="btn-ghost" onclick="addService()">+ Add Service</button>
+        <button class="btn-primary" onclick="gotoServiceDetails()">Next</button>
+      </div>`;
+    const list = document.getElementById('servicesList');
+    scope.services.forEach((svc,idx)=>{
+      const it = document.createElement('div'); it.className='item';
+      it.innerHTML = `<div style="flex:1"><input type="text" value="${escapeHtml(svc.identifier||'')}" onchange="updateServiceIdentifier(${idx},this.value)" /></div>
+        <div style="display:flex;gap:6px"><button onclick="openService(${idx})">Edit</button><button style="color:#b91c1c" onclick="removeService(${idx})">Del</button></div>`;
+      list.appendChild(it);
+    });
+  } else if(current.step===2){
+    // Service details editing -- picks the first service if none selected
+    const svcIdx = scope._editingServiceIdx ?? 0;
+    if(!scope.services[svcIdx]) { card.innerHTML = '<div class="muted">No service. Add one first.</div>'; return; }
+    const svc = scope.services[svcIdx];
+    card.innerHTML = `<strong>Service Details (${escapeHtml(svc.identifier||'')})</strong>
+      <div style="margin-top:8px">
+        <label>identifier</label><input id="sd_identifier" type="text" value="${escapeHtml(svc.identifier||'')}" />
+        <label>endPoint</label><input id="sd_endpoint" type="text" value="${escapeHtml(svc.endPoint||'/')}" />
+        <label>Description</label><input id="sd_desc" type="text" value="${escapeHtml(svc.Description||'')}" />
+        <label>rateLimit</label><select id="sd_ratelimit"><option value="false">false</option><option value="true">true</option></select>
+        <label>limitCount</label><input id="sd_limitCount" type="text" value="${escapeHtml(String(svc.limitCount||0))}" />
+        <div class="controls">
+          <button class="btn-ghost" onclick="prev()">Back</button>
+          <button class="btn-ghost" onclick="saveService(${svcIdx})">Save</button>
+          <button class="btn-primary" onclick="next()">Next: Settings</button>
+        </div>
+      </div>`;
+    document.getElementById('sd_ratelimit').value = svc.rateLimit ? 'true':'false';
+  } else if(current.step===3){
+    // settings for chosen service
+    const svcIdx = scope._editingServiceIdx ?? 0;
+    const svc = scope.services[svcIdx];
+    if(!svc) { card.innerHTML = '<div class="muted">No service selected.</div>'; return; }
+    card.innerHTML = `<strong>Settings for ${escapeHtml(svc.identifier||'')}</strong>
+      <div style="margin-top:8px" id="settingsList"></div>
+      <div style="margin-top:8px" class="controls">
+        <button class="btn-ghost" onclick="prev()">Back</button>
+        <button class="btn-ghost" onclick="addSetting(${svcIdx})">+ Add Setting</button>
+        <button class="btn-primary" onclick="next()">Next: Review</button>
+      </div>`;
+    const sList = document.getElementById('settingsList');
+    (svc.settings||[]).forEach((st,idx)=>{
+      const stEl = document.createElement('div'); stEl.className='item';
+      stEl.innerHTML = `<div style="flex:1"><input value="${escapeHtml(st.identifier||'')}" onchange="updateSetting(${svcIdx},${idx},'identifier',this.value)"/><input value="${escapeHtml(String(st.Value||''))}" onchange="updateSetting(${svcIdx},${idx},'Value',this.value)"/></div>
+        <div style="display:flex;gap:6px"><label><input type="checkbox" ${st.Active? 'checked':''} onchange="updateSetting(${svcIdx},${idx},'Active',this.checked)" /> Active</label><button style="color:#b91c1c" onclick="removeSetting(${svcIdx},${idx})">Del</button></div>`;
+      sList.appendChild(stEl);
+    });
+  } else if(current.step===4){
+    card.innerHTML = `<strong>Review</strong>
+      <div style="margin-top:8px">
+        <div class="muted">Preview the JSON below. You can Export or continue editing.</div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button class="btn-ghost" onclick="prev()">Back</button>
+          <button class="btn-primary" onclick="downloadPayload()">Export JSON</button>
+        </div>
+      </div>`;
+  }
+  renderPreview();
+}
+
+/* small helpers */
+function saveScope(){
+  const s = payload[current.scopeIdx];
+  s.scope = document.getElementById('f_scope').value;
+  s.identifier = document.getElementById('f_identifier').value;
+  s.Description = document.getElementById('f_desc').value;
+  s.Active = document.getElementById('f_active').checked;
+  renderScopeList();
+  current.step = 1;
+  renderForm();
+}
+function addService(){
+  const s = payload[current.scopeIdx];
+  const newSvc = { rateLimit:false, limitCount:0, limitPeriod:null, endPoint:'/', hasConfiguredFields:false, settings:[], fields:[], identifier:'new.service.'+Date.now(), Description:'', Active:true};
+  s.services.push(newSvc);
+  s._editingServiceIdx = s.services.length-1;
+  renderForm();
+}
+function updateServiceIdentifier(idx, val){
+  payload[current.scopeIdx].services[idx].identifier = val;
+  renderPreview();
+}
+function openService(idx){
+  payload[current.scopeIdx]._editingServiceIdx = idx;
+  current.step = 2;
+  renderForm();
+}
+function removeService(idx){
+  if(!confirm('Delete service?')) return;
+  payload[current.scopeIdx].services.splice(idx,1);
+  renderForm();
+}
+function gotoServiceDetails(){ 
+  const s = payload[current.scopeIdx];
+  if(!s.services.length){ alert('Add at least one service'); return; }
+  s._editingServiceIdx = 0;
+  current.step = 2;
+  renderForm();
+}
+function saveService(idx){
+  const svc = payload[current.scopeIdx].services[idx];
+  svc.identifier = document.getElementById('sd_identifier').value;
+  svc.endPoint = document.getElementById('sd_endpoint').value;
+  svc.Description = document.getElementById('sd_desc').value;
+  svc.rateLimit = document.getElementById('sd_ratelimit').value==='true';
+  svc.limitCount = Number(document.getElementById('sd_limitCount').value) || 0;
+  renderPreview();
+}
+function addSetting(svcIdx){
+  const svc = payload[current.scopeIdx].services[svcIdx];
+  svc.settings = svc.settings || [];
+  svc.settings.push({identifier:'new.setting.'+Date.now(), Value:'', Active:true});
+  renderForm();
+}
+function updateSetting(svcIdx, idx, key, val){
+  payload[current.scopeIdx].services[svcIdx].settings[idx][key] = val;
+  renderPreview();
+}
+function removeSetting(svcIdx, idx){
+  if(!confirm('Delete setting?')) return;
+  payload[current.scopeIdx].services[svcIdx].settings.splice(idx,1);
+  renderForm();
+}
+
+/* navigation */
+function prev(){ if(current.step>0) current.step--; renderForm(); }
+function next(){ if(current.step<stepsTpl.length-1) current.step++; renderForm(); }
+
+/* preview & export */
+function renderPreview(){
+  document.getElementById('preview').textContent = JSON.stringify(payload, null, 2);
+}
+function downloadPayload(){
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'payload.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* import */
+function importPayload(){
+  const txt = prompt('Paste JSON payload array here to import (overwrites current)');
+  if(!txt) return;
+  try{
+    const parsed = JSON.parse(txt);
+    if(!Array.isArray(parsed)) { alert('Expected JSON array of scopes'); return; }
+    payload = parsed;
+    current.scopeIdx = payload.length ? 0 : null;
+    renderScopeList(); renderPreview(); renderForm();
+  } catch(e){ alert('Invalid JSON: '+e.message) }
+}
+
+/* util */
+function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* init */
+renderSteps(); renderScopeList(); renderForm(); renderPreview();
+</script>
+</body>
+</html>

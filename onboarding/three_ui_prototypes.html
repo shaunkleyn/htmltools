@@ -1,0 +1,403 @@
+<!--
+Filename: three-ui-prototypes.html
+Contains 3 standalone static HTML prototypes (Table Dashboard, Nested Accordion Viewer, Form Wizard Builder)
+Open each in a browser (or split into separate files) to run.
+-->
+
+<!-- ================== PROTOTYPE 1: TABLE DASHBOARD ================== -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Prototype 1 - Table Dashboard</title>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <style>
+    body{font-family:Inter,Segoe UI,Arial;margin:0;background:#f5f7fb;color:#111}
+    .app{display:flex;height:100vh}
+    .sidebar{width:260px;background:#1f2937;color:#fff;padding:16px;box-sizing:border-box}
+    .sidebar h2{margin:0 0 12px;font-size:16px}
+    .scope-item{padding:8px;border-radius:6px;cursor:pointer;margin-bottom:6px;background:transparent}
+    .scope-item.active{background:#374151}
+    .main{flex:1;padding:16px;overflow:auto}
+    .toolbar{display:flex;gap:8px;margin-bottom:12px}
+    button{padding:8px 12px;border:0;border-radius:6px;cursor:pointer}
+    .btn-primary{background:#2563eb;color:#fff}
+    .btn-danger{background:#ef4444;color:#fff}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden}
+    th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+    .two-col{display:grid;grid-template-columns:1fr 420px;gap:12px}
+    .panel{background:#fff;padding:12px;border-radius:8px}
+    input[type=text],select,textarea{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px}
+    .tiny{font-size:12px;color:#666}
+    .flex{display:flex;gap:8px;align-items:center}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <h2>Scopes</h2>
+      <div id="scopes"></div>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:12px 0">
+      <button id="addScope" class="btn-primary">+ Add Scope</button>
+      <button id="exportJson" style="margin-top:8px">Export JSON</button>
+      <pre id="jsonOut" style="background:#0b1220;color:#9ae6b4;padding:8px;border-radius:6px;margin-top:8px;display:none;max-height:160px;overflow:auto"></pre>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <div class="flex">
+          <button id="addService" class="btn-primary">+ Add Service</button>
+          <button id="addSetting">+ Add Setting</button>
+          <button id="removeSelected" class="btn-danger">Delete Selected</button>
+        </div>
+        <div style="margin-left:auto" class="tiny">Table Dashboard — Inline edit & export</div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div class="panel">
+            <h3>Services</h3>
+            <table id="servicesTable">
+              <thead><tr><th>Select</th><th>Identifier</th><th>Endpoint</th><th>Description</th><th>Active</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="panel">
+            <h3>Settings (for selected service)</h3>
+            <table id="settingsTable">
+              <thead><tr><th>Identifier</th><th>Value</th><th>Active</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Service Details</h3>
+          <div style="margin-bottom:8px"><label>Identifier<input id="svcIdentifier" type="text"></label></div>
+          <div style="margin-bottom:8px"><label>Endpoint<input id="svcEndpoint" type="text"></label></div>
+          <div style="margin-bottom:8px"><label>Description<textarea id="svcDesc"></textarea></label></div>
+          <div style="margin-bottom:8px"><label>Active<select id="svcActive"><option value="true">true</option><option value="false">false</option></select></label></div>
+          <div class="flex"><button id="saveService" class="btn-primary">Save</button><button id="clearService">Clear</button></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample data (shortened) - in real use you can paste your JSON into window.payload
+    var payload = window.payload || {
+      parent:{ name:'Company1', id:'cd70aa83-f762-4f46-b046-c3c69dc0e0a2', settings:[
+        {scope:'avs', identifier:'AVS', Description:'Account Verification Service API', Active:true, services:[{identifier:'avs.services.avs', endPoint:'/', settings:[{identifier:'avs.track.request', Value:'true', Active:true}], fields:[]} ]},
+        {scope:'bss', identifier:'BSS', Description:'Bank Statement Service API', Active:true, services:[{identifier:'bss.services.bss', endPoint:'/', settings:[{identifier:'bss.redirect.url', Value:'https://bitventure.co.za', Active:true}], fields:[]} ]}
+      ] }
+    };
+
+    var selectedScopeIndex = 0;
+    var selectedServiceIndex = null;
+
+    function renderScopes(){
+      var $s = $('#scopes').empty();
+      payload.parent.settings.forEach(function(sc, idx){
+        var $el = $('<div class="scope-item"></div>').text(sc.scope+ ' — ' + sc.Description).data('idx', idx);
+        if(idx===selectedScopeIndex) $el.addClass('active');
+        $el.on('click', function(){ selectedScopeIndex = $(this).data('idx'); selectedServiceIndex = null; renderScopes(); renderServices(); renderSettings(); });
+        $s.append($el);
+      });
+    }
+
+    function renderServices(){
+      var list = payload.parent.settings[selectedScopeIndex].services || [];
+      var $tb = $('#servicesTable tbody').empty();
+      list.forEach(function(svc, i){
+        var $tr = $('<tr>');
+        $tr.append('<td><input type="checkbox" class="svcChk" data-idx="'+i+'"></td>');
+        $tr.append('<td class="editable" data-field="identifier">'+svc.identifier+'</td>');
+        $tr.append('<td class="editable" data-field="endPoint">'+(svc.endPoint||'')+'</td>');
+        $tr.append('<td class="editable" data-field="Description">'+(svc.Description||'')+'</td>');
+        $tr.append('<td>'+(svc.Active? 'true':'false')+'</td>');
+        var $acts = $('<td></td>');
+        $('<button>Edit</button>').on('click', function(){ selectedServiceIndex = i; loadServiceIntoForm(); }).appendTo($acts);
+        $('<button>Delete</button>').css({'margin-left':'6px'}).on('click', function(){ if(confirm('Delete service?')){ payload.parent.settings[selectedScopeIndex].services.splice(i,1); selectedServiceIndex=null; renderServices(); renderSettings(); } }).appendTo($acts);
+        $tr.append($acts);
+        $tb.append($tr);
+      });
+
+      // inline edit
+      $('.editable').attr('contenteditable', true).on('blur', function(){
+        var idx = $(this).closest('tr').find('.svcChk').data('idx');
+        var field = $(this).data('field');
+        payload.parent.settings[selectedScopeIndex].services[idx][field] = $(this).text();
+      });
+    }
+
+    function renderSettings(){
+      var tb = $('#settingsTable tbody').empty();
+      if(selectedServiceIndex===null){ tb.append('<tr><td colspan="4" class="tiny">Select a service to view settings</td></tr>'); return; }
+      var settings = payload.parent.settings[selectedScopeIndex].services[selectedServiceIndex].settings || [];
+      settings.forEach(function(st,i){
+        var $tr = $('<tr>');
+        $tr.append('<td>'+st.identifier+'</td>');
+        $tr.append('<td contenteditable class="setting-val" data-idx="'+i+'">'+(st.Value||'')+'</td>');
+        $tr.append('<td>'+(st.Active? 'true':'false')+'</td>');
+        var $acts = $('<td></td>');
+        $('<button>Delete</button>').on('click', function(){ if(confirm('Delete setting?')){ settings.splice(i,1); renderSettings(); } }).appendTo($acts);
+        $tr.append($acts);
+        tb.append($tr);
+      });
+
+      $('.setting-val').on('blur', function(){ var idx = $(this).data('idx'); settings[idx].Value = $(this).text(); });
+    }
+
+    function loadServiceIntoForm(){
+      if(selectedServiceIndex===null) return;
+      var svc = payload.parent.settings[selectedScopeIndex].services[selectedServiceIndex];
+      $('#svcIdentifier').val(svc.identifier);
+      $('#svcEndpoint').val(svc.endPoint);
+      $('#svcDesc').val(svc.Description);
+      $('#svcActive').val(svc.Active?'true':'false');
+    }
+
+    $('#addScope').on('click', function(){ var scName = prompt('Scope name (e.g. my-scope)'); if(!scName) return; payload.parent.settings.push({scope:scName,identifier:scName.toUpperCase(),Description:'',Active:true,services:[]}); selectedScopeIndex = payload.parent.settings.length-1; renderScopes(); renderServices(); });
+
+    $('#addService').on('click', function(){ var id = prompt('Service identifier (e.g. my.services.id)'); if(!id) return; payload.parent.settings[selectedScopeIndex].services.push({identifier:id,endPoint:'/',Description:'',Active:true,settings:[],fields:[]}); renderServices(); });
+
+    $('#addSetting').on('click', function(){ if(selectedServiceIndex===null){ alert('Select a service first'); return;} var id = prompt('Setting identifier'); if(!id) return; var val = prompt('Value (string)'); payload.parent.settings[selectedScopeIndex].services[selectedServiceIndex].settings.push({identifier:id,Value:val,Active:true}); renderSettings(); });
+
+    $('#saveService').on('click', function(){ if(selectedServiceIndex===null){ alert('No service selected'); return;} var svc = payload.parent.settings[selectedScopeIndex].services[selectedServiceIndex]; svc.identifier = $('#svcIdentifier').val(); svc.endPoint = $('#svcEndpoint').val(); svc.Description = $('#svcDesc').val(); svc.Active = $('#svcActive').val()==='true'; renderServices(); });
+
+    $('#clearService').on('click', function(){ selectedServiceIndex=null; $('#svcIdentifier,#svcEndpoint,#svcDesc').val(''); });
+
+    $('#removeSelected').on('click', function(){ $('.svcChk:checked').each(function(){ var idx = $(this).data('idx'); payload.parent.settings[selectedScopeIndex].services.splice(idx,1); }); selectedServiceIndex=null; renderServices(); renderSettings(); });
+
+    $('#servicesTable').on('click','tr', function(){ var idx = $(this).find('.svcChk').data('idx'); if(idx!==undefined){ selectedServiceIndex = idx; loadServiceIntoForm(); renderSettings(); } });
+
+    $('#exportJson').on('click', function(){ $('#jsonOut').text(JSON.stringify(payload,null,2)).toggle(); });
+
+    // initial render
+    renderScopes(); renderServices(); renderSettings();
+  </script>
+</body>
+</html>
+
+
+<!-- ================== PROTOTYPE 2: NESTED ACCORDION VIEWER ================== -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Prototype 2 - Accordion Viewer</title>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <style>
+    body{font-family:Inter,Segoe UI,Arial;background:#fafafa;color:#111;padding:20px}
+    .card{background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+    .head{display:flex;justify-content:space-between;align-items:center}
+    .toggle{cursor:pointer}
+    .actions button{margin-left:6px}
+    .meta{font-size:12px;color:#666}
+    .indent{margin-left:18px}
+    .small{font-size:13px}
+    .inline-edit{border:1px dashed transparent;padding:3px;border-radius:4px}
+    .inline-edit[contenteditable]:focus{border-color:#cbd5e1}
+  </style>
+</head>
+<body>
+  <h2>Nested Accordion Viewer</h2>
+  <div style="margin-bottom:12px"><button id="addRootScope">+ Add Scope</button> <button id="downloadJson">Export JSON</button></div>
+  <div id="accordion"></div>
+
+  <script>
+    var payload = window.payload || { parent:{ name:'Company1', id:'id-123', settings:[
+      {scope:'avs', identifier:'AVS', Description:'Account Verification', Active:true, services:[{identifier:'avs.services.avs', endPoint:'/', Description:'Entity', Active:true, settings:[{identifier:'avs.track.request', Value:'true', Active:true}], fields:[]}] }
+    ] } };
+
+    function renderAccordion(){
+      var $root = $('#accordion').empty();
+      payload.parent.settings.forEach(function(sc, sidx){
+        var $card = $('<div class="card" data-sidx="'+sidx+'"></div>');
+        var $head = $('<div class="head"></div>');
+        $head.append('<div><strong>'+sc.scope+'</strong> <div class="meta">'+(sc.Description||'')+'</div></div>');
+        var $controls = $('<div class="actions"></div>');
+        $('<button>Edit</button>').on('click', function(){ editScope(sidx); }).appendTo($controls);
+        $('<button>Delete</button>').on('click', function(){ if(confirm('Delete scope?')){ payload.parent.settings.splice(sidx,1); renderAccordion(); } }).appendTo($controls);
+        $('<button class="toggle">Toggle</button>').on('click', function(){ $body.toggle(); }).appendTo($controls);
+        $head.append($controls);
+        $card.append($head);
+
+        var $body = $('<div class="body indent"></div>');
+        sc.services.forEach(function(svc, vidx){
+          var $svc = $('<div class="card small" style="padding:8px;margin-bottom:6px"></div>');
+          var $svcHead = $('<div class="head"></div>');
+          $svcHead.append('<div><strong>'+svc.identifier+'</strong> <div class="meta">Endpoint: '+(svc.endPoint||'')+'</div></div>');
+          var $svcActs = $('<div></div>');
+          $('<button>Edit</button>').on('click', function(){ editService(sidx,vidx); }).appendTo($svcActs);
+          $('<button>Del</button>').on('click', function(){ if(confirm('Delete service?')){ payload.parent.settings[sidx].services.splice(vidx,1); renderAccordion(); } }).appendTo($svcActs);
+          $svcHead.append($svcActs);
+          $svc.append($svcHead);
+
+          var $settings = $('<div class="indent small"></div>');
+          if((svc.settings||[]).length===0) $settings.append('<div class="meta">No settings</div>');
+          (svc.settings||[]).forEach(function(st,stidx){
+            var $st = $('<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"></div>');
+            $st.append('<div><span class="inline-edit" contenteditable data-sidx="'+sidx+'" data-vidx="'+vidx+'" data-stidx="'+stidx+'">'+st.identifier+': '+(st.Value||'')+'</span><div class="meta">Active: '+(st.Active? 'true':'false')+'</div></div>');
+            var $b = $('<div></div>');
+            $('<button>Del</button>').on('click', function(){ if(confirm('Delete setting?')){ payload.parent.settings[sidx].services[vidx].settings.splice(stidx,1); renderAccordion(); } }).appendTo($b);
+            $st.append($b);
+            $settings.append($st);
+          });
+
+          $svc.append($settings);
+          $body.append($svc);
+        });
+
+        $('<div style="margin-top:8px"><button class="addService">+ Add Service</button></div>').appendTo($body).find('.addService').on('click', function(){ var id = prompt('service id'); if(!id) return; payload.parent.settings[sidx].services.push({identifier:id,endPoint:'/',Description:'',Active:true,settings:[],fields:[]}); renderAccordion(); });
+        $card.append($body);
+        $root.append($card);
+      });
+
+      // wire inline edits
+      $('.inline-edit').off('blur').on('blur', function(){ var sidx=$(this).data('sidx'), vidx=$(this).data('vidx'), stidx=$(this).data('stidx'); var txt=$(this).text(); var parts = txt.split(':'); payload.parent.settings[sidx].services[vidx].settings[stidx].identifier = parts[0].trim(); payload.parent.settings[sidx].services[vidx].settings[stidx].Value = (parts[1]||'').trim(); });
+    }
+
+    function editScope(idx){ var sc = payload.parent.settings[idx]; var newDesc = prompt('Description', sc.Description||''); if(newDesc!==null){ sc.Description = newDesc; renderAccordion(); }}
+    function editService(sidx,vidx){ var svc = payload.parent.settings[sidx].services[vidx]; var ep = prompt('Endpoint', svc.endPoint||'/'); if(ep!==null){ svc.endPoint = ep; renderAccordion(); }}
+
+    $('#addRootScope').on('click', function(){ var name = prompt('Scope name'); if(!name) return; payload.parent.settings.push({scope:name,identifier:name.toUpperCase(),Description:'',Active:true,services:[]}); renderAccordion(); });
+    $('#downloadJson').on('click', function(){ var blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href=url; a.download='payload.json'; a.click(); URL.revokeObjectURL(url); });
+
+    renderAccordion();
+  </script>
+</body>
+</html>
+
+
+<!-- ================== PROTOTYPE 3: FORM WIZARD BUILDER ================== -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Prototype 3 - Form Wizard Builder</title>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <style>
+    body{font-family:Inter,Segoe UI,Arial;background:#f0f4f8;padding:20px}
+    .wizard{max-width:900px;margin:0 auto;background:#fff;padding:16px;border-radius:8px}
+    .steps{display:flex;gap:8px;margin-bottom:12px}
+    .step{flex:1;padding:8px;border-radius:6px;text-align:center;background:#e6eef8}
+    .activeStep{background:#2563eb;color:#fff}
+    .form-row{margin-bottom:8px}
+    input,textarea,select{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px}
+    .btns{display:flex;gap:8px;margin-top:12px}
+    pre{background:#0b1220;color:#9ee7b9;padding:12px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="wizard">
+    <div class="steps">
+      <div class="step activeStep" data-step="1">1. Parent</div>
+      <div class="step" data-step="2">2. Scopes</div>
+      <div class="step" data-step="3">3. Services</div>
+      <div class="step" data-step="4">4. Settings</div>
+      <div class="step" data-step="5">5. Preview</div>
+    </div>
+
+    <div id="step1" class="step-pane">
+      <div class="form-row"><label>Parent name<input id="parentName" type="text" value="Company1"></label></div>
+      <div class="form-row"><label>Parent id<input id="parentId" type="text" value="cd70aa83-f762-4f46-b046-c3c69dc0e0a2"></label></div>
+      <div class="btns"><button id="toStep2" class="btn-primary">Next</button></div>
+    </div>
+
+    <div id="step2" class="step-pane" style="display:none">
+      <h4>Scopes</h4>
+      <div id="scopesList"></div>
+      <div style="margin-top:8px"><input id="newScopeName" placeholder="scope name (e.g. avs)"><button id="addScopeBtn">Add</button></div>
+      <div class="btns"><button id="backTo1">Back</button><button id="toStep3" class="btn-primary">Next</button></div>
+    </div>
+
+    <div id="step3" class="step-pane" style="display:none">
+      <h4>Services (select a scope on the left)</h4>
+      <div style="display:flex;gap:12px">
+        <div style="width:40%">
+          <select id="scopeSelect" size="8" style="width:100%"></select>
+        </div>
+        <div style="flex:1">
+          <div id="servicesList"></div>
+          <div style="margin-top:8px"><input id="svcId" placeholder="service identifier"><input id="svcEndpoint" placeholder="endpoint"><button id="addSvcBtn">Add Service</button></div>
+        </div>
+      </div>
+      <div class="btns"><button id="backTo2">Back</button><button id="toStep4" class="btn-primary">Next</button></div>
+    </div>
+
+    <div id="step4" class="step-pane" style="display:none">
+      <h4>Settings (choose scope & service)</h4>
+      <div style="display:flex;gap:12px">
+        <div style="width:30%">
+          <select id="scopeForSettings" size="6" style="width:100%"></select>
+        </div>
+        <div style="width:30%">
+          <select id="svcForSettings" size="6" style="width:100%"></select>
+        </div>
+        <div style="flex:1">
+          <div id="settingsForSvc"></div>
+          <div style="margin-top:8px"><input id="settingId" placeholder="setting id"><input id="settingVal" placeholder="value"><button id="addSettingBtn">Add Setting</button></div>
+        </div>
+      </div>
+      <div class="btns"><button id="backTo3">Back</button><button id="toStep5" class="btn-primary">Preview</button></div>
+    </div>
+
+    <div id="step5" class="step-pane" style="display:none">
+      <h4>Preview JSON</h4>
+      <pre id="previewJson">{ }</pre>
+      <div class="btns"><button id="backTo4">Back</button><button id="finishBtn" class="btn-primary">Finish & Export</button></div>
+    </div>
+  </div>
+
+  <script>
+    var payload = { parent:{ name:'Company1', id:'', settings:[] } };
+
+    function setActiveStep(n){ $('.step').removeClass('activeStep'); $('.step[data-step="'+n+'"]').addClass('activeStep'); $('.step-pane').hide(); $('#step'+n).show(); }
+
+    $('#toStep2').on('click', function(){ payload.parent.name = $('#parentName').val(); payload.parent.id = $('#parentId').val(); setActiveStep(2); renderScopesList(); });
+    $('#backTo1').on('click', function(){ setActiveStep(1); });
+
+    function renderScopesList(){ var $c = $('#scopesList').empty(); payload.parent.settings.forEach(function(s,idx){ var $row = $('<div style="padding:6px;border-bottom:1px solid #eee">'+s.scope+' <button data-idx="'+idx+'" class="delScope">Del</button></div>'); $c.append($row); }); $('#newScopeName').val(''); }
+    $('#addScopeBtn').on('click', function(){ var n = $('#newScopeName').val().trim(); if(!n) return alert('enter name'); payload.parent.settings.push({scope:n,identifier:n.toUpperCase(),Description:'',Active:true,services:[]}); renderScopesList(); renderScopeSelects(); });
+    $(document).on('click','.delScope', function(){ var idx=$(this).data('idx'); payload.parent.settings.splice(idx,1); renderScopesList(); renderScopeSelects(); });
+
+    $('#toStep3').on('click', function(){ setActiveStep(3); renderScopeSelects(); });
+    $('#backTo2').on('click', function(){ setActiveStep(2); });
+
+    function renderScopeSelects(){ var $sel = $('#scopeSelect').empty(); payload.parent.settings.forEach(function(s,idx){ $sel.append('<option value="'+idx+'">'+s.scope+'</option>'); }); $('#scopeForSettings,#scopeSelect').val(0); renderServicesForSelectedScope(); }
+
+    $('#scopeSelect').on('change', renderServicesForSelectedScope);
+    function renderServicesForSelectedScope(){ var idx = $('#scopeSelect').val(); var $list = $('#servicesList').empty(); if(idx===null) return; (payload.parent.settings[idx].services||[]).forEach(function(s,si){ $list.append('<div>'+s.identifier+' <button data-idx="'+si+'" class="delSvc">Del</button></div>'); }); }
+    $(document).on('click','.delSvc', function(){ var si=$(this).data('idx'); var scopeIdx = $('#scopeSelect').val(); payload.parent.settings[scopeIdx].services.splice(si,1); renderServicesForSelectedScope(); renderSvcForSettings(); });
+
+    $('#addSvcBtn').on('click', function(){ var scopeIdx = $('#scopeSelect').val(); var id = $('#svcId').val().trim(); var ep = $('#svcEndpoint').val().trim()||'/'; if(!id) return alert('id'); payload.parent.settings[scopeIdx].services.push({identifier:id,endPoint:ep,Description:'',Active:true,settings:[],fields:[]}); $('#svcId,#svcEndpoint').val(''); renderServicesForSelectedScope(); renderSvcForSettings(); });
+
+    $('#toStep4').on('click', function(){ setActiveStep(4); renderScopeForSettings(); renderSvcForSettings(); });
+    $('#backTo3').on('click', function(){ setActiveStep(3); });
+
+    function renderScopeForSettings(){ var $sel = $('#scopeForSettings').empty(); payload.parent.settings.forEach(function(s,idx){ $sel.append('<option value="'+idx+'">'+s.scope+'</option>'); }); $('#scopeForSettings').on('change', renderSvcForSettings); }
+    function renderSvcForSettings(){ var scopeIdx = $('#scopeForSettings').val(); var $sel = $('#svcForSettings').empty(); if(scopeIdx===undefined) return; (payload.parent.settings[scopeIdx].services||[]).forEach(function(s,idx){ $sel.append('<option value="'+idx+'">'+s.identifier+'</option>'); }); $('#svcForSettings').on('change', renderSettingsList);
+      renderSettingsList(); }
+    function renderSettingsList(){ var sidx = $('#scopeForSettings').val(); var vidx = $('#svcForSettings').val(); var $c = $('#settingsForSvc').empty(); if(sidx===undefined||vidx===undefined) return; var arr = payload.parent.settings[sidx].services[vidx].settings||[]; arr.forEach(function(st,idx){ $c.append('<div>'+st.identifier+': '+st.Value+' <button data-idx="'+idx+'" class="delSetting">Del</button></div>'); }); }
+
+    $('#addSettingBtn').on('click', function(){ var sidx = $('#scopeForSettings').val(); var vidx = $('#svcForSettings').val(); var id = $('#settingId').val().trim(); var val = $('#settingVal').val().trim(); if(!id) return alert('id'); payload.parent.settings[sidx].services[vidx].settings.push({identifier:id,Value:val,Active:true}); $('#settingId,#settingVal').val(''); renderSettingsList(); });
+    $(document).on('click','.delSetting', function(){ var idx=$(this).data('idx'); var sidx = $('#scopeForSettings').val(); var vidx = $('#svcForSettings').val(); payload.parent.settings[sidx].services[vidx].settings.splice(idx,1); renderSettingsList(); });
+
+    $('#toStep5').on('click', function(){ setActiveStep(5); $('#previewJson').text(JSON.stringify(payload,null,2)); });
+    $('#backTo4').on('click', function(){ setActiveStep(4); });
+    $('#finishBtn').on('click', function(){ var blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href=url; a.download='payload.json'; a.click(); URL.revokeObjectURL(url); });
+
+    // init
+    renderScopesList(); renderScopeSelects(); renderScopeForSettings();
+  </script>
+</body>
+</html>

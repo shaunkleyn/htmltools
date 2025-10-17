@@ -55,12 +55,14 @@ const scopes = {
             {
                 name: 'avs.services.avs',
                 description: 'Account Verification',
-                linkTo: ['parent', 'integrator', 'deviceuser'],
+                allowOn: ['parent', 'integrator'],
+                excludeFrom: ['deviceuser'],
                 settings: [
                     'entity.avs.webhook.url'
                 ]
             }
         ],
+        excludeFrom: ['deviceuser'],
         settings: []
     },
     'BIVS': {
@@ -80,13 +82,13 @@ const scopes = {
             {
                 name: 'bms.services.bms',
                 description: 'Bitventure Messaging Service',
-                linkTo: ['parent', 'integrator'],
+                allowOn: ['parent', 'integrator'],
                 settings: [],
             },
             {
                 name: 'bms.services.ems',
                 description: 'Emailing Service',
-                linkTo: ['parent', 'integrator'],
+                allowOn: ['parent', 'integrator'],
                 settings: [
                     'message.header',
                     'message.footer',
@@ -453,96 +455,8 @@ const scopes = {
                         helpText: 'Enter the webhook URL for mandate notifications',
                         applyTo: 'integrator',
                         table: 'entity_service_setting'
-                    }
-                ]
-            },
-            {
-                name: 'ocs.services.collection',
-                description: 'Collection',
-                sharedSettings: true,
-                settings: [
-                    {
-                        name: 'ocs.webhook.url.collection',
-                        placeholder: 'Collection webhook URL',
-                        description: 'Webhook URL for collection notifications',
-                        helpText: 'Enter the webhook URL for collection notifications',
-                        applyTo: 'integrator',
-                        table: 'entity_service_setting'
-                    }
-                ]
-            },
-            {
-                name: 'ocs.services.debitorder',
-                description: 'Debit Order',
-                sharedSettings: true,
-                settings: [
-                    { 
-                        name: 'ocs.ed.do.sc.gc.map', 
-                        placeholder: 'EasyDebit DO SC GC Map', 
-                        description: 'EasyDebit DO SC GC Map',
-                        applyTo: 'integrator'
-                        },
-                    { 
-                        name: 'ocs.ed.do.ul.gc.map', 
-                        placeholder: 'EasyDebit DO UL GC Map', 
-                        description: 'EasyDebit DO UL GC Map',
-                        applyTo: 'integrator'
                     },
                     { 
-                        name: 'ocs.ed.do.gc', 
-                        placeholder: 'EasyDebit DO GC', 
-                        description: 'EasyDebit DO GC',
-                        applyTo: 'integrator'
-                    },
-                ]
-            }
-        ],
-        settings: [
-            {
-                group: 'EasyDebit Webservice', 
-                name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice User', 
-                helpText: 'EasyDebit Webservice User for web service authentication'
-            },
-            {
-                group: 'EasyDebit Webservice', 
-                name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Password', 
-                description: 'EasyDebit Webservice Password for web service authentication'
-            },
-            {
-                group: 'EasyDebit Webservice', 
-                name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Group Code', 
-                description: 'EasyDebit Webservice Group Code'
-            },
-            {
-                group: 'EasyDebit', // OCS "Parent" Settings
-                name: 'ocs.df.scheme', 
-                placeholder: 'Default Scheme', 
-                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' 
-            },
-            {
-                group: 'EasyDebit',
-                name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
-                placeholder: 'EasyDebit SC GC Map',
-                description: 'Mapping between scheme names and group codes',
-                helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.'
-            },
-            { 
-                group: 'EasyDebit', 
-                name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
-                placeholder: 'EasyDebit UL GC Map', 
-                description: 'EasyDebit UL GC Map' },
-            {
-                group: 'EasyDebit',
-                name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
-                type: 'checkbox',
-                placeholder: 'EasyDebit Passthrough',
-                description: 'EasyDebit Passthrough',
-                defaultValue: true
-            },
-{ 
                         group: 'Default Mandate Details',
                         name: 'ocs.ed.mandate.default.details',
                         field: 'tracking',
@@ -684,6 +598,95 @@ const scopes = {
                         type: 'textbox',
                         defaultValue: '',
                     },
+                ]
+            },
+            {
+                name: 'ocs.services.collection',
+                description: 'Collection',
+                sharedSettings: true,
+                settings: [
+                    {
+                        name: 'ocs.webhook.url.collection',
+                        placeholder: 'Collection webhook URL',
+                        description: 'Webhook URL for collection notifications',
+                        helpText: 'Enter the webhook URL for collection notifications',
+                        applyTo: 'integrator',
+                        table: 'entity_service_setting'
+                    }
+                ]
+            },
+            {
+                name: 'ocs.services.debitorder',
+                description: 'Debit Order',
+                sharedSettings: true,
+                settings: [
+                    { 
+                        name: 'ocs.ed.do.sc.gc.map', 
+                        placeholder: 'EasyDebit DO SC GC Map', 
+                        description: 'EasyDebit DO SC GC Map',
+                        applyTo: 'integrator'
+                        },
+                    { 
+                        name: 'ocs.ed.do.ul.gc.map', 
+                        placeholder: 'EasyDebit DO UL GC Map', 
+                        description: 'EasyDebit DO UL GC Map',
+                        applyTo: 'integrator'
+                    },
+                    { 
+                        name: 'ocs.ed.do.gc', 
+                        placeholder: 'EasyDebit DO GC', 
+                        description: 'EasyDebit DO GC',
+                        applyTo: 'integrator'
+                    },
+                ]
+            }
+        ],
+        settings: [
+            {
+                group: 'EasyDebit Webservice', 
+                name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice User', 
+                helpText: 'EasyDebit Webservice User for web service authentication'
+            },
+            {
+                group: 'EasyDebit Webservice', 
+                name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice Password', 
+                description: 'EasyDebit Webservice Password for web service authentication'
+            },
+            {
+                group: 'EasyDebit Webservice', 
+                name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice Group Code', 
+                description: 'EasyDebit Webservice Group Code'
+            },
+            {
+                group: 'EasyDebit', // OCS "Parent" Settings
+                name: 'ocs.df.scheme', 
+                placeholder: 'Default Scheme', 
+                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' 
+            },
+            {
+                group: 'EasyDebit',
+                name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
+                placeholder: 'EasyDebit SC GC Map',
+                description: 'Mapping between scheme names and group codes',
+                helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.'
+            },
+            { 
+                group: 'EasyDebit', 
+                name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
+                placeholder: 'EasyDebit UL GC Map', 
+                description: 'EasyDebit UL GC Map' },
+            {
+                group: 'EasyDebit',
+                name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
+                type: 'checkbox',
+                placeholder: 'EasyDebit Passthrough',
+                description: 'EasyDebit Passthrough',
+                defaultValue: true
+            },
+
             {
                 name: 'ocs.easy.loan.webhook.url', // OCS Integrator Specific Setting
                 placeholder: 'Easy Loan Webhook URL',
@@ -799,21 +802,21 @@ const scopes = {
                         name: 'tca.application.key',
                         placeholder: 'TCA Application Key',
                         description: 'Application key for Transaction Card Authorization',
-                        linkTo: ['deviceuser'],
+                        allowOn: ['deviceuser'],
                     },
                     {
                         group: "Transaction Card Authorisation Settings",
                         name: 'tca.merchant.id',
                         placeholder: 'TCA Merchant ID',
                         description: 'Merchant ID for Transaction Card Authorization',
-                        linkTo: ['deviceuser'],
+                        allowOn: ['deviceuser'],
                     },
                     {
                         group: "Transaction Card Authorisation Settings",
                         name: 'tca.merchant.username',
                         placeholder: 'TCA Merchant Username',
                         description: 'Merchant Username for Transaction Card Authorization',
-                        linkTo: ['deviceuser'],
+                        allowOn: ['deviceuser'],
                     }
                 ]
             },

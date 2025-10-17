@@ -126,7 +126,7 @@
         .settings-section {
             margin-bottom: 20px;
             padding: 15px;
-            border: 1px solid #dee2e6;
+            /* border: 1px solid #dee2e6; */
             border-radius: 5px;
         }
         .settings-section h5 {
@@ -736,4 +736,16 @@
 
 .entity-disabled:hover {
     animation: pulse-gentle 2s infinite;
+}
+
+.accordion-button-sm {
+    padding: 0.6rem 1rem;
+}
+
+.label, .form-check-label {
+    font-weight: normal;
+}
+
+.label-sm, .form-check-label-sm {
+    font-size: .875rem;
 }

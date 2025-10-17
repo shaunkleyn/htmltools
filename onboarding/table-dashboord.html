@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Config Table Dashboard</title>
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --panel: #fff;
+    --accent: #2563eb;
+    --muted: #6b7280;
+  }
+  body {
+    font-family: Inter, Segoe UI, Roboto, Arial;
+    margin: 0;
+    background: var(--bg);
+    color: #111827;
+  }
+  header {
+    background: #0f172a;
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header h1 {
+    font-size: 16px;
+    margin: 0;
+  }
+  main {
+    padding: 16px;
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .toolbar button {
+    border: none;
+    background: var(--accent);
+    color: white;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .toolbar button.ghost {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #333;
+  }
+  input, select {
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 8px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+  }
+  tr:hover td {
+    background: #f1f5ff;
+  }
+  td input[type="text"], td select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .active {
+    color: #16a34a;
+  }
+  .inactive {
+    color: #dc2626;
+  }
+  .actions {
+    display: flex;
+    gap: 6px;
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .json-preview {
+    font-family: monospace;
+    font-size: 13px;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 8px;
+    border-radius: 8px;
+    overflow: auto;
+    height: 240px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Configuration Table Dashboard</h1>
+    <div class="muted">Flat view for Scopes, Services & Settings</div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <button onclick="addRow()">+ Add Row</button>
+      <button class="ghost" onclick="importJson()">Import JSON</button>
+      <button class="ghost" onclick="exportJson()">Export JSON</button>
+      <button class="ghost" onclick="refreshPreview()">Refresh Preview</button>
+      <input type="text" id="filterInput" placeholder="Filter by keyword..." oninput="renderTable()" />
+    </div>
+
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Scope</th>
+          <th>Scope Identifier</th>
+          <th>Service Identifier</th>
+          <th>Endpoint</th>
+          <th>Setting Identifier</th>
+          <th>Value</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>JSON Preview</h3>
+    <div id="jsonPreview" class="json-preview"></div>
+  </main>
+
+<script>
+let payload = [
+  {
+    "scope":"client-management-api",
+    "identifier":"CMS",
+    "Active":true,
+    "services":[
+      {"identifier":"cms.services.entity","endPoint":"/entity","Description":"Entity Management","Active":true,"settings":[]}
+    ]
+  },
+  {
+    "scope":"avs",
+    "identifier":"AVS",
+    "Active":true,
+    "services":[
+      {"identifier":"avs.services.avs","endPoint":"/","Description":"Account Verification","Active":true,
+        "settings":[
+          {"identifier":"avs.track.request","Value":"true","Active":true},
+          {"identifier":"avs.easydebit.profile","Value":"False","Active":true}
+        ]
+      }
+    ]
+  }
+];
+
+function flattenPayload() {
+  const rows = [];
+  payload.forEach(scope => {
+    scope.services?.forEach(service => {
+      if (service.settings?.length) {
+        service.settings.forEach(setting => {
+          rows.push({
+            scope: scope.scope,
+            scopeId: scope.identifier,
+            serviceId: service.identifier,
+            endpoint: service.endPoint,
+            settingId: setting.identifier,
+            value: setting.Value,
+            active: setting.Active
+          });
+        });
+      } else {
+        rows.push({
+          scope: scope.scope,
+          scopeId: scope.identifier,
+          serviceId: service.identifier,
+          endpoint: service.endPoint,
+          settingId: '',
+          value: '',
+          active: service.Active
+        });
+      }
+    });
+  });
+  return rows;
+}
+
+function rebuildPayload(rows) {
+  const newPayload = [];
+  rows.forEach(row => {
+    let scope = newPayload.find(s => s.scope === row.scope);
+    if (!scope) {
+      scope = { scope: row.scope, identifier: row.scopeId, Active: true, services: [] };
+      newPayload.push(scope);
+    }
+    let svc = scope.services.find(s => s.identifier === row.serviceId);
+    if (!svc) {
+      svc = { identifier: row.serviceId, endPoint: row.endpoint, Description:'', Active: true, settings: [] };
+      scope.services.push(svc);
+    }
+    if (row.settingId) {
+      let st = svc.settings.find(st => st.identifier === row.settingId);
+      if (!st) svc.settings.push({ identifier: row.settingId, Value: row.value, Active: row.active });
+    }
+  });
+  payload = newPayload;
+}
+
+function renderTable() {
+  const filter = document.getElementById('filterInput').value.toLowerCase();
+  const tbody = document.querySelector('#dataTable tbody');
+  tbody.innerHTML = '';
+  const rows = flattenPayload().filter(r =>
+    Object.values(r).some(v => String(v).toLowerCase().includes(filter))
+  );
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${r.scope}" onchange="updateCell(${i},'scope',this.value)" /></td>
+      <td><input type="text" value="${r.scopeId}" onchange="updateCell(${i},'scopeId',this.value)" /></td>
+      <td><input type="text" value="${r.serviceId}" onchange="updateCell(${i},'serviceId',this.value)" /></td>
+      <td><input type="text" value="${r.endpoint}" onchange="updateCell(${i},'endpoint',this.value)" /></td>
+      <td><input type="text" value="${r.settingId}" onchange="updateCell(${i},'settingId',this.value)" /></td>
+      <td><input type="text" value="${r.value}" onchange="updateCell(${i},'value',this.value)" /></td>
+      <td><select onchange="updateCell(${i},'active',this.value==='true')">
+            <option value="true" ${r.active?'selected':''}>true</option>
+            <option value="false" ${!r.active?'selected':''}>false</option>
+          </select></td>
+      <td class="actions">
+        <button class="ghost" onclick="deleteRow(${i})" style="color:#b91c1c">Del</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  window.flatRows = rows;
+  refreshPreview();
+}
+
+function updateCell(i, key, value) {
+  window.flatRows[i][key] = value;
+  rebuildPayload(window.flatRows);
+  refreshPreview();
+}
+
+function addRow() {
+  window.flatRows.push({
+    scope: '',
+    scopeId: '',
+    serviceId: '',
+    endpoint: '',
+    settingId: '',
+    value: '',
+    active: true
+  });
+  rebuildPayload(window.flatRows);
+  renderTable();
+}
+
+function deleteRow(i) {
+  if (!confirm('Delete this row?')) return;
+  window.flatRows.splice(i, 1);
+  rebuildPayload(window.flatRows);
+  renderTable();
+}
+
+function importJson() {
+  const txt = prompt('Paste JSON payload here:');
+  if (!txt) return;
+  try {
+    const parsed = JSON.parse(txt);
+    payload = parsed;
+    renderTable();
+  } catch (e) {
+    alert('Invalid JSON: ' + e.message);
+  }
+}
+
+function exportJson() {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'payload.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function refreshPreview() {
+  document.getElementById('jsonPreview').textContent = JSON.stringify(payload, null, 2);
+}
+
+renderTable();
+</script>
+</body>
+</html>

@@ -458,7 +458,18 @@ $('#createDeviceUser, #createIntegrator').change(function() {
             </div>
         `;
 
-        // Services section
+
+// Scope-level settings section
+if (scopeData.settings && scopeData.settings.length > 0) {
+    html += `<div class="settings-section">
+        <h5>Scope Settings</h5>`;
+    
+    html += renderGroupedSettings(scopeData.settings, scope, 'scope');
+    
+    html += `</div>`;
+}
+
+// Services section
 // In renderScopeTab function:
 // In renderScopeTab function, replace the services section with:
 if (scopeData.services && scopeData.services.length > 0) {
@@ -467,8 +478,8 @@ if (scopeData.services && scopeData.services.length > 0) {
         
         <div class="entity-services-assignment">
             <div class="row">
-                <!-- Parent Column -->`
-                html += renderScopeServiceCardForEntity(scopeData, scope, 'parent');
+                // <!-- Parent Column -->`
+                // html += renderScopeServiceCardForEntity(scopeData, scope, 'parent');
                 // <div class="col-md-4">
                 //     <div class="entity-card card">
                 //         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -503,9 +514,9 @@ if (scopeData.services && scopeData.services.length > 0) {
                 //     </div>
                 // </div>
                 
-                html += `<!-- Integrator Column -->`
+                // html += `<!-- Integrator Column -->`
                 //<div class="col-md-4">`
-                html += renderScopeServiceCardForEntity(scopeData, scope, 'integrator');
+                // html += renderScopeServiceCardForEntity(scopeData, scope, 'integrator');
                 //     <div class="entity-card card  ${$('#createIntegrator').is(':checked') ? '' : 'entity-disabled'}" 
                 //         ${!$('#createIntegrator').is(':checked') ? 'data-bs-toggle="tooltip" data-bs-title="Integrator has not been created in the Entity Setup section. Please enable it there first." data-bs-placement="top"' : ''}>
                 //         <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
@@ -548,9 +559,9 @@ if (scopeData.services && scopeData.services.length > 0) {
                 //     </div>
                 //</div>
                 
-                html += `<!-- Device User Column -->`
+                // html += `<!-- Device User Column -->`
                 //<div class="col-md-4">`
-                html += renderScopeServiceCardForEntity(scopeData, scope, 'deviceUser');
+                // html += renderScopeServiceCardForEntity(scopeData, scope, 'deviceUser');
 //     <div class="entity-card card ${$('#createDeviceUser').is(':checked') ? '' : 'entity-disabled'}" 
 //         ${!$('#createDeviceUser').is(':checked') ? 'data-bs-toggle="tooltip" data-bs-title="Device User has not been created in the Entity Setup section. Please enable it there first." data-bs-placement="top"' : ''}>
 //         <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
@@ -603,17 +614,47 @@ if (scopeData.services && scopeData.services.length > 0) {
                     ${scopeData.services.map((service, index) => 
                         service.settings && service.settings.length > 0 ? `
                             <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" 
-                                        data-bs-toggle="collapse" 
-                                        data-bs-target="#${scope}-${safeRename(service.name)}-config">
-                                        <i class="bi bi-gear me-2"></i>Configure ${service.description}
-                                    </button>
+                                <h2 class="accordion-header d-flex align-items-center flex-row">
+                                    <div class="accordion-button accordion-button-sm collapsed">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input parent-service" type="checkbox" 
+                                                data-service="${service.name}"
+                                                data-entity="parent"
+                                                role="link-service-to-entity" 
+                                                data-scope="${scope}" id="${scope}-${safeRename(service.name)}-parent" 
+                                                data-entity="parent" checked="" readonly="">
+                                        </div>
+                                        <div type="button" 
+                                        class="w-100"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#${scope}-${safeRename(service.name)}-config">${service.description}</div>
+                                    </div>
                                 </h2>
                                 <div id="${scope}-${safeRename(service.name)}-config" 
                                     class="accordion-collapse collapse" 
-                                    data-bs-parent="#${scope}-service-settings">
+                                    ignore-data-bs-parent="#${scope}-service-settings">
                                     <div class="accordion-body">
+
+                                    <div class="container-fluid">
+                                        <div class="row mb-2">
+                                            <div class="col-12">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input integrator-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${safeRename(service.name)}" data-entity="integrator">
+                                                    <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-integrator">
+                                                        Link to Integrator
+                                                        <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Integrator"></i>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input deviceuser-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${safeRename(service.name)}" data-entity="deviceuser">
+                                                    <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-deviceuser">
+                                                        Link to Device User
+                                                        <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Device User"></i>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                         ${renderGroupedSettings(service.settings, `${scope}-${safeRename(service.name)}`, 'service', scope, service.name)}
                                     </div>
                                 </div>
@@ -624,41 +665,12 @@ if (scopeData.services && scopeData.services.length > 0) {
             </div>
         ` : ''}
     </div>`;
-
-    // Add this modal to your HTML structure (can be placed at the bottom of the body)
-html += `
-<!-- Service Settings Modal -->
-<div class="modal fade" id="serviceSettingsModal" tabindex="-1" aria-labelledby="serviceSettingsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="serviceSettingsModalLabel">Service Settings</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="serviceSettingsModalBody">
-                <!-- Settings will be loaded here dynamically -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveServiceSettings">Save Settings</button>
-            </div>
-        </div>
-    </div>
-</div>`;
     
     // Remove the old entity linking section since we're using the cards now
     // (The entity-linking section will no longer be rendered)
 }
 
-        // Scope-level settings section
-        if (scopeData.settings && scopeData.settings.length > 0) {
-            html += `<div class="settings-section">
-                <h5>Scope Settings</h5>`;
-            
-            html += renderGroupedSettings(scopeData.settings, scope, 'scope');
-            
-            html += `</div>`;
-        }
+
 
         return html;
     }
@@ -733,11 +745,11 @@ html += `
 
         // Render each group
         Object.keys(groupedSettings).forEach(groupName => {
-            html += `<div class="settings-group">`;
+            html += `<div class="settings-group accordion">`;
             
             // Only show group header if it's not "General Settings" or if there are multiple groups
             if (groupName !== 'General Settings' || Object.keys(groupedSettings).length > 1) {
-                html += `<div class="settings-group-header">${groupName}</div>`;
+                html += `<div class="settings-group-header accordion-item">${groupName}</div>`;
             }
             
             html += `<div class="row">`;
@@ -787,11 +799,11 @@ html += `
                     const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
                     html += `
                         <div class="mb-3 col-md-6" ${dependsOnAttr}>
-                            <label for="${inputId}" class="form-label">
+                            <label for="${inputId}" class="form-label label-sm">
                                 ${settingObj.label}
                                 ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
                             </label>
-                            <input type="text" class="form-control" id="${inputId}" 
+                            <input type="text" class="form-control form-control-sm" id="${inputId}" 
                             placeholder="${settingObj.placeholder}" 
                             value="${settingObj.defaultValue || ''}" 
                             service-setting="${settingObj.settingName}"
@@ -893,13 +905,42 @@ html += `
     }
 
     function renderScopeServiceCardForEntity(scopeData, scope, entity) {
+        console.log(scopeData);
         let entityDisplayName = entity.charAt(0).toUpperCase() + entity.slice(1);
         entity = entity.toLowerCase();
         console.log(`Rendering service card for entity: ${entityDisplayName} (${entity}) in scope: ${scope}`);
+        if (scopeData.excludeFrom && scopeData.excludeFrom.includes(entity) ) {
+            return `
+            <div class="col-md-4">
+                <div class="entity-card card shadow-none entity-disabled opacity-50" 
+                    data-bs-toggle="tooltip" data-bs-title="${scope} is not applicable to the  ${splitCamelCase(entityDisplayName).toLowerCase()}." data-bs-placement="top">
+                    <div class="card-header bg-entity text-white d-flex justify-content-between align-items-center opacity-50">
+                        <div>
+                            <i class="bi bi-gear me-2"></i>${entityDisplayName}
+                        </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" disabled>
+                            </div>
+                        </div>
+                    <div class="card-body">
+                        ${scopeData.services.map(service => `
+                            <div class="service-item d-flex justify-content-between align-items-center mb-2">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input ${entity}-service" type="checkbox" disabled>
+                                    <label class="form-check-label text-muted">${service.description}</label>
+                                </div>                   
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
         let html = `
             <div class="col-md-4">
-                <div class="entity-card card  ${$('#create' + entityDisplayName + '').is(':checked') ? '' : 'entity-disabled'}" 
-                    ${!$('#create' + entityDisplayName + '').is(':checked') ? `data-bs-toggle="tooltip" data-bs-title="${entityDisplayName} has not been created in the Entity Setup section. Please enable it there first." data-bs-placement="top"` : ''}>
+                <div class="entity-card card ${$('#create' + entityDisplayName + '').is(':checked') ? '' : 'entity-disabled'}" 
+                    ${!$('#create' + entityDisplayName + '').is(':checked') ? `data-bs-toggle="tooltip" data-bs-title="The ${splitCamelCase(entityDisplayName)} has not been created in the Entity Setup section. Please enable it there first." data-bs-placement="top"` : ''}>
                     <div class="card-header bg-entity text-white d-flex justify-content-between align-items-center">
                         <div>
                             <i class="bi bi-gear me-2"></i>${entityDisplayName}
@@ -910,9 +951,11 @@ html += `
                                 data-scope="${scope}"
                                 id="${scope}-${entity}-toggle-all"
                                 data-entity="${entity}"
+                                ${(scopeData.excludeFrom && scopeData.excludeFrom.includes(entity)) || (scopeData.services.every(s => s.allowOn?.includes(entity))) ? 'data-exclude-on-entity="true"' : ''}
                                 ${$('#create' + entityDisplayName + '').is(':checked') ? '' : 'disabled'}
                                 ${entity === 'parent' ? 'checked' : ''}
-                                ${entity === 'parent' ? 'readonly' : ''}>
+                                ${entity === 'parent' ? 'readonly' : ''}
+                                ${$('#create' + entityDisplayName + '').is(':checked') && scopeData.services.some(s => s.allowOn?.includes(entity)) ? 'checked' : ''}>
                         </div>
                     </div>
                     <div class="card-body">
@@ -923,10 +966,13 @@ html += `
                                         role="link-service-to-entity"
                                         id="${scope}-${safeRename(service.name)}-${entity}"
                                         data-service="${service.name}"
-                                        data-entity="${entity}"
+                                        data-entity="${entity}" service.exclude
+                                        ${service.excludeFrom && service.excludeFrom.includes(entity) ? 'data-exclude-on-entity="true"' : ''}
+                                        ${service.allowOn && !service.allowOn.includes(entity) ? 'disabled' : ''}
                                         ${$('#create' + entityDisplayName + '').is(':checked') ? '' : 'disabled'}
                                         ${!$('#create' + entityDisplayName + '').is(':checked') ? `data-bs-toggle="tooltip" data-bs-title="Enable ${entityDisplayName} in Entity Setup to assign services" data-bs-placement="left"` : ''}
-                                        ${entity === 'parent' ? 'checked' : ''}>
+                                        ${entity === 'parent' ? 'checked' : ''}
+                                        ${$('#create' + entityDisplayName + '').is(':checked') && service.allowOn?.includes(entity) ? 'checked' : ''}>
                                     <label for="${scope}-${safeRename(service.name)}-${entity}" class="form-check-label">${service.description}</label>
                                 </div>
                                 ${service.settings && service.settings.length > 0 ? `
@@ -937,7 +983,7 @@ html += `
                                         <i class="bi bi-gear"></i>
                                     </button>
                                 ` : `
-                                    <span class="badge bg-secondary">No settings</span>
+                                    
                                 `}
                             </div>
                         `).join('')}
@@ -1317,6 +1363,14 @@ function initializeTooltips(container = document) {
         }
     }
 
+    function splitCamelCase(str) {
+    return str
+        // insert space before all caps
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        // capitalize first letter
+        .replace(/^./, c => c.toUpperCase());
+    }
+
     $('#togglePassword').click(function() {
         const passwordField = $('#devicePassword');
         const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
@@ -1436,7 +1490,7 @@ function extractScopeConfiguration_old() {
         if ($scopeTab.length === 0) return;
 
         const scopeConfig = {
-            linkTo: [],
+            allowOn: [],
             rateLimit: {
                 enabled: false,
                 numberOfRequests: null,
@@ -1450,7 +1504,7 @@ function extractScopeConfiguration_old() {
         $scopeTab.find('[section="entity-linking"] [scope-link]').each(function() {
             const $checkbox = $(this);
             if ($checkbox.is(':checked') && !$checkbox.is(':disabled')) {
-                scopeConfig.linkTo.push($checkbox.attr('scope-link'));
+                scopeConfig.allowOn.push($checkbox.attr('scope-link'));
             }
         });
 
@@ -1476,7 +1530,7 @@ function extractScopeConfiguration_old() {
             const serviceConfig = {
                 name: serviceName,
                 enabled: serviceEnabled,
-                linkTo: [...serviceEntities], // Copy the global entities
+                allowOn: [...serviceEntities], // Copy the global entities
                 settings: []
             };
 
@@ -1559,7 +1613,7 @@ function extractScopeConfiguration() {
         
         const scopeConfig = {
             scope: scope,
-            linkTo: [],
+            allowOn: [],
             rateLimit: {
                 enabled: false,
                 numberOfRequests: null,
@@ -1575,7 +1629,7 @@ function extractScopeConfiguration() {
             const entityType = $checkbox.data('entity');
             
             if ($checkbox.is(':checked') && !$checkbox.is(':disabled')) {
-                scopeConfig.linkTo.push(entityType);
+                scopeConfig.allowOn.push(entityType);
             }
         });
 
@@ -1598,24 +1652,24 @@ function extractScopeConfiguration() {
                 servicesMap.set(serviceName, {
                     name: serviceName,
                     enabled: false, // Will be determined by parent checkbox
-                    linkTo: [],
+                    allowOn: [],
                     settings: []
                 });
             }
             
             const serviceConfig = servicesMap.get(serviceName);
             
-            // If this service is checked for any entity, add that entity to linkTo
+            // If this service is checked for any entity, add that entity to allowOn
             if ($serviceCheckbox.is(':checked') && !$serviceCheckbox.is(':disabled')) {
-                if (!serviceConfig.linkTo.includes(entityType)) {
-                    serviceConfig.linkTo.push(entityType);
+                if (!serviceConfig.allowOn.includes(entityType)) {
+                    serviceConfig.allowOn.push(entityType);
                 }
             }
         });
 
         // 4) Determine if service is enabled (enabled if linked to at least one entity)
         servicesMap.forEach((serviceConfig, serviceName) => {
-            serviceConfig.enabled = serviceConfig.linkTo.length > 0;
+            serviceConfig.enabled = serviceConfig.allowOn.length > 0;
             
             if (serviceConfig.enabled) {
                 // Get service settings from modal data or service settings section
@@ -1683,8 +1737,6 @@ function extractScopeConfiguration() {
 // Helper function to get service settings (you'll need to implement this based on your modal structure)
 function getServiceSettings(scope, serviceName) {
     const serviceSettings = [];
-    
-
     $(`#${scope}`).find('[role="link-service-to-entity"]').each(function() {
         if ($(this).is(':checked')) {
             const serviceName = $(this).data('service');

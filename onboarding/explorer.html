@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Config Explorer Prototype</title>
+<style>
+  :root{--bg:#f5f7fa;--panel:#fff;--muted:#666;--accent:#2563eb}
+  body{font-family:Inter,Segoe UI,Roboto,Arial; margin:0; background:var(--bg); height:100vh; display:flex; gap:12px}
+  header{height:64px; background:#0f1724; color:white; display:flex; align-items:center; padding:0 16px; gap:12px; flex-shrink:0}
+  header h1{font-size:16px;margin:0}
+  .container{display:flex;flex:1;padding:12px;gap:12px}
+  .panel{background:var(--panel); border-radius:8px; box-shadow:0 4px 12px rgba(8,15,30,0.06); padding:12px; overflow:auto}
+  .tree{width:360px; min-width:260px; max-width:520px}
+  .main{flex:1; display:flex; flex-direction:column; gap:12px}
+  .tree ul{list-style:none;padding-left:12px}
+  .node{padding:6px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:space-between}
+  .node:hover{background:#f1f5ff}
+  .node .meta{font-size:12px;color:var(--muted)}
+  button{cursor:pointer}
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  .details{padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .field{display:flex; flex-direction:column; gap:6px}
+  label{font-size:12px;color:var(--muted)}
+  input[type="text"], textarea, select{padding:8px;border:1px solid #e6e9ef;border-radius:6px}
+  .list{max-height:260px; overflow:auto; border:1px dashed #e6e9ef; padding:8px; border-radius:6px}
+  .small{font-size:12px;color:var(--muted)}
+  .actions{display:flex; gap:8px; justify-content:flex-end}
+  .btn-primary{background:var(--accent); color:white; border:none; padding:8px 10px; border-radius:6px}
+  .btn-ghost{background:transparent; border:1px solid #e6e9ef; padding:8px 10px; border-radius:6px}
+  .toggle{display:flex;gap:6px;align-items:center}
+  .json-area{height:300px; width:100%; font-family:monospace; font-size:13px}
+  .muted{color:var(--muted)}
+  .trash{color:#b91c1c}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Config Explorer</h1>
+    <div class="small muted">Tree-based viewer/editor prototype</div>
+  </header>
+
+  <div class="container">
+    <div class="panel tree" id="leftPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><strong>Scopes</strong></div>
+        <div class="controls">
+          <button class="btn-ghost" onclick="importJson()">Import</button>
+          <button class="btn-primary" onclick="exportJson()">Export</button>
+        </div>
+      </div>
+
+      <div id="treeRoot"></div>
+
+      <hr/>
+      <div style="display:flex; gap:8px; margin-top:8px">
+        <button class="btn-primary" onclick="addScope()">+ Add Scope</button>
+        <button class="btn-ghost" onclick="collapseAll()">Collapse All</button>
+      </div>
+    </div>
+
+    <div class="panel main" id="rightPanel">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><strong>Details</strong><div class="small muted">Select a Scope / Service / Setting from the tree</div></div>
+        <div class="actions">
+          <button class="btn-ghost" onclick="resetSelection()">Clear</button>
+          <button class="btn-primary" onclick="applyChanges()">Save</button>
+        </div>
+      </div>
+
+      <div id="detailArea" style="flex:1; display:flex; flex-direction:column; gap:12px; min-height:220px">
+        <div class="muted">No node selected</div>
+      </div>
+
+      <hr/>
+
+      <div>
+        <strong>Raw JSON</strong>
+        <div class="small muted">You can edit JSON directly and press Load</div>
+        <textarea id="rawJson" class="json-area"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
+          <button class="btn-ghost" onclick="loadRaw()">Load</button>
+          <button class="btn-primary" onclick="exportJson()">Download</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* --- sample payload (small subset) --- */
+let payload = [
+  {
+    "scope":"client-management-api",
+    "services":[
+      {"rateLimit":false,"limitCount":0,"limitPeriod":null,"endPoint":"/entity","hasConfiguredFields":false,"settings":[],"fields":[],"identifier":"cms.services.entity","Description":"Entity Management","Active":true}
+    ],
+    "identifier":"CMS",
+    "Description":"Client Management Service",
+    "Active":true
+  },
+  {
+    "scope":"avs",
+    "services":[
+      {"rateLimit":false,"limitCount":0,"limitPeriod":null,"endPoint":"/","hasConfiguredFields":false,"settings":[{"identifier":"avs.track.request","Value":"true","Active":true},{"identifier":"avs.easydebit.profile","Value":"False","Active":true}], "fields":[],"identifier":"avs.services.avs","Description":"Can perform account verification","Active":true}
+    ],
+    "identifier":"AVS",
+    "Description":"Account Verification Service API",
+    "Active":true
+  }
+];
+
+let selected = { type: null, scopeIdx: null, serviceIdx: null, settingIdx: null };
+
+function renderTree(){
+  const root = document.getElementById('treeRoot');
+  root.innerHTML = '';
+  payload.forEach((s, si) => {
+    const scopeEl = document.createElement('div');
+    scopeEl.className = 'node';
+    scopeEl.innerHTML = '<div><strong>'+escapeHtml(s.scope)+'</strong><div class="meta">'+escapeHtml(s.Description||'')+'</div></div><div style="display:flex;gap:6px"><button onclick="onScopeAddService('+si+');event.stopPropagation()" title="Add Service">+S</button><button onclick="selectScope('+si+');event.stopPropagation()">Edit</button></div>';
+    scopeEl.onclick = ()=> toggleScope(si);
+    const children = document.createElement('div');
+    children.style.paddingLeft = '12px';
+    children.id = 'scope_children_'+si;
+
+    const ul = document.createElement('ul');
+    s.services.forEach((svc, svi) => {
+      const li = document.createElement('li');
+      li.innerHTML = '<div class="node"><div><strong>'+escapeHtml(svc.endPoint||svc.identifier)+'</strong><div class="meta">'+escapeHtml(svc.Description||svc.identifier)+'</div></div><div style="display:flex;gap:6px"><button onclick="onServiceAddSetting('+si+','+svi+');event.stopPropagation()" title="Add Setting">+st</button><button onclick="selectService('+si+','+svi+');event.stopPropagation()">Edit</button></div></div>';
+      li.onclick = ()=> toggleService(si,svi);
+      const settingsList = document.createElement('ul');
+      (svc.settings||[]).forEach((st, sti) => {
+        const stLi = document.createElement('li');
+        stLi.innerHTML = '<div class="node"><div>'+escapeHtml(st.identifier)+' <span class="meta">= '+escapeHtml(String(st.Value))+'</span></div><div style="display:flex;gap:6px"><button onclick="selectSetting('+si+','+svi+','+sti+');event.stopPropagation()">Edit</button></div></div>';
+        settingsList.appendChild(stLi);
+      });
+      li.appendChild(settingsList);
+      ul.appendChild(li);
+    });
+
+    children.appendChild(ul);
+
+    root.appendChild(scopeEl);
+    root.appendChild(children);
+  });
+
+  document.getElementById('rawJson').value = JSON.stringify(payload, null, 2);
+}
+
+/* Expand/collapse helpers */
+function toggleScope(idx){
+  const el = document.getElementById('scope_children_'+idx);
+  el.style.display = (el.style.display==='none' || !el.style.display) ? 'block' : 'none';
+}
+function toggleService(si,svi){
+  // find the inner ul under scope_children and toggle the corresponding child
+  const parent = document.getElementById('scope_children_'+si);
+  if(!parent) return;
+  const lists = parent.querySelectorAll('ul');
+  if(lists[svi]) lists[svi].style.display = (lists[svi].style.display==='none' || !lists[svi].style.display) ? 'block' : 'none';
+}
+
+/* selection handlers */
+function selectScope(si){
+  selected = {type:'scope', scopeIdx:si, serviceIdx:null, settingIdx:null};
+  showScopeDetails(si);
+}
+function selectService(si,svi){
+  selected = {type:'service', scopeIdx:si, serviceIdx:svi, settingIdx:null};
+  showServiceDetails(si,svi);
+}
+function selectSetting(si,svi,sti){
+  selected = {type:'setting', scopeIdx:si, serviceIdx:svi, settingIdx:sti};
+  showSettingDetails(si,svi,sti);
+}
+
+/* show detail panels */
+function showScopeDetails(si){
+  const s = payload[si];
+  const area = document.getElementById('detailArea');
+  area.innerHTML = '';
+  const form = document.createElement('div');
+  form.className='details';
+  form.innerHTML = `
+    <div class="field"><label>scope</label><input id="d_scope" type="text" value="${escapeHtml(s.scope||'')}" /></div>
+    <div class="field"><label>identifier</label><input id="d_identifier" type="text" value="${escapeHtml(s.identifier||'')}" /></div>
+    <div class="field"><label>Description</label><input id="d_desc" type="text" value="${escapeHtml(s.Description||'')}" /></div>
+    <div class="field"><label>Active</label><div class="toggle"><input id="d_active" type="checkbox" ${s.Active? 'checked':''} /></div></div>
+    <div style="grid-column:1/3"><label>Services</label><div class="list" id="scope_services"></div></div>
+    <div style="grid-column:1/3;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-ghost" onclick="deleteScope(${si})">Delete Scope</button>
+      <button class="btn-primary" onclick="applyScope(${si})">Apply</button>
+    </div>
+  `;
+  area.appendChild(form);
+  // populate services list
+  const list = document.getElementById('scope_services');
+  s.services.forEach((svc, idx)=> {
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.marginBottom='6px';
+    row.innerHTML = `<div>${escapeHtml(svc.endPoint||svc.identifier)} <span class="small muted">(${escapeHtml(svc.identifier)})</span></div>
+      <div style="display:flex;gap:6px"><button onclick="selectService(${si},${idx});event.stopPropagation()">Edit</button><button class="trash" onclick="deleteService(${si},${idx});event.stopPropagation()">Del</button></div>`;
+    list.appendChild(row);
+  });
+  list.appendChild(createAddButton(()=>onScopeAddService(si),'+ Add Service'));
+}
+
+function showServiceDetails(si,svi){
+  const svc = payload[si].services[svi];
+  const area = document.getElementById('detailArea');
+  area.innerHTML = '';
+  const form = document.createElement('div');
+  form.className='details';
+  form.innerHTML = `
+    <div class="field"><label>identifier</label><input id="s_identifier" type="text" value="${escapeHtml(svc.identifier||'')}" /></div>
+    <div class="field"><label>endPoint</label><input id="s_endpoint" type="text" value="${escapeHtml(svc.endPoint||'')}" /></div>
+    <div class="field"><label>Description</label><input id="s_desc" type="text" value="${escapeHtml(svc.Description||'')}" /></div>
+    <div class="field"><label>Active</label><div class="toggle"><input id="s_active" type="checkbox" ${svc.Active? 'checked':''} /></div></div>
+    <div style="grid-column:1/3"><label>Settings</label><div class="list" id="svc_settings"></div></div>
+    <div style="grid-column:1/3;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-ghost" onclick="deleteService(${si},${svi})">Delete Service</button>
+      <button class="btn-primary" onclick="applyService(${si},${svi})">Apply</button>
+    </div>
+  `;
+  area.appendChild(form);
+
+  const list = document.getElementById('svc_settings');
+  (svc.settings||[]).forEach((st, idx)=>{
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.marginBottom='6px';
+    row.innerHTML = `<div>${escapeHtml(st.identifier)} <span class="muted">= ${escapeHtml(String(st.Value))}</span></div>
+      <div style="display:flex;gap:6px"><button onclick="selectSetting(${si},${svi},${idx});event.stopPropagation()">Edit</button><button class="trash" onclick="deleteSetting(${si},${svi},${idx});event.stopPropagation()">Del</button></div>`;
+    list.appendChild(row);
+  });
+  list.appendChild(createAddButton(()=>onServiceAddSetting(si,svi),'+ Add Setting'));
+}
+
+function showSettingDetails(si,svi,sti){
+  const st = payload[si].services[svi].settings[sti];
+  const area = document.getElementById('detailArea');
+  area.innerHTML = '';
+  const form = document.createElement('div');
+  form.className='details';
+  form.innerHTML = `
+    <div class="field"><label>identifier</label><input id="st_identifier" type="text" value="${escapeHtml(st.identifier||'')}" /></div>
+    <div class="field"><label>Value</label><input id="st_value" type="text" value="${escapeHtml(String(st.Value||''))}" /></div>
+    <div class="field"><label>Active</label><div class="toggle"><input id="st_active" type="checkbox" ${st.Active? 'checked':''} /></div></div>
+    <div style="grid-column:1/3;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-ghost" onclick="deleteSetting(${si},${svi},${sti})">Delete Setting</button>
+      <button class="btn-primary" onclick="applySetting(${si},${svi},${sti})">Apply</button>
+    </div>
+  `;
+  area.appendChild(form);
+}
+
+/* small helper to create add button */
+function createAddButton(onclick, text){
+  const b = document.createElement('button');
+  b.className='btn-ghost';
+  b.textContent = text;
+  b.onclick = onclick;
+  return b;
+}
+
+/* add operations */
+function addScope(){
+  const newScope = { scope:'new-scope', services:[], identifier:'NEW', Description:'', Active:true };
+  payload.push(newScope);
+  renderTree();
+}
+function onScopeAddService(si){
+  payload[si].services.push({ rateLimit:false, limitCount:0, limitPeriod:null, endPoint:'/', hasConfiguredFields:false, settings:[], fields:[], identifier:'new.service.'+Date.now(), Description:'', Active:true});
+  renderTree();
+  selectService(si, payload[si].services.length-1);
+}
+function onServiceAddSetting(si,svi){
+  const svc = payload[si].services[svi];
+  svc.settings = svc.settings || [];
+  svc.settings.push({identifier:'new.setting.'+Date.now(), Value:'', Active:true});
+  renderTree();
+  selectSetting(si,svi, svc.settings.length-1);
+}
+
+/* delete operations */
+function deleteScope(si){
+  if(!confirm('Delete this scope?')) return;
+  payload.splice(si,1);
+  selected={type:null};
+  renderTree();
+  document.getElementById('detailArea').innerHTML = '<div class="muted">No node selected</div>';
+}
+function deleteService(si,svi){
+  if(!confirm('Delete this service?')) return;
+  payload[si].services.splice(svi,1);
+  renderTree();
+  document.getElementById('detailArea').innerHTML = '<div class="muted">No node selected</div>';
+}
+function deleteSetting(si,svi,sti){
+  if(!confirm('Delete this setting?')) return;
+  payload[si].services[svi].settings.splice(sti,1);
+  renderTree();
+  document.getElementById('detailArea').innerHTML = '<div class="muted">No node selected</div>';
+}
+
+/* apply changes from UI */
+function applyScope(si){
+  const s = payload[si];
+  s.scope = document.getElementById('d_scope').value;
+  s.identifier = document.getElementById('d_identifier').value;
+  s.Description = document.getElementById('d_desc').value;
+  s.Active = document.getElementById('d_active').checked;
+  renderTree();
+}
+function applyService(si,svi){
+  const svc = payload[si].services[svi];
+  svc.identifier = document.getElementById('s_identifier').value;
+  svc.endPoint = document.getElementById('s_endpoint').value;
+  svc.Description = document.getElementById('s_desc').value;
+  svc.Active = document.getElementById('s_active').checked;
+  renderTree();
+}
+function applySetting(si,svi,sti){
+  const st = payload[si].services[svi].settings[sti];
+  st.identifier = document.getElementById('st_identifier').value;
+  st.Value = document.getElementById('st_value').value;
+  st.Active = document.getElementById('st_active').checked;
+  renderTree();
+}
+
+/* top-level save/clear */
+function applyChanges(){
+  // If selection present, attempt to save currently shown fields
+  if(selected.type==='scope') applyScope(selected.scopeIdx);
+  else if(selected.type==='service') applyService(selected.scopeIdx, selected.serviceIdx);
+  else if(selected.type==='setting') applySetting(selected.scopeIdx, selected.serviceIdx, selected.settingIdx);
+  alert('Saved locally. Use Export to download JSON.');
+}
+
+function resetSelection(){
+  selected={type:null};
+  document.getElementById('detailArea').innerHTML = '<div class="muted">No node selected</div>';
+}
+
+/* raw JSON import/export */
+function importJson(){
+  const txt = prompt('Paste JSON payload here (overwrites current)');
+  if(!txt) return;
+  try{
+    const parsed = JSON.parse(txt);
+    if(!Array.isArray(parsed)) if(!confirm('Imported JSON is not an array. Continue?') ) return;
+    payload = parsed;
+    renderTree();
+    alert('Imported');
+  }catch(e){
+    alert('Invalid JSON: '+e.message);
+  }
+}
+function loadRaw(){
+  try{
+    const parsed = JSON.parse(document.getElementById('rawJson').value);
+    payload = parsed;
+    renderTree();
+    alert('Loaded');
+  }catch(e){ alert('Invalid JSON: '+e.message) }
+}
+function exportJson(){
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'payload.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* utility */
+function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function collapseAll(){
+  document.querySelectorAll('[id^="scope_children_"]').forEach(e=>e.style.display='none');
+  document.querySelectorAll('.panel ul ul').forEach(e=>e.style.display='none');
+}
+renderTree();
+</script>
+</body>
+</html>
