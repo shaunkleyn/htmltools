@@ -752,7 +752,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                 </div>
                             </div>
                             <div id="${safeReplace(groupName.toLowerCase(), ' ', '_')}" class="accordion-collapse collapse">
-                                <div class="accordion-body">`;
+                                <div class="accordion-body bg-light">`;
             html += `<div class="row">`;
                                     groupedSettings[groupName].forEach(settingObj => {
                 console.log(settingObj);
