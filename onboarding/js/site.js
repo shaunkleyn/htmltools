@@ -753,6 +753,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                             </div>
                             <div id="${safeReplace(groupName.toLowerCase(), ' ', '_')}" class="accordion-collapse collapse">
                                 <div class="accordion-body">`;
+            html += `<div class="row">`;
                                     groupedSettings[groupName].forEach(settingObj => {
                 console.log(settingObj);
                 const settingName = safeRename(settingObj.name);
@@ -797,7 +798,6 @@ if (scopeData.services && scopeData.services.length > 0) {
                     // Default text input
                     const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
                     html += `
-                    <div class="row">
                         <div class="mb-3 col-md-6" ${dependsOnAttr}>
                             <label for="${inputId}" class="form-label label-sm">
                                 ${settingObj.label}
@@ -814,11 +814,10 @@ if (scopeData.services && scopeData.services.length > 0) {
                             service-setting-field="${settingObj.settingField || ''}">
                             ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
                         </div>
-                    </div>
                     `;
                 }
             });
-        html +=                 `</div>
+        html +=                 `</div></div>
                             </div>
                     </div>`;
         });
