@@ -747,7 +747,7 @@ if (scopeData.services && scopeData.services.length > 0) {
         Object.keys(groupedSettings).forEach(groupName => {
             html += `<div class="accordion-item">
                             <div class="accordion-header">
-                                <div class="accordion-button accordion-button-sm collapsed" data-bs-toggle="collapse" aria-expanded="false">
+                                <div class="accordion-button accordion-button-sm collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="${safeReplace(groupName.toLowerCase(), ' ', '_')}">
                                     <div type="button" class="w-100 collapsed" data-bs-toggle="collapse" data-bs-target="${safeReplace(groupName.toLowerCase(), ' ', '_')}" aria-expanded="false">${groupName}</div>
                                 </div>
                             </div>
