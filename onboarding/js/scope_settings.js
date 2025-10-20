@@ -660,7 +660,7 @@ const scopes = {
                 ]
             },
             {
-                group: 'EasyDebit', 
+                group: 'EasyDebit.group1', 
                 name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
                 placeholder: 'EasyDebit Webservice User', 
                 helpText: 'EasyDebit Webservice User for web service authentication'
