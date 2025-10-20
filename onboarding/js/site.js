@@ -676,233 +676,247 @@ if (scopeData.services && scopeData.services.length > 0) {
     }
 
     function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceName = '') {
-        console.log('Rendering settings for:', prefix, settings);
-        console.log(settings);
-        let html = '';
-        prefix = safeRename(prefix);
-        
-        if (!settings || settings.length === 0) {
-            return html;
-        }
+    // console.log('Rendering settings for:', prefix, settings); // Keeping one console log for debugging
+    // console.log(settings);
 
-        // Group settings by their group
-        const groupedSettings = {};
-        
-        settings.forEach(setting => {
-            let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, serviceName;
-            
-            // Handle both string and object formats
-            if (typeof setting === 'string') {
-                groupName = 'General Settings';
-                settingName = setting;
-                description = settingDescriptions[setting] || 'No description available';
-                placeholder = `Enter value for ${setting}`;
-                helpText = null;
-                inputType = 'text';
-                label = setting;
-                defaultValue = '';
-                settingField = '';
-                settingTableName = 'entity_service_type_setting';
-                serviceName = serviceName;
-            } else {
-                groupName = setting.group || 'General Settings';
-                settingName = setting.name;
-                description = setting.description || settingDescriptions[settingName] || 'No description available';
-                placeholder = safeReplace(setting.placeholder, '"', '&#34;') || `Enter value for ${settingName}`;
-                helpText = setting.helpText || null;
-                inputType = setting.type || 'text';
-                dependsOn = safeReplace(setting.dependsOn, '>', '___') || null;
-                options = setting.options;
-                checkboxes = setting.checkboxes;
-                label = setting.label || settingName;
-                defaultValue = setting.defaultValue || null;
-                settingField = setting.field || null;
-                settingTableName = setting.table ||  'entity_service_type_setting';
-                serviceName = setting.serviceName || serviceName;
-            }
-            
-            if (!groupedSettings[groupName]) {
-                groupedSettings[groupName] = [];
-            }
-            
-            groupedSettings[groupName].push({
-                name: settingName,
-                description: description,
-                placeholder: placeholder,
-                helpText: helpText,
-                type: inputType,
-                dependsOn: dependsOn,
-                options: options,
-                checkboxes: checkboxes,
-                label: label,
-                defaultValue: defaultValue,
-                settingField: settingField,
-                settingName: settingName,
-                settingTableName: settingTableName,
-                serviceName: serviceName
-            });
-        });
+    let html = '';
+    prefix = safeRename(prefix);
 
-        html += `<div class="accordion">`;
-        Object.keys(groupedSettings).forEach(groupName => {
-            html += `<div class="accordion-item">
-                            <div class="accordion-header">
-                                <div class="accordion-button accordion-button-sm collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#${safeReplace(groupName.toLowerCase(), ' ', '_')}">
-                                    <div type="button" class="w-100 collapsed" data-bs-toggle="collapse" data-bs-target="#${safeReplace(groupName.toLowerCase(), ' ', '_')}" aria-expanded="false">${groupName}</div>
-                                </div>
-                            </div>
-                            <div id="${safeReplace(groupName.toLowerCase(), ' ', '_')}" class="accordion-collapse collapse">
-                                <div class="accordion-body bg-light">`;
-            html += `<div class="row">`;
-                                    groupedSettings[groupName].forEach(settingObj => {
-                console.log(settingObj);
-                const settingName = safeRename(settingObj.name);
-                const dependsOn = safeRename(settingObj.dependsOn);
-                let inputId = `${prefix}-${settingName}`;
-                if (settingObj.settingField != '' && settingObj.settingField != null) {
-                    inputId = `${inputId}___${safeRename(settingObj.settingField)}`;
-                }
-                
-                // Handle different input types
-                if (settingObj.type === 'checkbox') {
-                    html += renderCheckboxSetting(settingObj, inputId, prefix);
-                } else if (settingObj.type === 'dual-checkbox') {
-                    html += renderDualCheckboxSetting(settingObj, inputId, prefix);
-                } else if (settingObj.type === 'radio') {
-                    html += renderRadioSetting(settingObj, inputId, prefix);
-                } else if (settingObj.type ==='radio-button-group') {
-                    html += `<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="btnradio1">Radio 1</label>
-
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="btnradio2">Radio 2</label>
-
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="btnradio3">Radio 3</label>
-                        </div>`;
-                } else if (settingObj.type === 'radio-group') {
-                    html += `<div class="form-check">
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-                        <label class="form-check-label" for="flexRadioDefault1">
-                            Default radio
-                        </label>
-                        </div>
-                        <div class="form-check">
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
-                        <label class="form-check-label" for="flexRadioDefault2">
-                            Default checked radio
-                        </label>
-                        </div>`;
-                } else {
-                    // Default text input
-                    const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
-                    html += `
-                        <div class="mb-3 col-md-6" ${dependsOnAttr}>
-                            <label for="${inputId}" class="form-label label-sm">
-                                ${settingObj.label}
-                                ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
-                            </label>
-                            <input type="text" class="form-control form-control-sm" id="${inputId}" 
-                            placeholder="${settingObj.placeholder}" 
-                            value="${settingObj.defaultValue || ''}" 
-                            service-setting="${settingObj.settingName}"
-                            role="set-service-setting-value"
-                            data-service-name="${serviceName}"
-                            data-setting="${settingObj.settingName}"
-                            data-setting-table="${settingObj.settingTableName}"
-                            service-setting-field="${settingObj.settingField || ''}">
-                            ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
-                        </div>
-                    `;
-                }
-            });
-        html +=                 `</div></div>
-                            </div>
-                    </div>`;
-        });
-        html += `</div>`;
-
-        // Render each group
-        Object.keys(groupedSettings).forEach(groupName => {
-            html += `<div class="settings-group accordion">`;
-            
-            // Only show group header if it's not "General Settings" or if there are multiple groups
-            if (groupName !== 'General Settings' || Object.keys(groupedSettings).length > 1) {
-                html += `<div class="settings-group-header">${groupName}</div>`;
-            }
-            
-            html += `<div class="row">`;
-            
-            groupedSettings[groupName].forEach(settingObj => {
-                console.log(settingObj);
-                const settingName = safeRename(settingObj.name);
-                const dependsOn = safeRename(settingObj.dependsOn);
-                let inputId = `${prefix}-${settingName}`;
-                if (settingObj.settingField != '' && settingObj.settingField != null) {
-                    inputId = `${inputId}___${safeRename(settingObj.settingField)}`;
-                }
-                
-                // Handle different input types
-                if (settingObj.type === 'checkbox') {
-                    html += renderCheckboxSetting(settingObj, inputId, prefix);
-                } else if (settingObj.type === 'dual-checkbox') {
-                    html += renderDualCheckboxSetting(settingObj, inputId, prefix);
-                } else if (settingObj.type === 'radio') {
-                    html += renderRadioSetting(settingObj, inputId, prefix);
-                } else if (settingObj.type ==='radio-button-group') {
-                    html += `<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="btnradio1">Radio 1</label>
-
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="btnradio2">Radio 2</label>
-
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="btnradio3">Radio 3</label>
-                        </div>`;
-                } else if (settingObj.type === 'radio-group') {
-                    html += `<div class="form-check">
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-                        <label class="form-check-label" for="flexRadioDefault1">
-                            Default radio
-                        </label>
-                        </div>
-                        <div class="form-check">
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
-                        <label class="form-check-label" for="flexRadioDefault2">
-                            Default checked radio
-                        </label>
-                        </div>`;
-                } else {
-                    // Default text input
-                    const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
-                    html += `
-                        <div class="mb-3 col-md-6" ${dependsOnAttr}>
-                            <label for="${inputId}" class="form-label label-sm">
-                                ${settingObj.label}
-                                ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
-                            </label>
-                            <input type="text" class="form-control form-control-sm" id="${inputId}" 
-                            placeholder="${settingObj.placeholder}" 
-                            value="${settingObj.defaultValue || ''}" 
-                            service-setting="${settingObj.settingName}"
-                            role="set-service-setting-value"
-                            data-service-name="${serviceName}"
-                            data-setting="${settingObj.settingName}"
-                            data-setting-table="${settingObj.settingTableName}"
-                            service-setting-field="${settingObj.settingField || ''}">
-                            ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
-                        </div>
-                    `;
-                }
-            });
-            
-            html += `</div></div>`;
-        });
-        
+    if (!settings || settings.length === 0) {
         return html;
     }
+
+    // --- START: MODIFIED GROUPING LOGIC ---
+    // Group settings by their main group and then by subgroup
+    const groupedSettings = {};
+
+    settings.forEach(setting => {
+        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName;
+
+        // Handle string, array, and object formats (logic remains mostly the same)
+        if (typeof setting === 'string') {
+            groupName = 'General Settings';
+            settingName = setting;
+            description = settingDescriptions[setting] || 'No description available';
+            placeholder = `Enter value for ${setting}`;
+            helpText = null;
+            inputType = 'text';
+            label = setting;
+            defaultValue = '';
+            settingField = '';
+            settingTableName = 'entity_service_type_setting';
+            currentServiceName = serviceName;
+        } else if (typeof setting === 'object' && Array.isArray(setting)) {
+            // Assuming an array setting is an older format or not fully implemented, keeping original logic for arrays
+            groupName = setting.group || 'General Settings';
+            settingName = 'setting_group'; // Placeholder for array setting
+            description = settingDescriptions[setting] || 'No description available';
+            currentServiceName = serviceName;
+        } else {
+            groupName = setting.group || 'General Settings';
+            settingName = setting.name;
+            description = setting.description || settingDescriptions[settingName] || 'No description available';
+            placeholder = safeReplace(setting.placeholder, '"', '&#34;') || `Enter value for ${settingName}`;
+            helpText = setting.helpText || null;
+            inputType = setting.type || 'text';
+            dependsOn = safeReplace(setting.dependsOn, '>', '___') || null;
+            options = setting.options;
+            checkboxes = setting.checkboxes;
+            label = setting.label || settingName;
+            defaultValue = setting.defaultValue || null;
+            settingField = setting.field || null;
+            settingTableName = setting.table || 'entity_service_type_setting';
+            currentServiceName = setting.serviceName || serviceName;
+        }
+
+        // Determine Main Group and Subgroup
+        let mainGroup = groupName;
+        let subGroup = null;
+        const groupParts = groupName.split('.'); // Use a common delimiter like '.' or '-'
+
+        // Check for subgroups (e.g., 'Main Group.Sub Group' or 'Main-Group-Sub-Group')
+        // We'll use the last part as the subgroup title, and the rest as the main group
+        const delimiter = '.'; // Define your delimiter
+        if (groupName.includes(delimiter)) {
+            const parts = groupName.split(delimiter);
+            subGroup = parts.pop().trim(); // Last part is the subgroup name
+            mainGroup = parts.join(delimiter).trim() || 'General Settings'; // Remaining parts are the main group
+        } else {
+            mainGroup = groupName;
+            subGroup = 'General Settings'; // Assign a default subgroup if no delimiter
+        }
+
+
+        if (!groupedSettings[mainGroup]) {
+            groupedSettings[mainGroup] = {};
+        }
+        if (!groupedSettings[mainGroup][subGroup]) {
+            groupedSettings[mainGroup][subGroup] = [];
+        }
+
+        groupedSettings[mainGroup][subGroup].push({
+            name: settingName,
+            description: description,
+            placeholder: placeholder,
+            helpText: helpText,
+            type: inputType,
+            dependsOn: dependsOn,
+            options: options,
+            checkboxes: checkboxes,
+            label: label,
+            defaultValue: defaultValue,
+            settingField: settingField,
+            settingName: settingName,
+            settingTableName: settingTableName,
+            serviceName: currentServiceName // Use currentServiceName
+        });
+    });
+    // --- END: MODIFIED GROUPING LOGIC ---
+
+    html += `<div class="accordion">`;
+
+    // --- START: MODIFIED RENDERING LOGIC ---
+    Object.keys(groupedSettings).forEach(mainGroupName => {
+        const subGroups = groupedSettings[mainGroupName];
+        const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
+        
+        // Render Main Group Accordion Header
+        html += `<div class="accordion-item">
+            <div class="accordion-header">
+                <div class="accordion-button collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#${mainGroupHtmlId}">
+                    ${mainGroupName}
+                </div>
+            </div>
+            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse">
+                <div class="accordion-body p-0">`; // p-0 to allow nested accordion padding
+
+        // Check if we need a nested accordion for subgroups
+        const subGroupNames = Object.keys(subGroups);
+        const hasMultipleSubgroups = subGroupNames.length > 1 || (subGroupNames.length === 1 && subGroupNames[0] !== 'General Settings');
+
+        if (hasMultipleSubgroups) {
+            // Nested Accordion for Subgroups
+            html += `<div class="accordion accordion-flush" id="${mainGroupHtmlId}-subgroups">`;
+            
+            subGroupNames.forEach(subGroupName => {
+                const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
+
+                // Subgroup Accordion Item
+                html += `<div class="accordion-item bg-light border-bottom">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button accordion-button-sm collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="false" aria-controls="${subGroupHtmlId}">
+                            ${subGroupName}
+                        </button>
+                    </h2>
+                    <div id="${subGroupHtmlId}" class="accordion-collapse collapse" data-bs-parent="#${mainGroupHtmlId}-subgroups">
+                        <div class="accordion-body">
+                            <div class="row">`;
+                            
+                // Render settings within the Subgroup
+                subGroups[subGroupName].forEach(settingObj => {
+                    html += renderSetting(settingObj, prefix, serviceName);
+                });
+                
+                html += `       </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`; // Close nested accordion
+        } else {
+            // Render settings directly if there's only one "General Settings" subgroup
+            const settingsArray = subGroups[subGroupNames[0]];
+            html += `<div class="p-3 bg-light"><div class="row">`;
+            settingsArray.forEach(settingObj => {
+                html += renderSetting(settingObj, prefix, serviceName);
+            });
+            html += `</div></div>`;
+        }
+
+
+        html += `   </div>
+            </div>
+        </div>`; // Close main accordion item
+    });
+
+    html += `</div>`; // Close main accordion
+    
+    // The second rendering loop in your original code is redundant and was causing duplicates.
+    // I've removed it and replaced the first loop with the new logic.
+
+    return html;
+}
+
+// Helper function to render an individual setting (extracted from your original inner loop logic)
+function renderSetting(settingObj, prefix, serviceName) {
+    let html = '';
+    console.log(settingObj);
+    const settingName = safeRename(settingObj.name);
+    const dependsOn = safeRename(settingObj.dependsOn);
+    let inputId = `${prefix}-${settingName}`;
+    if (settingObj.settingField != '' && settingObj.settingField != null) {
+        inputId = `${inputId}___${safeRename(settingObj.settingField)}`;
+    }
+
+    // Handle different input types (using placeholders for external functions)
+    if (settingObj.type === 'checkbox') {
+        // Assume renderCheckboxSetting exists and returns HTML
+        html += renderCheckboxSetting(settingObj, inputId, prefix); 
+    } else if (settingObj.type === 'dual-checkbox') {
+        // Assume renderDualCheckboxSetting exists and returns HTML
+        html += renderDualCheckboxSetting(settingObj, inputId, prefix);
+    } else if (settingObj.type === 'radio') {
+        // Assume renderRadioSetting exists and returns HTML
+        html += renderRadioSetting(settingObj, inputId, prefix);
+    } else if (settingObj.type === 'radio-button-group') {
+        // Hardcoded example HTML in your snippet
+        html += `<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                    <input type="radio" class="btn-check" name="btnradio-${inputId}" id="btnradio1-${inputId}" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="btnradio1-${inputId}">Radio 1</label>
+                    <input type="radio" class="btn-check" name="btnradio-${inputId}" id="btnradio2-${inputId}" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio2-${inputId}">Radio 2</label>
+                    <input type="radio" class="btn-check" name="btnradio-${inputId}" id="btnradio3-${inputId}" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio3-${inputId}">Radio 3</label>
+                </div>`;
+    } else if (settingObj.type === 'radio-group') {
+        // Hardcoded example HTML in your snippet
+        html += `<div class="form-check">
+                    <input class="form-check-input" type="radio" name="flexRadioDefault-${inputId}" id="flexRadioDefault1-${inputId}">
+                    <label class="form-check-label" for="flexRadioDefault1-${inputId}">Default radio</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="flexRadioDefault-${inputId}" id="flexRadioDefault2-${inputId}" checked>
+                    <label class="form-check-label" for="flexRadioDefault2-${inputId}">Default checked radio</label>
+                </div>`;
+    } else {
+        // Default text input (using the setting's input type if defined, otherwise 'text')
+        const inputType = settingObj.type === 'textbox' ? 'text' : settingObj.type;
+        const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
+        html += `
+            <div class="mb-3 col-md-6" ${dependsOnAttr}>
+                <label for="${inputId}" class="form-label label-sm">
+                    ${settingObj.label}
+                    ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
+                </label>
+                <input type="${inputType}" class="form-control form-control-sm" id="${inputId}" 
+                placeholder="${settingObj.placeholder}" 
+                value="${settingObj.defaultValue || ''}" 
+                service-setting="${settingObj.settingName}"
+                role="set-service-setting-value"
+                data-service-name="${serviceName}"
+                data-setting="${settingObj.settingName}"
+                data-setting-table="${settingObj.settingTableName}"
+                service-setting-field="${settingObj.settingField || ''}">
+                ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
+            </div>
+        `;
+    }
+    return html;
+}
+
+// NOTE: You'll need to make sure the external functions like 'safeRename', 'safeReplace', 
+// 'settingDescriptions', 'createDependencyId', 'renderCheckboxSetting', etc. are defined 
+// elsewhere in your scope for the full code to run.
 
     function renderCheckboxSetting(settingObj, inputId, prefix) {
         const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
