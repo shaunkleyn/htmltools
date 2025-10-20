@@ -643,6 +643,23 @@ const scopes = {
         ],
         settings: [
             {
+                group: 'EasyDebit2',
+                settings: [
+                    {
+                group: 'EasyDebit3', 
+                name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice User', 
+                helpText: 'EasyDebit Webservice User for web service authentication'
+            },
+            {
+                group: 'EasyDebit3', 
+                name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice Password', 
+                description: 'EasyDebit Webservice Password for web service authentication'
+            },
+                ]
+            },
+            {
                 group: 'EasyDebit', 
                 name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
                 placeholder: 'EasyDebit Webservice User', 
