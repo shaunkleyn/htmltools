@@ -644,7 +644,6 @@ const scopes = {
         settings: [
             {
                 group: 'EasyDebit2',
-                name: 'EasyDebit2-name',
                 settings: [
                     {
                         group: 'EasyDebit3', 
