@@ -676,9 +676,6 @@ if (scopeData.services && scopeData.services.length > 0) {
     }
 
 function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceName = '') {
-    // console.log('Rendering settings for:', prefix, settings);
-    // console.log(settings);
-
     let html = '';
     prefix = safeRename(prefix);
 
@@ -686,14 +683,12 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         return html;
     }
 
-    // --- START: MODIFIED GROUPING LOGIC & COUNTING ---
-    // Group settings by their main group and then by subgroup
+    // --- GROUPING LOGIC (remains the same) ---
     const groupedSettings = {};
 
     settings.forEach(setting => {
         let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName;
 
-        // ... (setting parsing logic remains the same) ...
         if (typeof setting === 'string') {
             groupName = 'General Settings';
             settingName = setting;
@@ -728,19 +723,17 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             currentServiceName = setting.serviceName || serviceName;
         }
 
-        // Determine Main Group and Subgroup
         let mainGroup = groupName;
         let subGroup = null;
-        const delimiter = '.'; // Define your delimiter
+        const delimiter = '.';
         if (groupName.includes(delimiter)) {
             const parts = groupName.split(delimiter);
-            subGroup = parts.pop().trim(); // Last part is the subgroup name
-            mainGroup = parts.join(delimiter).trim() || 'General Settings'; // Remaining parts are the main group
+            subGroup = parts.pop().trim();
+            mainGroup = parts.join(delimiter).trim() || 'General Settings';
         } else {
             mainGroup = groupName;
-            subGroup = 'General Settings'; // Assign a default subgroup if no delimiter
+            subGroup = 'General Settings';
         }
-
 
         if (!groupedSettings[mainGroup]) {
             groupedSettings[mainGroup] = {};
@@ -766,42 +759,43 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             serviceName: currentServiceName
         });
     });
-    // --- END: MODIFIED GROUPING LOGIC & COUNTING ---
+    // --- END GROUPING LOGIC ---
 
     html += `<div class="accordion">`;
 
     let mainGroupIndex = 0; // Index to open the first main group by default
 
-    // --- START: MODIFIED RENDERING LOGIC (BADGES & EXPANDED) ---
+    // --- START: CORRECTED RENDERING LOGIC ---
     Object.keys(groupedSettings).forEach(mainGroupName => {
         const subGroups = groupedSettings[mainGroupName];
         const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
         
         let totalSettingsCount = 0;
-        
-        // Calculate total count for the main group
         Object.keys(subGroups).forEach(subGroupName => {
             totalSettingsCount += subGroups[subGroupName].length;
         });
 
-        const isMainGroupOpen = mainGroupIndex === 0 ? 'show' : ''; // Open the first main group
-        const mainGroupButtonClass = mainGroupIndex === 0 ? '' : 'collapsed';
-        mainGroupIndex++; // Increment index for the next iteration
+        // Main Group State Logic
+        const isMainGroupOpen = mainGroupIndex === 0;
+        const mainGroupShowClass = isMainGroupOpen ? 'show' : '';
+        const mainGroupButtonClass = isMainGroupOpen ? '' : 'collapsed';
+        const mainGroupAriaExpanded = isMainGroupOpen ? 'true' : 'false';
+        
+        mainGroupIndex++;
         
         // Render Main Group Accordion Header
         html += `<div class="accordion-item">
             <div class="accordion-header">
-                <div class="accordion-button ${mainGroupButtonClass}" data-bs-toggle="collapse" aria-expanded="${isMainGroupOpen === 'show' ? 'true' : 'false'}" data-bs-target="#${mainGroupHtmlId}">
+                <div class="accordion-button ${mainGroupButtonClass}" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
                     <div class="d-flex justify-content-between w-100">
                         <span>${mainGroupName}</span>
                         <span class="badge bg-secondary rounded-pill me-2">${totalSettingsCount}</span>
                     </div>
                 </div>
             </div>
-            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${isMainGroupOpen}">
+            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}">
                 <div class="accordion-body p-0">`;
 
-        // Check if we need a nested accordion for subgroups
         const subGroupNames = Object.keys(subGroups);
         const hasMultipleSubgroups = subGroupNames.length > 1 || (subGroupNames.length === 1 && subGroupNames[0] !== 'General Settings');
 
@@ -813,17 +807,23 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                 const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
                 const subgroupCount = subGroups[subGroupName].length;
                 
-                // Subgroup Accordion Item - Subgroups expanded by default
+                // Subgroup State Logic (Always Expanded/Open)
+                const isSubgroupOpen = true;
+                const subGroupShowClass = 'show'; // Subgroups should be expanded by default
+                const subGroupButtonClass = ''; // Button should not have 'collapsed' class
+                const subGroupAriaExpanded = 'true';
+                
+                // Subgroup Accordion Item
                 html += `<div class="accordion-item bg-light border-bottom">
                     <h2 class="accordion-header">
-                        <button class="accordion-button accordion-button-sm" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="true" aria-controls="${subGroupHtmlId}">
+                        <button class="accordion-button accordion-button-sm ${subGroupButtonClass} bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="${subGroupAriaExpanded}" aria-controls="${subGroupHtmlId}">
                             <div class="d-flex justify-content-between w-100">
                                 <span>${subGroupName}</span>
                                 <span class="badge bg-info rounded-pill me-2">${subgroupCount}</span>
                             </div>
                         </button>
                     </h2>
-                    <div id="${subGroupHtmlId}" class="accordion-collapse collapse show" data-bs-parent="#${mainGroupHtmlId}-subgroups">
+                    <div id="${subGroupHtmlId}" class="accordion-collapse collapse ${subGroupShowClass}" data-bs-parent="#${mainGroupHtmlId}-subgroups">
                         <div class="accordion-body">
                             <div class="row">`;
                             
@@ -848,7 +848,6 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             html += `</div></div>`;
         }
 
-
         html += `   </div>
             </div>
         </div>`; // Close main accordion item
@@ -856,10 +855,9 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
 
     html += `</div>`; // Close main accordion
     
-    // ... (renderSetting helper function remains the same) ...
-
     return html;
 }
+
 
 // Helper function to render an individual setting (extracted from your original inner loop logic)
 function renderSetting(settingObj, prefix, serviceName) {
