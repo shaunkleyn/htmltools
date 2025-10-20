@@ -683,12 +683,13 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         return html;
     }
 
-    // --- GROUPING LOGIC (remains the same) ---
+    // --- (Grouping Logic Remains The Same) ---
     const groupedSettings = {};
 
     settings.forEach(setting => {
         let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName;
 
+        // ... (setting parsing and grouping logic here, ensuring groupedSettings is populated)
         if (typeof setting === 'string') {
             groupName = 'General Settings';
             settingName = setting;
@@ -759,13 +760,12 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             serviceName: currentServiceName
         });
     });
-    // --- END GROUPING LOGIC ---
+    // --- (End Grouping Logic) ---
 
     html += `<div class="accordion">`;
 
-    let mainGroupIndex = 0; // Index to open the first main group by default
+    let mainGroupIndex = 0;
 
-    // --- START: CORRECTED RENDERING LOGIC ---
     Object.keys(groupedSettings).forEach(mainGroupName => {
         const subGroups = groupedSettings[mainGroupName];
         const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
@@ -775,25 +775,28 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             totalSettingsCount += subGroups[subGroupName].length;
         });
 
-        // Main Group State Logic
+        // 🛠️ CORRECTED MAIN GROUP STATE LOGIC 🛠️
         const isMainGroupOpen = mainGroupIndex === 0;
-        const mainGroupShowClass = isMainGroupOpen ? 'show' : '';
-        const mainGroupButtonClass = isMainGroupOpen ? '' : 'collapsed';
+        // The first item should NOT have the 'collapsed' class on the button.
+        const mainGroupButtonClass = isMainGroupOpen ? '' : 'collapsed'; 
+        // The first item should have aria-expanded="true".
         const mainGroupAriaExpanded = isMainGroupOpen ? 'true' : 'false';
+        // The content div needs the 'show' class to be open.
+        const mainGroupShowClass = isMainGroupOpen ? 'show' : '';
         
         mainGroupIndex++;
         
         // Render Main Group Accordion Header
         html += `<div class="accordion-item">
-            <div class="accordion-header">
-                <div class="accordion-button ${mainGroupButtonClass}" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
+            <h2 class="accordion-header">
+                <button class="accordion-button ${mainGroupButtonClass}" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
                     <div class="d-flex justify-content-between w-100">
                         <span>${mainGroupName}</span>
                         <span class="badge bg-secondary rounded-pill me-2">${totalSettingsCount}</span>
                     </div>
-                </div>
-            </div>
-            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}">
+                </button>
+            </h2>
+            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}" data-bs-parent=".accordion">
                 <div class="accordion-body p-0">`;
 
         const subGroupNames = Object.keys(subGroups);
@@ -807,11 +810,12 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                 const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
                 const subgroupCount = subGroups[subGroupName].length;
                 
-                // Subgroup State Logic (Always Expanded/Open)
-                const isSubgroupOpen = true;
-                const subGroupShowClass = 'show'; // Subgroups should be expanded by default
-                const subGroupButtonClass = ''; // Button should not have 'collapsed' class
+                // Subgroup State Logic (Always Expanded/Open by user request)
+                // The button must NOT be collapsed and aria-expanded must be true.
+                const subGroupButtonClass = ''; 
                 const subGroupAriaExpanded = 'true';
+                // The content div MUST have the 'show' class.
+                const subGroupShowClass = 'show';
                 
                 // Subgroup Accordion Item
                 html += `<div class="accordion-item bg-light border-bottom">
@@ -857,7 +861,6 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
     
     return html;
 }
-
 
 // Helper function to render an individual setting (extracted from your original inner loop logic)
 function renderSetting(settingObj, prefix, serviceName) {
