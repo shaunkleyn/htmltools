@@ -751,5 +751,9 @@
 }
 
 .accordion-button:not(.collapsed) {
-    font-weight: 500;;
+    font-weight: 500;
+}
+
+.accordion-button {
+    user-select: none;
 }
