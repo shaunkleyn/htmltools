@@ -749,3 +749,7 @@
 .label-sm, .form-check-label-sm {
     font-size: .875rem;
 }
+
+.accordion-button:not(.collapsed) {
+    font-weight: 500;;
+}
