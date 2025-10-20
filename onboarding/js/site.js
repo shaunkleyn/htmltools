@@ -689,7 +689,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
     settings.forEach(setting => {
         let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName;
 
-        // ... (setting parsing and grouping logic here, ensuring groupedSettings is populated)
+        // ... (setting parsing and grouping logic here) ...
         if (typeof setting === 'string') {
             groupName = 'General Settings';
             settingName = setting;
@@ -775,13 +775,13 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             totalSettingsCount += subGroups[subGroupName].length;
         });
 
-        // 🛠️ CORRECTED MAIN GROUP STATE LOGIC 🛠️
+        // 🟢 CORRECTED MAIN GROUP STATE LOGIC 🟢
         const isMainGroupOpen = mainGroupIndex === 0;
-        // The first item should NOT have the 'collapsed' class on the button.
+
+        // If open (first group): button has NO 'collapsed' class, aria-expanded="true".
+        // If closed (all others): button HAS 'collapsed' class, aria-expanded="false".
         const mainGroupButtonClass = isMainGroupOpen ? '' : 'collapsed'; 
-        // The first item should have aria-expanded="true".
         const mainGroupAriaExpanded = isMainGroupOpen ? 'true' : 'false';
-        // The content div needs the 'show' class to be open.
         const mainGroupShowClass = isMainGroupOpen ? 'show' : '';
         
         mainGroupIndex++;
@@ -810,11 +810,10 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                 const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
                 const subgroupCount = subGroups[subGroupName].length;
                 
-                // Subgroup State Logic (Always Expanded/Open by user request)
+                // Subgroup State Logic (Always Expanded/Open)
                 // The button must NOT be collapsed and aria-expanded must be true.
                 const subGroupButtonClass = ''; 
                 const subGroupAriaExpanded = 'true';
-                // The content div MUST have the 'show' class.
                 const subGroupShowClass = 'show';
                 
                 // Subgroup Accordion Item
@@ -833,6 +832,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                             
                 // Render settings within the Subgroup
                 subGroups[subGroupName].forEach(settingObj => {
+                    // Assuming renderSetting is defined elsewhere
                     html += renderSetting(settingObj, prefix, serviceName);
                 });
                 
@@ -847,6 +847,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             const settingsArray = subGroups[subGroupNames[0]];
             html += `<div class="p-3 bg-light"><div class="row">`;
             settingsArray.forEach(settingObj => {
+                // Assuming renderSetting is defined elsewhere
                 html += renderSetting(settingObj, prefix, serviceName);
             });
             html += `</div></div>`;
