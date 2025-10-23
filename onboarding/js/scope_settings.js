@@ -562,6 +562,7 @@ const scopes = {
                         description: 'Enter default frequency for mandates',
                         type: 'textbox',
                         defaultValue: 'MONTHLY',
+                        values: ['ADHOC', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'BIANUALLY', 'ANNUALLY', 'ONCE_OFF'],
                     },
                     { 
                         group: 'Default Mandate Details',
