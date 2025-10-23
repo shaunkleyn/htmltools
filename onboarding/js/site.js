@@ -864,6 +864,8 @@ if (scopeData.services && scopeData.services.length > 0) {
     return html;
 }
 
+
+
 // Helper function to render an individual setting
 function renderSetting(settingObj, prefix, serviceName) {
     let html = '';
@@ -1018,74 +1020,6 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
 // NOTE: You still need to ensure the following helper functions are defined in your scope:
 // safeRename, safeReplace, settingDescriptions, createDependencyId, renderCheckboxSetting, renderDualCheckboxSetting.
 
-// Helper function to render an individual setting (extracted from your original inner loop logic)
-function renderSetting(settingObj, prefix, serviceName) {
-    let html = '';
-    console.log(settingObj);
-    const settingName = safeRename(settingObj.name);
-    const dependsOn = safeRename(settingObj.dependsOn);
-    let inputId = `${prefix}-${settingName}`;
-    if (settingObj.settingField != '' && settingObj.settingField != null) {
-        inputId = `${inputId}___${safeRename(settingObj.settingField)}`;
-    }
-
-    // Handle different input types (using placeholders for external functions)
-    if (settingObj.type === 'checkbox') {
-        // Assume renderCheckboxSetting exists and returns HTML
-        html += renderCheckboxSetting(settingObj, inputId, prefix); 
-    } else if (settingObj.type === 'dual-checkbox') {
-        // Assume renderDualCheckboxSetting exists and returns HTML
-        html += renderDualCheckboxSetting(settingObj, inputId, prefix);
-    } else if (settingObj.type === 'radio') {
-        // Assume renderRadioSetting exists and returns HTML
-        html += renderRadioSetting(settingObj, inputId, prefix);
-    } else if (settingObj.type === 'radio-button-group') {
-        // Hardcoded example HTML in your snippet
-        html += `<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                    <input type="radio" class="btn-check" name="btnradio-${inputId}" id="btnradio1-${inputId}" autocomplete="off" checked>
-                    <label class="btn btn-outline-primary" for="btnradio1-${inputId}">Radio 1</label>
-                    <input type="radio" class="btn-check" name="btnradio-${inputId}" id="btnradio2-${inputId}" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio2-${inputId}">Radio 2</label>
-                    <input type="radio" class="btn-check" name="btnradio-${inputId}" id="btnradio3-${inputId}" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio3-${inputId}">Radio 3</label>
-                </div>`;
-    } else if (settingObj.type === 'radio-group') {
-        // Hardcoded example HTML in your snippet
-        html += `<div class="form-check">
-                    <input class="form-check-input" type="radio" name="flexRadioDefault-${inputId}" id="flexRadioDefault1-${inputId}">
-                    <label class="form-check-label" for="flexRadioDefault1-${inputId}">Default radio</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="flexRadioDefault-${inputId}" id="flexRadioDefault2-${inputId}" checked>
-                    <label class="form-check-label" for="flexRadioDefault2-${inputId}">Default checked radio</label>
-                </div>`;
-    } else {
-        // Default text input (using the setting's input type if defined, otherwise 'text')
-        const inputType = settingObj.type === 'textbox' ? 'text' : settingObj.type;
-        const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
-        html += `
-            <div class="mb-3 col-md-6" ${dependsOnAttr}>
-                <label for="${inputId}" class="form-label label-sm">
-                    ${settingObj.label}
-                    ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
-                </label>
-                <input type="${inputType}" class="form-control form-control-sm" id="${inputId}" 
-                placeholder="${settingObj.placeholder}" 
-                value="${settingObj.defaultValue || ''}" 
-                service-setting="${settingObj.settingName}"
-                role="set-service-setting-value"
-                data-service-name="${serviceName}"
-                data-service="${serviceName}"
-                data-setting="${settingObj.settingName}"
-                data-setting-table="${settingObj.settingTableName}"
-                service-setting-field="${settingObj.settingField || ''}">
-                ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
-            </div>
-        `;
-    }
-    return html;
-}
-
 // NOTE: You'll need to make sure the external functions like 'safeRename', 'safeReplace', 
 // 'settingDescriptions', 'createDependencyId', 'renderCheckboxSetting', etc. are defined 
 // elsewhere in your scope for the full code to run.
@@ -1138,37 +1072,37 @@ function renderSetting(settingObj, prefix, serviceName) {
         `;
     }
 
-    function renderRadioSetting(settingObj, inputId, prefix) {
-        let optionsHtml = '';
+    // function renderRadioSetting(settingObj, inputId, prefix) {
+    //     let optionsHtml = '';
         
-        if (settingObj.options && settingObj.options.length > 0) {
-            settingObj.options.forEach(option => {
-                optionsHtml += `
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="${inputId}" value="${option.value}" id="${inputId}-${option.value}">
-                        <label class="form-check-label" for="${inputId}-${option.value}">
-                            ${option.label}
-                        </label>
-                    </div>
-                `;
-            });
-        }
+    //     if (settingObj.options && settingObj.options.length > 0) {
+    //         settingObj.options.forEach(option => {
+    //             optionsHtml += `
+    //                 <div class="form-check">
+    //                     <input class="form-check-input" type="radio" name="${inputId}" value="${option.value}" id="${inputId}-${option.value}">
+    //                     <label class="form-check-label" for="${inputId}-${option.value}">
+    //                         ${option.label}
+    //                     </label>
+    //                 </div>
+    //             `;
+    //         });
+    //     }
         
-        const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
+    //     const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
         
-        return `
-            <div class="mb-3 col-md-12" ${dependsOnAttr}>
-                <label class="form-label mb-2">
-                    ${settingObj.label}
-                    ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
-                </label>
-                <div>
-                    ${optionsHtml}
-                </div>
-                ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
-            </div>
-        `;
-    }
+    //     return `
+    //         <div class="mb-3 col-md-12" ${dependsOnAttr}>
+    //             <label class="form-label mb-2">
+    //                 ${settingObj.label}
+    //                 ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
+    //             </label>
+    //             <div>
+    //                 ${optionsHtml}
+    //             </div>
+    //             ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
+    //         </div>
+    //     `;
+    // }
 
     function renderScopeServiceCardForEntity(scopeData, scope, entity) {
         console.log(scopeData);
