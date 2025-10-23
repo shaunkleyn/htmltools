@@ -676,9 +676,6 @@ if (scopeData.services && scopeData.services.length > 0) {
     }
 
     function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceName = '') {
-    // console.log('Rendering settings for:', prefix, settings); // Keeping one console log for debugging
-    // console.log(settings);
-
     let html = '';
     prefix = safeRename(prefix);
 
@@ -686,14 +683,13 @@ if (scopeData.services && scopeData.services.length > 0) {
         return html;
     }
 
-    // --- START: MODIFIED GROUPING LOGIC ---
-    // Group settings by their main group and then by subgroup
+    // --- START: MODIFIED GROUPING LOGIC (passing 'values') ---
     const groupedSettings = {};
 
     settings.forEach(setting => {
-        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName;
+        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName, values;
 
-        // Handle string, array, and object formats (logic remains mostly the same)
+        // Handle string, array, and object formats (parsing logic is the same)
         if (typeof setting === 'string') {
             groupName = 'General Settings';
             settingName = setting;
@@ -706,12 +702,13 @@ if (scopeData.services && scopeData.services.length > 0) {
             settingField = '';
             settingTableName = 'entity_service_type_setting';
             currentServiceName = serviceName;
+            values = null;
         } else if (typeof setting === 'object' && Array.isArray(setting)) {
-            // Assuming an array setting is an older format or not fully implemented, keeping original logic for arrays
             groupName = setting.group || 'General Settings';
-            settingName = 'setting_group'; // Placeholder for array setting
+            settingName = 'setting_group';
             description = settingDescriptions[setting] || 'No description available';
             currentServiceName = serviceName;
+            values = null;
         } else {
             groupName = setting.group || 'General Settings';
             settingName = setting.name;
@@ -727,23 +724,20 @@ if (scopeData.services && scopeData.services.length > 0) {
             settingField = setting.field || null;
             settingTableName = setting.table || 'entity_service_type_setting';
             currentServiceName = setting.serviceName || serviceName;
+            values = setting.values; // <<< Pass the 'values' array to the setting object
         }
 
-        // Determine Main Group and Subgroup
+        // Determine Main Group and Subgroup (Logic remains the same)
         let mainGroup = groupName;
         let subGroup = null;
-        const groupParts = groupName.split('.'); // Use a common delimiter like '.' or '-'
-
-        // Check for subgroups (e.g., 'Main Group.Sub Group' or 'Main-Group-Sub-Group')
-        // We'll use the last part as the subgroup title, and the rest as the main group
-        const delimiter = '.'; // Define your delimiter
+        const delimiter = '.';
         if (groupName.includes(delimiter)) {
             const parts = groupName.split(delimiter);
-            subGroup = parts.pop().trim(); // Last part is the subgroup name
-            mainGroup = parts.join(delimiter).trim() || 'General Settings'; // Remaining parts are the main group
+            subGroup = parts.pop().trim();
+            mainGroup = parts.join(delimiter).trim() || 'General Settings';
         } else {
             mainGroup = groupName;
-            subGroup = 'General Settings'; // Assign a default subgroup if no delimiter
+            subGroup = 'General Settings';
         }
 
 
@@ -768,29 +762,47 @@ if (scopeData.services && scopeData.services.length > 0) {
             settingField: settingField,
             settingName: settingName,
             settingTableName: settingTableName,
-            serviceName: currentServiceName // Use currentServiceName
+            serviceName: currentServiceName,
+            values: values // <<< Values array is now available here
         });
     });
     // --- END: MODIFIED GROUPING LOGIC ---
 
     html += `<div class="accordion">`;
 
-    // --- START: MODIFIED RENDERING LOGIC ---
+    let mainGroupIndex = 0;
+
+    // --- START: RENDERING LOGIC (State Fixes and Badges) ---
     Object.keys(groupedSettings).forEach(mainGroupName => {
         const subGroups = groupedSettings[mainGroupName];
         const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
         
+        let totalSettingsCount = 0;
+        Object.keys(subGroups).forEach(subGroupName => {
+            totalSettingsCount += subGroups[subGroupName].length;
+        });
+
+        // Main Group State Logic (First item open, others closed for tree view)
+        const isMainGroupOpen = mainGroupIndex === 0;
+        const mainGroupButtonClass = isMainGroupOpen ? '' : 'collapsed'; 
+        const mainGroupAriaExpanded = isMainGroupOpen ? 'true' : 'false';
+        const mainGroupShowClass = isMainGroupOpen ? 'show' : '';
+        
+        mainGroupIndex++;
+        
         // Render Main Group Accordion Header
         html += `<div class="accordion-item">
-            <div class="accordion-header">
-                <div class="accordion-button collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#${mainGroupHtmlId}">
-                    ${mainGroupName}
-                </div>
-            </div>
-            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse">
-                <div class="accordion-body p-0">`; // p-0 to allow nested accordion padding
+            <h2 class="accordion-header">
+                <button class="accordion-button ${mainGroupButtonClass}" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
+                    <div class="d-flex justify-content-between w-100">
+                        <span>${mainGroupName}</span>
+                        <span class="badge bg-secondary rounded-pill me-2">${totalSettingsCount}</span>
+                    </div>
+                </button>
+            </h2>
+            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}" data-bs-parent=".accordion">
+                <div class="accordion-body p-0">`;
 
-        // Check if we need a nested accordion for subgroups
         const subGroupNames = Object.keys(subGroups);
         const hasMultipleSubgroups = subGroupNames.length > 1 || (subGroupNames.length === 1 && subGroupNames[0] !== 'General Settings');
 
@@ -800,15 +812,24 @@ if (scopeData.services && scopeData.services.length > 0) {
             
             subGroupNames.forEach(subGroupName => {
                 const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
-
+                const subgroupCount = subGroups[subGroupName].length;
+                
+                // Subgroup State Logic (Always Expanded/Open for a persistent tree view, adjust if necessary)
+                const subGroupButtonClass = ''; 
+                const subGroupAriaExpanded = 'true';
+                const subGroupShowClass = 'show';
+                
                 // Subgroup Accordion Item
                 html += `<div class="accordion-item bg-light border-bottom">
                     <h2 class="accordion-header">
-                        <button class="accordion-button accordion-button-sm collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="false" aria-controls="${subGroupHtmlId}">
-                            ${subGroupName}
+                        <button class="accordion-button accordion-button-sm ${subGroupButtonClass} bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="${subGroupAriaExpanded}" aria-controls="${subGroupHtmlId}">
+                            <div class="d-flex justify-content-between w-100">
+                                <span>${subGroupName}</span>
+                                <span class="badge bg-info rounded-pill me-2">${subgroupCount}</span>
+                            </div>
                         </button>
                     </h2>
-                    <div id="${subGroupHtmlId}" class="accordion-collapse collapse" data-bs-parent="#${mainGroupHtmlId}-subgroups">
+                    <div id="${subGroupHtmlId}" class="accordion-collapse collapse ${subGroupShowClass}" data-bs-parent="#${mainGroupHtmlId}-subgroups">
                         <div class="accordion-body">
                             <div class="row">`;
                             
@@ -833,7 +854,6 @@ if (scopeData.services && scopeData.services.length > 0) {
             html += `</div></div>`;
         }
 
-
         html += `   </div>
             </div>
         </div>`; // Close main accordion item
@@ -841,11 +861,162 @@ if (scopeData.services && scopeData.services.length > 0) {
 
     html += `</div>`; // Close main accordion
     
-    // The second rendering loop in your original code is redundant and was causing duplicates.
-    // I've removed it and replaced the first loop with the new logic.
-
     return html;
 }
+
+// Helper function to render an individual setting
+function renderSetting(settingObj, prefix, serviceName) {
+    let html = '';
+    const settingName = safeRename(settingObj.name);
+    const dependsOn = safeRename(settingObj.dependsOn);
+    let inputId = `${prefix}-${settingName}`;
+    if (settingObj.settingField != '' && settingObj.settingField != null) {
+        inputId = `${inputId}___${safeRename(settingObj.settingField)}`;
+    }
+
+    const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
+
+    // Standard attributes shared by most inputs/selects
+    const sharedAttrs = `
+        service-setting="${settingObj.settingName}"
+        role="set-service-setting-value"
+        data-service-name="${serviceName}"
+        data-setting="${settingObj.settingName}"
+        data-setting-table="${settingObj.settingTableName}"
+        service-setting-field="${settingObj.settingField || ''}"
+    `;
+    
+    // Header for the input group
+    const inputHeader = `<label for="${inputId}" class="form-label label-sm">
+        ${settingObj.label}
+        ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
+    </label>`;
+    
+    // Help Text
+    const helpTextHtml = settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : '';
+
+
+    // --- Input Type Routing ---
+
+    if (settingObj.type === 'dropdown') {
+        html += `
+            <div class="mb-3 col-md-6" ${dependsOnAttr}>
+                ${inputHeader}
+                <select class="form-select form-select-sm" id="${inputId}" ${sharedAttrs}>
+                    ${renderOptionsHtml(settingObj.values, settingObj.defaultValue, true)}
+                </select>
+                ${helpTextHtml}
+            </div>
+        `;
+
+    } else if (settingObj.type === 'radio') {
+        // Now using the dedicated helper function to render radio buttons
+        html += renderRadioSetting(settingObj, inputId, prefix, serviceName);
+        
+    } else if (settingObj.type === 'checkbox') {
+        html += renderCheckboxSetting(settingObj, inputId, prefix); 
+    } else if (settingObj.type === 'dual-checkbox') {
+        html += renderDualCheckboxSetting(settingObj, inputId, prefix);
+    } else if (settingObj.type === 'radio-button-group' || settingObj.type === 'radio-group') {
+        // Fallback for older radio types, still using hardcoded examples or dedicated functions if you provide them
+        html += `<div class="mb-3 col-md-6"><p class="text-warning">Placeholder for ${settingObj.type} implementation.</p></div>`;
+
+    } else {
+        // Default Text Input (for 'text', 'textbox', 'password', etc.)
+        const inputType = settingObj.type === 'textbox' ? 'text' : settingObj.type;
+        html += `
+            <div class="mb-3 col-md-6" ${dependsOnAttr}>
+                ${inputHeader}
+                <input type="${inputType}" class="form-control form-control-sm" id="${inputId}" 
+                placeholder="${settingObj.placeholder}" 
+                value="${settingObj.defaultValue || ''}" 
+                ${sharedAttrs}>
+                ${helpTextHtml}
+            </div>
+        `;
+    }
+    return html;
+}
+
+// --- New Reusable Options Renderer ---
+
+/**
+ * Generates HTML options for a <select> or radio group.
+ * @param {Array<string|object>} values - Array of values or {key, value} objects.
+ * @param {string} defaultValue - The default value to mark as selected/checked.
+ * @param {boolean} isSelect - True if rendering for a <select> element.
+ * @returns {string} HTML string of options or radio buttons.
+ */
+function renderOptionsHtml(values, defaultValue, isSelect = false) {
+    if (!values || values.length === 0) {
+        return isSelect ? `<option value="">No options available</option>` : '';
+    }
+
+    let optionsHtml = isSelect ? `<option value="">-- Select an option --</option>` : '';
+    const defValue = defaultValue ? String(defaultValue) : '';
+    
+    const isKeyValObject = typeof values[0] === 'object' && values[0] !== null;
+
+    values.forEach(val => {
+        let optionValue, optionText;
+
+        if (isKeyValObject) {
+            // Key-value object format: {key: 1, value: 'Fixed'}
+            optionValue = val.key;
+            optionText = val.value;
+        } else {
+            // Simple array format: ['ADHOC', 'WEEKLY']
+            optionValue = val;
+            optionText = val;
+        }
+
+        const isSelected = (String(optionValue) === defValue) ? 'selected' : '';
+        const isChecked = (String(optionValue) === defValue) ? 'checked' : '';
+
+        if (isSelect) {
+            optionsHtml += `<option value="${optionValue}" ${isSelected}>${optionText}</option>`;
+        } else {
+            // Logic for radio button generation (used in renderRadioSetting)
+            optionsHtml += `
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radio-${defValue}" value="${optionValue}" id="radio-${optionValue}" ${isChecked}>
+                    <label class="form-check-label" for="radio-${optionValue}">${optionText}</label>
+                </div>
+            `;
+        }
+    });
+
+    return optionsHtml;
+}
+
+
+// --- Updated renderRadioSetting to use the new values array and renderer ---
+
+function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
+    const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
+
+    const optionsHtml = renderOptionsHtml(settingObj.values, settingObj.defaultValue, false);
+    
+    // Note: The shared attributes are NOT applied to the inner radio inputs here. 
+    // They should be applied to the container or hidden input if you need to capture the value on submit.
+    // For simplicity, we keep the radio button structure simple here.
+    
+    return `
+        <div class="mb-3 col-md-12" ${dependsOnAttr}>
+            <label class="form-label mb-2">
+                ${settingObj.label}
+                ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
+            </label>
+            <div id="${inputId}-radio-group">
+                ${optionsHtml}
+            </div>
+            ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
+        </div>
+    `;
+}
+
+// NOTE: You still need to ensure the following helper functions are defined in your scope:
+// safeRename, safeReplace, settingDescriptions, createDependencyId, renderCheckboxSetting, renderDualCheckboxSetting.
 
 // Helper function to render an individual setting (extracted from your original inner loop logic)
 function renderSetting(settingObj, prefix, serviceName) {
