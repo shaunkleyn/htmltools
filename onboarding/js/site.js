@@ -1696,19 +1696,24 @@ function getServiceSettingsWithData(scope, serviceName) {
     window.getAllServiceSettings = getAllServiceSettings;
 });
 
+// Entity type mapping for PostgreSQL
+const entityTypeMapping = {
+    'parent': 'p',
+    'integrator': 'i',
+    'deviceuser': 'd'
+};
+
 function extractScopeConfiguration() {
     const scopeConfigs = [];
     
     // Get all visible/enabled scope tabs
-
-     $('.scope-checkbox-input:checked').each(function() {
-        const scope = $(this).val();
-        const $scopeTab = $(`#${scope}`);
-        // const scope = $scopeTab.attr('scope');
+    $('.scope-tab:visible').each(function() {
+        const $scopeTab = $(this);
+        const scope = $scopeTab.attr('scope');
         
         const scopeConfig = {
             scope: scope,
-            allowOn: [],
+            linkTo: [],
             rateLimit: {
                 enabled: false,
                 numberOfRequests: null,
@@ -1718,84 +1723,82 @@ function extractScopeConfiguration() {
             settings: []
         };
 
-        // 1) Get scope entity linking from entity toggle-all checkboxes
+        // 1) Get scope entity linking
         $scopeTab.find('[role="link-scope-to-entity"]').each(function() {
             const $checkbox = $(this);
             const entityType = $checkbox.data('entity');
             
             if ($checkbox.is(':checked') && !$checkbox.is(':disabled')) {
-                scopeConfig.allowOn.push(entityType);
+                scopeConfig.linkTo.push(entityType);
             }
         });
 
-        // 2) Check rate limiting and get values
+        // 2) Get rate limiting
         const $rateLimitCheckbox = $(`#${scope}-rate-limit`);
         scopeConfig.rateLimit.enabled = $rateLimitCheckbox.is(':checked');
         scopeConfig.rateLimit.numberOfRequests = $(`#${scope}-limit-count`).val() || null;
         scopeConfig.rateLimit.duration = $(`#${scope}-limit-period`).val() || null;
 
-        // 3) Get all unique services and their entity linking
+        // 3) Get services and their entity linking
         const servicesMap = new Map();
         
-        // First, collect all service checkboxes and group by service name
-        $scopeTab.find('[role="link-service-to-entity"]').each(function() {
-            const $serviceCheckbox = $(this);
-            const serviceName = $serviceCheckbox.data('service');
-            const entityType = $serviceCheckbox.data('entity');
+        $scopeTab.find('[role="link-service-to-entity"][data-service]').each(function() {
+            const $checkbox = $(this);
+            const serviceName = $checkbox.data('service');
+            const entityType = $checkbox.data('entity');
+            const serviceType = $checkbox.data('service-type') || scope;
             
             if (!servicesMap.has(serviceName)) {
                 servicesMap.set(serviceName, {
                     name: serviceName,
-                    enabled: false, // Will be determined by parent checkbox
-                    allowOn: [],
+                    serviceType: serviceType,
+                    enabled: false,
+                    linkTo: [],
                     settings: []
                 });
             }
             
             const serviceConfig = servicesMap.get(serviceName);
             
-            // If this service is checked for any entity, add that entity to allowOn
-            if ($serviceCheckbox.is(':checked') && !$serviceCheckbox.is(':disabled')) {
-                if (!serviceConfig.allowOn.includes(entityType)) {
-                    serviceConfig.allowOn.push(entityType);
+            if ($checkbox.is(':checked') && !$checkbox.is(':disabled')) {
+                if (!serviceConfig.linkTo.includes(entityType)) {
+                    serviceConfig.linkTo.push(entityType);
                 }
             }
         });
 
-        // 4) Determine if service is enabled (enabled if linked to at least one entity)
+        // 4) Process services and get settings
         servicesMap.forEach((serviceConfig, serviceName) => {
-            serviceConfig.enabled = serviceConfig.allowOn.length > 0;
+            serviceConfig.enabled = serviceConfig.linkTo.length > 0;
             
             if (serviceConfig.enabled) {
-                // Get service settings from modal data or service settings section
-                const serviceSettings = getServiceSettings(scope, serviceName);
+                const serviceSettings = getServiceSettings($scopeTab, serviceName, serviceConfig.linkTo);
                 serviceConfig.settings = serviceSettings;
-                
                 scopeConfig.services.push(serviceConfig);
             }
         });
 
         // 5) Get scope-level settings
-        $scopeTab.find('.settings-section:not(:has(.entity-services-assignment)) [service-setting]').each(function() {
+        $scopeTab.find('[service-setting]:not([role="set-service-setting-value"])').each(function() {
             const $setting = $(this);
             const settingName = $setting.attr('service-setting');
             const settingField = $setting.attr('service-setting-field') || '';
             const settingValue = $setting.val();
             
-            // Handle different input types
             let finalValue = settingValue;
             if ($setting.is(':checkbox')) {
                 finalValue = $setting.is(':checked');
             }
             
-            // Check if this setting is part of a JSON object
             if (settingField) {
                 let existingSetting = scopeConfig.settings.find(s => s.name === settingName);
                 
                 if (!existingSetting) {
                     existingSetting = {
                         name: settingName,
-                        value: {}
+                        value: {},
+                        linkTo: [...scopeConfig.linkTo],
+                        settingType: 'scope'
                     };
                     scopeConfig.settings.push(existingSetting);
                 }
@@ -1804,16 +1807,18 @@ function extractScopeConfiguration() {
             } else {
                 scopeConfig.settings.push({
                     name: settingName,
-                    value: finalValue
+                    value: finalValue,
+                    linkTo: [...scopeConfig.linkTo],
+                    settingType: 'scope'
                 });
             }
         });
 
-        // Convert JSON object settings to string for scope settings
+        // Convert JSON object settings to string
         scopeConfig.settings = scopeConfig.settings.map(setting => {
             if (typeof setting.value === 'object' && Object.keys(setting.value).length > 0) {
                 return {
-                    name: setting.name,
+                    ...setting,
                     value: JSON.stringify(setting.value)
                 };
             }
@@ -1821,90 +1826,115 @@ function extractScopeConfiguration() {
         });
 
         scopeConfigs.push(scopeConfig);
-     });
-    $('.scope-tab:visible').each(function() {
-        
     });
 
     return scopeConfigs;
 }
 
-// Helper function to get service settings (you'll need to implement this based on your modal structure)
-function getServiceSettings(scope, serviceName) {
-    const serviceSettings = [];
-    $(`#${scope}`).find('[role="link-service-to-entity"]').each(function() {
-        if ($(this).is(':checked')) {
-            const serviceName = $(this).data('service');
-            const entity = $(this).data('entity');
-            console.log('Processing service:', serviceName);
-            $(`#${scope}`).find(`[role="set-service-setting-value"][data-service="${serviceName}"]`).each(function() {
-                console.log('Found service setting input:', this);
-            const $setting = $(this);
-            const settingName = $setting.data('setting');
-            const settingTable = $setting.data('setting-table');
-            const settingField = $setting.attr('service-setting-field') || '';
-            const settingEntity = entity || null;
-            const settingValue = $setting.val();
-            
-            // Handle different input types
-            let finalValue = settingValue;
-            if ($setting.is(':checkbox')) {
-                finalValue = $setting.is(':checked');
-            }
-            
-            // Check if this setting is part of a JSON object
-            if (settingField) {
-                let existingSetting = serviceSettings.find(s => s.name === settingName);
-                
-                if (!existingSetting) {
-                    existingSetting = {
-                        name: settingName,
-                        table: settingTable,
-                        value: {},
-                        applyTo: settingEntity
-                    };
-                    serviceSettings.push(existingSetting);
-                }
-                
-                existingSetting.value[settingField] = finalValue;
-                existingSetting.value[settingField]['applyTo'].push(settingEntity);
-            } else {
-                 let existingSetting = serviceSettings.find(s => s.name === settingName);
-                 if (existingSetting) {
-                     existingSetting['applyTo'].push(settingEntity);
-                 } else {
-                // Regular setting
-                serviceSettings.push({
-                    name: settingName,
-                    table: settingTable,
-                    value: finalValue,
-                    applyTo: [settingEntity]
-                });
-            }
-        }
+// Helper function to generate PostgreSQL script data
+function generatePostgresScriptData() {
+    const allConfigs = extractScopeConfiguration();
+    const scriptData = {
+        parent_name: $('#parentName').val(),
+        create_integration_entity: $('#createIntegrator').is(':checked'),
+        create_device_user: $('#createDeviceUser').is(':checked'),
+        device_user_username: $('#deviceUsername').val(),
+        device_user_password: $('#devicePassword').val(),
+        device_user_email_address: $('#deviceEmail').val(),
+        entity_service_types: [],
+        entity_settings: []
+    };
 
-        });
-        
-        // Convert JSON object settings to string
-        serviceSettings.forEach(setting => {
-            if (typeof setting.value === 'object' && Object.keys(setting.value).length > 0) {
-                setting.value = JSON.stringify(setting.value);
-            }
-        });
-
-
-        }
+    // Generate entity_service_types array
+    allConfigs.forEach(scopeConfig => {
+        scriptData.entity_service_types.push([
+            scopeConfig.scope,
+            scopeConfig.rateLimit.enabled.toString(),
+            scopeConfig.rateLimit.numberOfRequests,
+            scopeConfig.rateLimit.duration
+        ]);
     });
 
-    
+    // Generate entity_settings array
+    allConfigs.forEach(scopeConfig => {
+        // Scope-level settings
+        scopeConfig.settings.forEach(setting => {
+            setting.linkTo.forEach(entity => {
+                scriptData.entity_settings.push([
+                    scopeConfig.scope,
+                    entityTypeMapping[entity], // Use the mapping here
+                    setting.name,
+                    setting.value
+                ]);
+            });
+        });
 
-    // Find the service settings accordion for this scope and service
-    const $serviceAccordion = $(`#${scope}-${serviceName.replace(/\./g, '-')}-config`);
+        // Service-level settings
+        scopeConfig.services.forEach(service => {
+            service.settings.forEach(setting => {
+                setting.linkTo.forEach(entity => {
+                    scriptData.entity_settings.push([
+                        service.serviceType || scopeConfig.scope,
+                        entityTypeMapping[entity], // Use the mapping here
+                        setting.name,
+                        setting.value
+                    ]);
+                });
+            });
+        });
+    });
+
+    return scriptData;
+}
+
+// Helper function to get service settings
+function getServiceSettings($scopeTab, serviceName, serviceLinkTo) {
+    const serviceSettings = [];
     
-    if ($serviceAccordion.length > 0) {
-        // Find all service setting inputs within this accordion
+    $scopeTab.find(`[role="set-service-setting-value"][data-service-name="${serviceName}"], [role="set-service-setting-value"][data-service="${serviceName}"]`).each(function() {
+        const $setting = $(this);
+        const settingName = $setting.data('setting');
+        const settingTable = $setting.data('setting-table');
+        const settingField = $setting.attr('service-setting-field') || '';
+        const settingValue = $setting.val();
         
-    }
+        let finalValue = settingValue;
+        if ($setting.is(':checkbox')) {
+            finalValue = $setting.is(':checked');
+        }
+        
+        if (settingField) {
+            let existingSetting = serviceSettings.find(s => s.name === settingName);
+            
+            if (!existingSetting) {
+                existingSetting = {
+                    name: settingName,
+                    table: settingTable,
+                    value: {},
+                    linkTo: [...serviceLinkTo],
+                    settingType: 'service'
+                };
+                serviceSettings.push(existingSetting);
+            }
+            
+            existingSetting.value[settingField] = finalValue;
+        } else {
+            serviceSettings.push({
+                name: settingName,
+                table: settingTable,
+                value: finalValue,
+                linkTo: [...serviceLinkTo],
+                settingType: 'service'
+            });
+        }
+    });
+    
+    // Convert JSON object settings to string
+    serviceSettings.forEach(setting => {
+        if (typeof setting.value === 'object' && Object.keys(setting.value).length > 0) {
+            setting.value = JSON.stringify(setting.value);
+        }
+    });
     
     return serviceSettings;
 }
