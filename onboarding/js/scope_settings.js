@@ -626,6 +626,7 @@ const scopes = {
                         type: 'textbox',
                         maxLength: 14,
                         defaultValue: '',
+                        dependsOn: 'ocs.ed.mandate.default.details.generateContractReference'
                     },
                     { 
                         group: 'Default Mandate Details',
