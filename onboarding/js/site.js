@@ -639,14 +639,14 @@ if (scopeData.services && scopeData.services.length > 0) {
                                         <div class="row mb-2">
                                             <div class="col-12">
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input integrator-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${safeRename(service.name)}" data-entity="integrator">
+                                                    <input class="form-check-input integrator-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-integrator">
                                                         Link to Integrator
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Integrator"></i>
                                                     </label>
                                                 </div>
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input deviceuser-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${safeRename(service.name)}" data-entity="deviceuser">
+                                                    <input class="form-check-input deviceuser-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${service.name}" data-entity="deviceuser">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-deviceuser">
                                                         Link to Device User
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Device User"></i>
@@ -904,6 +904,7 @@ function renderSetting(settingObj, prefix, serviceName) {
                 service-setting="${settingObj.settingName}"
                 role="set-service-setting-value"
                 data-service-name="${serviceName}"
+                data-service="${serviceName}"
                 data-setting="${settingObj.settingName}"
                 data-setting-table="${settingObj.settingTableName}"
                 service-setting-field="${settingObj.settingField || ''}">
@@ -1834,13 +1835,15 @@ function getServiceSettings(scope, serviceName) {
     $(`#${scope}`).find('[role="link-service-to-entity"]').each(function() {
         if ($(this).is(':checked')) {
             const serviceName = $(this).data('service');
+            const entity = $(this).data('entity');
             console.log('Processing service:', serviceName);
-            $(`#${scope}`).find(`[role="set-service-setting-value"][data-service-name="${serviceName}"]`).each(function() {
+            $(`#${scope}`).find(`[role="set-service-setting-value"][data-service="${serviceName}"]`).each(function() {
                 console.log('Found service setting input:', this);
             const $setting = $(this);
             const settingName = $setting.data('setting');
             const settingTable = $setting.data('setting-table');
             const settingField = $setting.attr('service-setting-field') || '';
+            const settingEntity = entity || null;
             const settingValue = $setting.val();
             
             // Handle different input types
@@ -1857,20 +1860,29 @@ function getServiceSettings(scope, serviceName) {
                     existingSetting = {
                         name: settingName,
                         table: settingTable,
-                        value: {}
+                        value: {},
+                        applyTo: settingEntity
                     };
                     serviceSettings.push(existingSetting);
                 }
                 
                 existingSetting.value[settingField] = finalValue;
+                existingSetting.value[settingField]['applyTo'].push(settingEntity);
             } else {
+                 let existingSetting = serviceSettings.find(s => s.name === settingName);
+                 if (existingSetting) {
+                     existingSetting['applyTo'].push(settingEntity);
+                 } else {
                 // Regular setting
                 serviceSettings.push({
                     name: settingName,
                     table: settingTable,
-                    value: finalValue
+                    value: finalValue,
+                    applyTo: [settingEntity]
                 });
             }
+        }
+
         });
         
         // Convert JSON object settings to string

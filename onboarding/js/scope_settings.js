@@ -446,7 +446,7 @@ const scopes = {
             {
                 name: 'ocs.services.mandate',
                 description: 'Mandate Creation',
-                sharedSettings: true,
+                allowOn: ['parent', 'integrator'],
                 settings: [
                     {
                         name: 'ocs.webhook.url.mandate',
@@ -456,7 +456,94 @@ const scopes = {
                         applyTo: 'integrator',
                         table: 'entity_service_setting'
                     },
+                ]
+            },
+            {
+                name: 'ocs.services.collection',
+                description: 'Collection',
+                allowOn: ['parent', 'integrator'],
+                settings: [
+                    {
+                        name: 'ocs.webhook.url.collection',
+                        placeholder: 'Collection webhook URL',
+                        description: 'Webhook URL for collection notifications',
+                        helpText: 'Enter the webhook URL for collection notifications',                        
+                        table: 'entity_service_setting'
+                    }
+                ]
+            },
+            {
+                name: 'ocs.services.debitorder',
+                description: 'Debit Order',
+                allowOn: ['parent', 'integrator'],
+                settings: [
                     { 
+                        name: 'ocs.ed.do.sc.gc.map', 
+                        placeholder: 'EasyDebit DO SC GC Map', 
+                        description: 'EasyDebit DO SC GC Map',
+                        applyTo: 'integrator'
+                        },
+                    { 
+                        name: 'ocs.ed.do.ul.gc.map', 
+                        placeholder: 'EasyDebit DO UL GC Map', 
+                        description: 'EasyDebit DO UL GC Map',
+                        applyTo: 'integrator'
+                    },
+                    { 
+                        name: 'ocs.ed.do.gc', 
+                        placeholder: 'EasyDebit DO GC', 
+                        description: 'EasyDebit DO GC',
+                        applyTo: 'integrator'
+                    },
+                ]
+            }
+        ],
+        settings: [
+            {
+                group: 'EasyDebit.Webservice', 
+                name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice User', 
+                helpText: 'EasyDebit Webservice User for web service authentication'
+            },
+            {
+                group: 'EasyDebit.Webservice', 
+                name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice Password', 
+                description: 'EasyDebit Webservice Password for web service authentication'
+            },
+            {
+                group: 'EasyDebit.Webservice', 
+                name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
+                placeholder: 'EasyDebit Webservice Group Code', 
+                description: 'EasyDebit Webservice Group Code'
+            },
+            {
+                group: 'EasyDebit', // OCS "Parent" Settings
+                name: 'ocs.df.scheme', 
+                placeholder: 'Default Scheme', 
+                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' 
+            },
+            {
+                group: 'EasyDebit',
+                name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
+                placeholder: 'EasyDebit SC GC Map',
+                description: 'Mapping between scheme names and group codes',
+                helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.'
+            },
+            { 
+                group: 'EasyDebit', 
+                name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
+                placeholder: 'EasyDebit UL GC Map', 
+                description: 'EasyDebit UL GC Map' },
+            {
+                group: 'EasyDebit',
+                name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
+                type: 'checkbox',
+                placeholder: 'EasyDebit Passthrough',
+                description: 'EasyDebit Passthrough',
+                defaultValue: true
+            },
+            { 
                         group: 'Default Mandate Details',
                         name: 'ocs.ed.mandate.default.details',
                         field: 'tracking',
@@ -598,96 +685,8 @@ const scopes = {
                         type: 'textbox',
                         defaultValue: '',
                     },
-                ]
-            },
             {
-                name: 'ocs.services.collection',
-                description: 'Collection',
-                sharedSettings: true,
-                settings: [
-                    {
-                        name: 'ocs.webhook.url.collection',
-                        placeholder: 'Collection webhook URL',
-                        description: 'Webhook URL for collection notifications',
-                        helpText: 'Enter the webhook URL for collection notifications',
-                        applyTo: 'integrator',
-                        table: 'entity_service_setting'
-                    }
-                ]
-            },
-            {
-                name: 'ocs.services.debitorder',
-                description: 'Debit Order',
-                sharedSettings: true,
-                settings: [
-                    { 
-                        name: 'ocs.ed.do.sc.gc.map', 
-                        placeholder: 'EasyDebit DO SC GC Map', 
-                        description: 'EasyDebit DO SC GC Map',
-                        applyTo: 'integrator'
-                        },
-                    { 
-                        name: 'ocs.ed.do.ul.gc.map', 
-                        placeholder: 'EasyDebit DO UL GC Map', 
-                        description: 'EasyDebit DO UL GC Map',
-                        applyTo: 'integrator'
-                    },
-                    { 
-                        name: 'ocs.ed.do.gc', 
-                        placeholder: 'EasyDebit DO GC', 
-                        description: 'EasyDebit DO GC',
-                        applyTo: 'integrator'
-                    },
-                ]
-            }
-        ],
-        settings: [
-            {
-                group: 'EasyDebit.Webservice', 
-                name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice User', 
-                helpText: 'EasyDebit Webservice User for web service authentication'
-            },
-            {
-                group: 'EasyDebit.Webservice', 
-                name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Password', 
-                description: 'EasyDebit Webservice Password for web service authentication'
-            },
-            {
-                group: 'EasyDebit.Webservice', 
-                name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Group Code', 
-                description: 'EasyDebit Webservice Group Code'
-            },
-            {
-                group: 'EasyDebit', // OCS "Parent" Settings
-                name: 'ocs.df.scheme', 
-                placeholder: 'Default Scheme', 
-                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' 
-            },
-            {
-                group: 'EasyDebit',
-                name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
-                placeholder: 'EasyDebit SC GC Map',
-                description: 'Mapping between scheme names and group codes',
-                helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.'
-            },
-            { 
-                group: 'EasyDebit', 
-                name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
-                placeholder: 'EasyDebit UL GC Map', 
-                description: 'EasyDebit UL GC Map' },
-            {
-                group: 'EasyDebit',
-                name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
-                type: 'checkbox',
-                placeholder: 'EasyDebit Passthrough',
-                description: 'EasyDebit Passthrough',
-                defaultValue: true
-            },
-
-            {
+                group: 'Integrations',
                 name: 'ocs.easy.loan.webhook.url', // OCS Integrator Specific Setting
                 placeholder: 'Easy Loan Webhook URL',
                 description: 'Webhook URL for Easy Loan integration',
@@ -695,24 +694,50 @@ const scopes = {
                 applyTo: 'integrator'
             },
             {
-                group: 'EasyPOS',
+                group: 'Integrations',
                 name: 'external.status.webhook.url', // OCS Device User Specific Setting
-                description: 'External Status Webhook URL',
+                description: 'Webhook URL for receipt printing on the EasyPOS.',
                 placeholder: 'External Status Webhook URL',
-                helpText: 'Webhook URL for receipt printing on the EasyPOS. This setting is only applicable if you are using EasyPOS.',
-                applyTo: 'user'
+                helpText: 'This setting is only applicable if you are using EasyPOS.',
+                applyTo: 'deviceuser'
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.cre.nme',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.cre.abr.sho.nme',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.cre.bra.cde',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.cre.acc.num',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.pro.acc',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.chg.acc',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.cli.pro',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.cre.ema.det',
+            },
+            {
+                group: 'Nedbank Settings',
+                name: 'ocs.ned.cre.tel.det',
             },
 
-                
-            'ocs.ned.cre.bra.cde',
-            'ocs.ned.cre.acc.num',
-            'ocs.ned.cre.ema.det',
-            'ocs.ned.cre.tel.det',
-            'ocs.ned.cre.abr.sho.nme',
-            'ocs.ned.cli.pro',
-            'ocs.ned.chg.acc',
-            'ocs.ned.cre.nme',
-            'ocs.ned.pro.acc'
         ]
     },
     'OPS': {
