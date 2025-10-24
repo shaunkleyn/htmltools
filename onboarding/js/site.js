@@ -779,7 +779,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
 
     // If there is only one main group, we skip the outer accordion wrapper and its header.
     if (hasMultipleMainGroups) {
-        html += `<div class="accordion">`;
+        html += `<div class="accordion accordion-spaced">`;
     }
 
     let mainGroupIndex = 0;
@@ -806,7 +806,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         if (hasMultipleMainGroups) {
              html += `<div class="accordion-item">
                 <h2 class="accordion-header">
-                    <button class="accordion-button ${mainGroupButtonClass}" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
+                    <button class="accordion-button ${mainGroupButtonClass} bg-none" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
                         <div class="d-flex justify-content-between w-100">
                             <span>${mainGroupName}</span>
                             <span class="badge bg-secondary rounded-pill me-2">${totalSettingsCount}</span>

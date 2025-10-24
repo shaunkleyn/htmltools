@@ -758,3 +758,12 @@
     user-select: none;
 }
 
+.accordion.accordion-spaced .accordion-item {
+    margin-top: 5px;
+    border-radius: var(--bs-accordion-border-radius);
+    border: var(--bs-accordion-border-width) solid var(--bs-accordion-border-color);
+}
+
+.bg-none {
+    background: transparent !important;
+}
