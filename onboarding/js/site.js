@@ -638,7 +638,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                     <div class="container-fluid">
                                         <div class="row mb-2">
                                             <div class="col-12">
-                                                <div class="form-check form-switch">
+                                                <div class="form-check form-switch ms-3">
                                                     <input class="form-check-input integrator-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-integrator">
                                                         Link to Integrator
