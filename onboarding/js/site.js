@@ -612,7 +612,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                 <h6>Service Configuration</h6>
                 <div class="accordion" id="${scope}-service-settings">
                     ${scopeData.services.map((service, index) => 
-                        service.settings > 0 ? `
+                        `
                             <div class="accordion-item">
                                 <h2 class="accordion-header d-flex align-items-center flex-row">
                                     <div class="accordion-button accordion-button-sm collapsed p-0">
@@ -659,7 +659,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                     </div>
                                 </div>
                             </div>
-                        ` : ''
+                        `
                     ).join('')}
                 </div>
             </div>
