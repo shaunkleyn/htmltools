@@ -694,8 +694,10 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         
         if (typeof setting === 'string') {
             groupName = 'General Settings';
-            settingName = setting;
-            // ... (fill other defaults)
+            settingName = setting;  
+            description = settingDescriptions[setting] || 'No description available';
+            placeholder = `Enter value for ${setting}`;
+            helpText = null;
             inputType = 'text';
             label = setting;
             defaultValue = '';
@@ -815,7 +817,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                     <div class="accordion-body p-0">`;
         } else {
              // If only one main group, start the container here (no collapse/header)
-             html += `<div class="p-0">`; // Use a simple div to contain content
+             html += `<div class="p-0 mt-3"><h6>${mainGroupName}</h6>`; // Use a simple div to contain content
         }
 
         // Subgroup Rendering Logic (Nested Accordion vs. Direct Render)
