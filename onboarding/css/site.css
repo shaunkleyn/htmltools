@@ -770,6 +770,10 @@
     border: var(--bs-accordion-border-width) solid var(--bs-accordion-border-color);
 }
 
+.accordion.accordion-spaced .accordion-item .accordion-button {
+    border-radius: var(--bs-accordion-border-radius);
+}
+
 .accordion.accordion-spaced .accordion-item .accordion-button:not(.collapsed) {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
