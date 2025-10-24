@@ -469,6 +469,7 @@ if (scopeData.settings && scopeData.settings.length > 0) {
     html += `</div>`;
 }
 
+console.log(scopeData);
 // Services section
 // In renderScopeTab function:
 // In renderScopeTab function, replace the services section with:
