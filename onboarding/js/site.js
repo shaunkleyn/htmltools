@@ -675,7 +675,9 @@ if (scopeData.services && scopeData.services.length > 0) {
         return html;
     }
 
-    function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceName = '') {
+    // NOTE: Assuming all required helper functions (safeRename, safeReplace, renderSetting) are available.
+
+function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceName = '', allSettings) {
     let html = '';
     prefix = safeRename(prefix);
 
@@ -683,19 +685,17 @@ if (scopeData.services && scopeData.services.length > 0) {
         return html;
     }
 
-    // --- START: MODIFIED GROUPING LOGIC (passing 'values') ---
+    // --- START: MODIFIED GROUPING LOGIC ---
     const groupedSettings = {};
 
     settings.forEach(setting => {
-        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName, values;
-
-        // Handle string, array, and object formats (parsing logic is the same)
+        // ... (Parsing logic remains the same, assuming it correctly extracts properties)
+        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName, values, dependencyAction;
+        
         if (typeof setting === 'string') {
             groupName = 'General Settings';
             settingName = setting;
-            description = settingDescriptions[setting] || 'No description available';
-            placeholder = `Enter value for ${setting}`;
-            helpText = null;
+            // ... (fill other defaults)
             inputType = 'text';
             label = setting;
             defaultValue = '';
@@ -706,17 +706,18 @@ if (scopeData.services && scopeData.services.length > 0) {
         } else if (typeof setting === 'object' && Array.isArray(setting)) {
             groupName = setting.group || 'General Settings';
             settingName = 'setting_group';
-            description = settingDescriptions[setting] || 'No description available';
             currentServiceName = serviceName;
             values = null;
         } else {
             groupName = setting.group || 'General Settings';
             settingName = setting.name;
+            // ... (fill other properties from setting object)
             description = setting.description || settingDescriptions[settingName] || 'No description available';
             placeholder = safeReplace(setting.placeholder, '"', '&#34;') || `Enter value for ${settingName}`;
             helpText = setting.helpText || null;
             inputType = setting.type || 'text';
             dependsOn = safeReplace(setting.dependsOn, '>', '___') || null;
+            dependencyAction = setting.dependencyAction || null; // Capture the dependency action
             options = setting.options;
             checkboxes = setting.checkboxes;
             label = setting.label || settingName;
@@ -724,7 +725,7 @@ if (scopeData.services && scopeData.services.length > 0) {
             settingField = setting.field || null;
             settingTableName = setting.table || 'entity_service_type_setting';
             currentServiceName = setting.serviceName || serviceName;
-            values = setting.values; // <<< Pass the 'values' array to the setting object
+            values = setting.values;
         }
 
         // Determine Main Group and Subgroup (Logic remains the same)
@@ -749,12 +750,14 @@ if (scopeData.services && scopeData.services.length > 0) {
         }
 
         groupedSettings[mainGroup][subGroup].push({
+            // ... (push properties to array)
             name: settingName,
             description: description,
             placeholder: placeholder,
             helpText: helpText,
             type: inputType,
             dependsOn: dependsOn,
+            dependencyAction: dependencyAction, // Include the new property
             options: options,
             checkboxes: checkboxes,
             label: label,
@@ -763,17 +766,24 @@ if (scopeData.services && scopeData.services.length > 0) {
             settingName: settingName,
             settingTableName: settingTableName,
             serviceName: currentServiceName,
-            values: values // <<< Values array is now available here
+            values: values
         });
     });
     // --- END: MODIFIED GROUPING LOGIC ---
 
-    html += `<div class="accordion">`;
+    // --- NEW: Determine if an outer accordion is needed ---
+    const mainGroupNames = Object.keys(groupedSettings);
+    const hasMultipleMainGroups = mainGroupNames.length > 1;
+
+    // If there is only one main group, we skip the outer accordion wrapper and its header.
+    if (hasMultipleMainGroups) {
+        html += `<div class="accordion">`;
+    }
 
     let mainGroupIndex = 0;
 
-    // --- START: RENDERING LOGIC (State Fixes and Badges) ---
-    Object.keys(groupedSettings).forEach(mainGroupName => {
+    // --- START: RENDERING LOGIC (Updated) ---
+    mainGroupNames.forEach(mainGroupName => {
         const subGroups = groupedSettings[mainGroupName];
         const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
         
@@ -782,7 +792,7 @@ if (scopeData.services && scopeData.services.length > 0) {
             totalSettingsCount += subGroups[subGroupName].length;
         });
 
-        // Main Group State Logic (First item open, others closed for tree view)
+        // Main Group State Logic
         const isMainGroupOpen = mainGroupIndex === 0;
         const mainGroupButtonClass = isMainGroupOpen ? '' : 'collapsed'; 
         const mainGroupAriaExpanded = isMainGroupOpen ? 'true' : 'false';
@@ -790,31 +800,39 @@ if (scopeData.services && scopeData.services.length > 0) {
         
         mainGroupIndex++;
         
-        // Render Main Group Accordion Header
-        html += `<div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button ${mainGroupButtonClass}" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
-                    <div class="d-flex justify-content-between w-100">
-                        <span>${mainGroupName}</span>
-                        <span class="badge bg-secondary rounded-pill me-2">${totalSettingsCount}</span>
-                    </div>
-                </button>
-            </h2>
-            <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}" data-bs-parent=".accordion">
-                <div class="accordion-body p-0">`;
+        // Conditional Main Group Accordion Header/Wrapper
+        if (hasMultipleMainGroups) {
+             html += `<div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button ${mainGroupButtonClass}" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
+                        <div class="d-flex justify-content-between w-100">
+                            <span>${mainGroupName}</span>
+                            <span class="badge bg-secondary rounded-pill me-2">${totalSettingsCount}</span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}" data-bs-parent=".accordion">
+                    <div class="accordion-body p-0">`;
+        } else {
+             // If only one main group, start the container here (no collapse/header)
+             html += `<div class="p-0">`; // Use a simple div to contain content
+        }
 
+        // Subgroup Rendering Logic (Nested Accordion vs. Direct Render)
         const subGroupNames = Object.keys(subGroups);
+        
+        // This condition correctly checks for more than one subgroup, or if the only subgroup is NOT 'General Settings'
         const hasMultipleSubgroups = subGroupNames.length > 1 || (subGroupNames.length === 1 && subGroupNames[0] !== 'General Settings');
 
         if (hasMultipleSubgroups) {
-            // Nested Accordion for Subgroups
+            // Nested Accordion for Subgroups (If multiple subgroups exist)
             html += `<div class="accordion accordion-flush" id="${mainGroupHtmlId}-subgroups">`;
             
             subGroupNames.forEach(subGroupName => {
                 const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
                 const subgroupCount = subGroups[subGroupName].length;
                 
-                // Subgroup State Logic (Always Expanded/Open for a persistent tree view, adjust if necessary)
+                // Subgroup State Logic (Set to show by default)
                 const subGroupButtonClass = ''; 
                 const subGroupAriaExpanded = 'true';
                 const subGroupShowClass = 'show';
@@ -835,31 +853,41 @@ if (scopeData.services && scopeData.services.length > 0) {
                             
                 // Render settings within the Subgroup
                 subGroups[subGroupName].forEach(settingObj => {
-                    html += renderSetting(settingObj, prefix, serviceName);
+                    // Pass the complete list of settings (needed for dependency initial state)
+                    html += renderSetting(settingObj, prefix, serviceName, settings);
                 });
                 
-                html += `       </div>
+                html += `           </div>
                         </div>
                     </div>
                 </div>`;
             });
             html += `</div>`; // Close nested accordion
         } else {
-            // Render settings directly if there's only one "General Settings" subgroup
+            // Render settings directly if there's only one subgroup (General Settings or not)
             const settingsArray = subGroups[subGroupNames[0]];
+            // Render the row directly, without an extra header/accordion wrapper
             html += `<div class="p-3 bg-light"><div class="row">`;
             settingsArray.forEach(settingObj => {
-                html += renderSetting(settingObj, prefix, serviceName);
+                 // Pass the complete list of settings (needed for dependency initial state)
+                html += renderSetting(settingObj, prefix, serviceName, settings);
             });
             html += `</div></div>`;
         }
 
-        html += `   </div>
-            </div>
-        </div>`; // Close main accordion item
+        // Close Main Group Accordion Item/Wrapper
+        if (hasMultipleMainGroups) {
+             html += `       </div>
+                    </div>
+                </div>`; // Close accordion-body, accordion-collapse, accordion-item
+        } else {
+            html += `</div>`; // Close simple p-0 div
+        }
     });
 
-    html += `</div>`; // Close main accordion
+    if (hasMultipleMainGroups) {
+        html += `</div>`; // Close main accordion
+    }
     
     return html;
 }
