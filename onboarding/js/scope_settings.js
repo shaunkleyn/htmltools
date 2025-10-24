@@ -626,7 +626,8 @@ const scopes = {
                         type: 'textbox',
                         maxLength: 14,
                         defaultValue: '',
-                        dependsOn: 'generateContractReference:true'
+                        dependsOn: 'generateContractReference:true',
+                        dependencyAction: 'disable'
                     },
                     { 
                         group: 'Default Mandate Details',

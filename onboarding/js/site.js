@@ -877,28 +877,28 @@ function renderSetting(settingObj, prefix, serviceName) {
     let html = '';
     const settingName = safeRename(settingObj.name);
     
-    // --- START: Dependency ID Generation Logic ---
+    // --- START: Dependency ID Generation Logic (Updated to include Action) ---
     let dependsOnAttr = '';
+    const dependencyAction = settingObj.dependencyAction || 'disable'; // <<< NEW: Extract Action
     
     if (settingObj.dependsOn) {
         // 1. Check if the setting is a multi-field setting (i.e., has a field property)
         if (settingObj.settingField) {
-            // This is a field-level dependency on another field within the same setting name.
             // Format: 'otherFieldName:requiredValue'
             const [controllingField, requiredValue] = settingObj.dependsOn.split(':');
             
             if (controllingField && requiredValue !== undefined) {
                 // The controlling element's ID is the settingName + controllingField
-                // e.g., 'scope-parent-ocs-ed-mandate-default-details___generateContractReference'
-                const controllingId = createDependencyId(prefix, settingName + '___' + controllingField);
+                const controllingId = createControlId(prefix, settingObj.settingName, controllingField);
                 
-                // The data attribute now holds both the target ID and the required value
-                dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
+                // Add the target ID, required value, and the dependency action
+                dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}" data-dependency-action="${dependencyAction}"`;
             }
         } else {
             // 2. Standard single-setting dependency on a different setting name.
-            // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
-            dependsOnAttr = `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"`;
+            // Note: This path may need further refinement depending on whether 
+            // the dependency also needs a specific required value. For now, it's just the ID.
+            dependsOnAttr = `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}" data-dependency-action="${dependencyAction}"`;
         }
     }
     // --- END: Dependency ID Generation Logic ---
@@ -939,10 +939,11 @@ function renderSetting(settingObj, prefix, serviceName) {
         `;
 
     } else if (settingObj.type === 'radio') {
+        // Pass the dependsOnAttr to the dedicated renderer
         html += renderRadioSetting(settingObj, inputId, prefix, serviceName, dependsOnAttr);
         
     } else if (settingObj.type === 'checkbox') {
-        // Updated call to pass dependsOnAttr for the container div
+        // Pass the dependsOnAttr to the dedicated renderer
         html += renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr); 
     } 
     // ... (other types like dual-checkbox, radio-button-group, etc.)
@@ -1050,22 +1051,18 @@ function renderOptionsHtml(values, defaultValue, isSelect = false) {
 }
 
 
-// --- Updated renderRadioSetting to use the new values array and renderer ---
-
-function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
-    const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
-
+/**
+ * Renders a radio group setting.
+ */
+function renderRadioSetting(settingObj, inputId, prefix, serviceName, dependsOnAttr = '') {
+    // The dependsOnAttr must be applied to the surrounding container div
     const optionsHtml = renderOptionsHtml(settingObj.values, settingObj.defaultValue, false);
-    
-    // Note: The shared attributes are NOT applied to the inner radio inputs here. 
-    // They should be applied to the container or hidden input if you need to capture the value on submit.
-    // For simplicity, we keep the radio button structure simple here.
     
     return `
         <div class="mb-3 col-md-12" ${dependsOnAttr}>
             <label class="form-label mb-2">
                 ${settingObj.label}
-                ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
+                ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${safeReplace(settingObj.description, '"', '&#34;')}"></i>` : ''}
             </label>
             <div id="${inputId}-radio-group">
                 ${optionsHtml}
@@ -1082,22 +1079,30 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
 // 'settingDescriptions', 'createDependencyId', 'renderCheckboxSetting', etc. are defined 
 // elsewhere in your scope for the full code to run.
 
-    function renderCheckboxSetting(settingObj, inputId, prefix) {
-        const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
-        
-        return `
-            <div class="mb-3 col-md-12" ${dependsOnAttr}>
-                <div class="form-check form-switch">
-                    <input class="form-check-input setting-checkbox" type="checkbox" id="${inputId}">
-                    <label class="form-check-label" for="${inputId}">
-                        ${settingObj.label}
-                        ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
-                    </label>
-                </div>
+/**
+ * Renders a standard checkbox setting.
+ */
+function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr = '') {
+    // The shared attributes must be applied to the checkbox input itself
+    // The dependsOnAttr must be applied to the surrounding container div
+    const isChecked = settingObj.defaultValue === true || String(settingObj.defaultValue).toLowerCase() === 'true' ? 'checked' : '';
+    const label = settingObj.label || settingObj.settingName;
+
+    return `
+        <div class="mb-3 col-md-6 d-flex align-items-center" ${dependsOnAttr}>
+            <div class="form-check form-switch mt-4">
+                <input class="form-check-input" type="checkbox" role="set-service-setting-value" id="${inputId}" ${isChecked}
+                    data-setting="${settingObj.settingName}"
+                    service-setting-field="${settingObj.settingField || ''}">
+                <label class="form-check-label" for="${inputId}">
+                    ${label}
+                    ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${safeReplace(settingObj.description, '"', '&#34;')}"></i>` : ''}
+                </label>
                 ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
     function renderDualCheckboxSetting(settingObj, inputId, prefix) {
         let checkboxesHtml = '';
