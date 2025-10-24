@@ -608,7 +608,6 @@ if (scopeData.services && scopeData.services.length > 0) {
         html += `</div></div>
         
         <!-- Service Settings Accordion (only show if any service has settings) -->
-        
             <div class="service-settings-panel mt-4">
                 <h6>Service Configuration</h6>
                 <div class="accordion" id="${scope}-service-settings">
@@ -664,7 +663,6 @@ if (scopeData.services && scopeData.services.length > 0) {
                     ).join('')}
                 </div>
             </div>
-        `
     </div>`;
     
     // Remove the old entity linking section since we're using the cards now
