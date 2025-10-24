@@ -818,6 +818,9 @@
 .accordion-header {
     background: #e9ecef;
     border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color);
+}
+
+.accordion-button {
     padding: 0.5rem 1rem;
 }
 
