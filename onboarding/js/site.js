@@ -866,32 +866,59 @@ if (scopeData.services && scopeData.services.length > 0) {
 
 
 
-// Helper function to render an individual setting
+/**
+ * Helper function to render an individual setting control.
+ * @param {object} settingObj - The setting object.
+ * @param {string} prefix - The scope prefix (e.g., 'scope-parent').
+ * @param {string} serviceName - The service name (e.g., 'OCS').
+ * @returns {string} HTML string for the setting control.
+ */
 function renderSetting(settingObj, prefix, serviceName) {
     let html = '';
     const settingName = safeRename(settingObj.name);
-    const dependsOn = safeRename(settingObj.dependsOn);
-    let inputId = `${prefix}-${settingName}`;
-    if (settingObj.settingField != '' && settingObj.settingField != null) {
-        inputId = `${inputId}___${safeRename(settingObj.settingField)}`;
+    
+    // --- START: Dependency ID Generation Logic ---
+    let dependsOnAttr = '';
+    
+    if (settingObj.dependsOn) {
+        // 1. Check if the setting is a multi-field setting (i.e., has a field property)
+        if (settingObj.settingField) {
+            // This is a field-level dependency on another field within the same setting name.
+            // Format: 'otherFieldName:requiredValue'
+            const [controllingField, requiredValue] = settingObj.dependsOn.split(':');
+            
+            if (controllingField && requiredValue !== undefined) {
+                // The controlling element's ID is the settingName + controllingField
+                // e.g., 'scope-parent-ocs-ed-mandate-default-details___generateContractReference'
+                const controllingId = createDependencyId(prefix, settingName + '___' + controllingField);
+                
+                // The data attribute now holds both the target ID and the required value
+                dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
+            }
+        } else {
+            // 2. Standard single-setting dependency on a different setting name.
+            // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
+            dependsOnAttr = `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"`;
+        }
     }
-
-    const dependsOnAttr = dependsOn ? `data-depends-on="${createDependencyId(prefix, dependsOn)}"` : '';
+    // --- END: Dependency ID Generation Logic ---
 
     // Standard attributes shared by most inputs/selects
+    const inputId = createControlId(prefix, settingObj.settingName, settingObj.settingField);
+    
     const sharedAttrs = `
         service-setting="${settingObj.settingName}"
         role="set-service-setting-value"
         data-service-name="${serviceName}"
         data-setting="${settingObj.settingName}"
-        data-setting-table="${settingObj.settingTableName}"
+        data-setting-table="${settingObj.settingTableName || ''}"
         service-setting-field="${settingObj.settingField || ''}"
     `;
     
     // Header for the input group
     const inputHeader = `<label for="${inputId}" class="form-label label-sm">
-        ${settingObj.label}
-        ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
+        ${settingObj.label || settingObj.settingName}
+        ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${safeReplace(settingObj.description, '"', '&#34;')}"></i>` : ''}
     </label>`;
     
     // Help Text
@@ -912,26 +939,24 @@ function renderSetting(settingObj, prefix, serviceName) {
         `;
 
     } else if (settingObj.type === 'radio') {
-        // Now using the dedicated helper function to render radio buttons
-        html += renderRadioSetting(settingObj, inputId, prefix, serviceName);
+        html += renderRadioSetting(settingObj, inputId, prefix, serviceName, dependsOnAttr);
         
     } else if (settingObj.type === 'checkbox') {
-        html += renderCheckboxSetting(settingObj, inputId, prefix); 
-    } else if (settingObj.type === 'dual-checkbox') {
-        html += renderDualCheckboxSetting(settingObj, inputId, prefix);
-    } else if (settingObj.type === 'radio-button-group' || settingObj.type === 'radio-group') {
-        // Fallback for older radio types, still using hardcoded examples or dedicated functions if you provide them
-        html += `<div class="mb-3 col-md-6"><p class="text-warning">Placeholder for ${settingObj.type} implementation.</p></div>`;
-
-    } else {
+        // Updated call to pass dependsOnAttr for the container div
+        html += renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr); 
+    } 
+    // ... (other types like dual-checkbox, radio-button-group, etc.)
+    else {
         // Default Text Input (for 'text', 'textbox', 'password', etc.)
         const inputType = settingObj.type === 'textbox' ? 'text' : settingObj.type;
+        const maxLengthAttr = settingObj.maxLength ? `maxlength="${settingObj.maxLength}"` : '';
         html += `
             <div class="mb-3 col-md-6" ${dependsOnAttr}>
                 ${inputHeader}
                 <input type="${inputType}" class="form-control form-control-sm" id="${inputId}" 
-                placeholder="${settingObj.placeholder}" 
+                placeholder="${safeReplace(settingObj.placeholder, '"', '&#34;')}" 
                 value="${settingObj.defaultValue || ''}" 
+                ${maxLengthAttr}
                 ${sharedAttrs}>
                 ${helpTextHtml}
             </div>
@@ -1193,16 +1218,33 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
         return html;
     }
 
-    // Helper function to create proper dependency IDs
-    function createDependencyId(prefix, dependsOn) {
-        // If dependsOn is already a full ID (contains the prefix), use it as is
-        if (dependsOn.includes(prefix)) {
-            return dependsOn;
-        }
-        
-        // Otherwise, create the full ID by combining prefix and dependsOn
-        return `${safeRename(prefix)}-${safeRename(dependsOn)}`;
+/**
+ * Creates the dependency target ID based on a setting name (used for lookups).
+ * This function must be consistent with createControlId logic.
+ * @param {string} prefix 
+ * @param {string} dependencyKey - Can be just a setting name or a settingName___field
+ * @returns {string}
+ */
+function createDependencyId(prefix, dependencyKey) {
+    // Note: The dependencyKey is already expected to contain the safe-renamed field 
+    // if it's a field-level dependency (e.g., 'ocs-ed-mandate-default-details___generateContractReference')
+    return `${prefix}-${safeRename(dependencyKey)}`;
+}
+
+    /**
+ * Creates a consistent ID for a control, handling fields.
+ * @param {string} prefix 
+ * @param {string} name 
+ * @param {string} field 
+ * @returns {string}
+ */
+function createControlId(prefix, name, field) {
+    let id = `${prefix}-${safeRename(name)}`;
+    if (field && field.trim() !== '') {
+        id = `${id}___${safeRename(field)}`;
     }
+    return id;
+}
 
     function initializeDependencyHandlers(container = document) {
         // Small delay to ensure all elements are rendered
