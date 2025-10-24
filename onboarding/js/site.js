@@ -842,10 +842,10 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                 // Subgroup Accordion Item
                 html += `<div class="accordion-item bg-light border-bottom">
                     <h2 class="accordion-header">
-                        <button class="accordion-button accordion-button-sm ${subGroupButtonClass} bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="${subGroupAriaExpanded}" aria-controls="${subGroupHtmlId}">
+                        <button class="accordion-button accordion-button-sm ${subGroupButtonClass} bg-light pe-4" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="${subGroupAriaExpanded}" aria-controls="${subGroupHtmlId}">
                             <div class="d-flex justify-content-between w-100">
                                 <span>${subGroupName}</span>
-                                <span class="badge bg-info rounded-pill me-2">${subgroupCount}</span>
+                                <span class="badge bg-info rounded-pill me-3">${subgroupCount}</span>
                             </div>
                         </button>
                     </h2>
