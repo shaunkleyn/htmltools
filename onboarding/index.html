@@ -84,7 +84,76 @@
                 </div>
             </div>
  
-
+<!-- Basic Entity Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span>Basic Entity Information</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="parentName" class="form-label">Parent Entity Name</label>
+                            <input type="text" class="form-control" id="parentName" placeholder="Enter parent entity name">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="website" class="form-label">Website URL</label>
+                            <input type="text" class="form-control" id="website" placeholder="http://www.example.com">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="integratorEmail" class="form-label">Integrator Email</label>
+                            <input type="email" class="form-control" id="integratorEmail" placeholder="development@bitventure.co.za">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="crsEnquiryBy" class="form-label">CRS CPB Enquiry Done By</label>
+                            <input type="text" class="form-control" id="crsEnquiryBy" placeholder="Enter name for CRS enquiries">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="createDeviceUser">
+                            <label class="form-check-label" for="createDeviceUser">
+                                Create Device User
+                            </label>
+                        </div>
+                        <div class="conditional-field" id="deviceUserFields">
+                            <div class="mb-3">
+                                <label for="deviceUsername" class="form-label">Device User Username</label>
+                                <input type="text" class="form-control" id="deviceUsername" placeholder="Enter device username">
+                            </div>
+                            <div class="mb-3">
+                                <label for="devicePassword" class="form-label">Device User Password</label>
+                                <input type="password" class="form-control" id="devicePassword" placeholder="Enter device password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="createIntegrator" checked>
+                            <label class="form-check-label" for="createIntegrator">
+                                Create Integrator
+                            </label>
+                        </div>
+                        <div class="conditional-field" id="integratorFields">
+                            <div class="mb-3">
+                                <label for="integratorName" class="form-label">Integrator Name</label>
+                                <input type="text" class="form-control" id="integratorName" placeholder="Integrator name will be auto-generated">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 <div class="card mb-4">
     <div class="card-header">
