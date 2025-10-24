@@ -764,6 +764,11 @@
     border: var(--bs-accordion-border-width) solid var(--bs-accordion-border-color);
 }
 
+.accordion.accordion-spaced .accordion-item .accordion-button {
+    border-radius: var(--bs-accordion-border-radius);
+}
+
+
 .bg-none {
     background: transparent !important;
 }
