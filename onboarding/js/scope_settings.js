@@ -40,11 +40,12 @@ const settingDescriptions = {
 const scopes = {
     'AML': {
         name: 'Anti-Money Laundering',
+        allowOn: ['parent', 'integrator'],
         services: [
             {
                 name: 'aml.service.aml',
                 description: 'Anti-Money Laundering Service',
-                allowOn: ['parent', 'integrator'],
+                
                 settings: []
             }
         ],
