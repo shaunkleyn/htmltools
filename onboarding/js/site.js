@@ -807,9 +807,9 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
              html += `<div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button ${mainGroupButtonClass} bg-none" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
-                        <div class="d-flex justify-content-between w-100">
+                        <div class="d-flex justify-content-between w-100 me-2">
                             <span>${mainGroupName}</span>
-                            <span class="badge bg-secondary rounded-pill me-2">${totalSettingsCount}</span>
+                            <span class="badge bg-secondary rounded-pill me-3">${totalSettingsCount}</span>
                         </div>
                     </button>
                 </h2>
