@@ -773,6 +773,8 @@
 .accordion.accordion-spaced .accordion-item .accordion-button:not(.collapsed) {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    border-top-left-radius: var(--bs-accordion-border-radius);
+    border-top-right-radius: var(--bs-accordion-border-radius);
 }
 
 
