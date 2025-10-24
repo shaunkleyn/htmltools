@@ -636,7 +636,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                     <div class="container-fluid">
                                         <div class="row mb-2">
                                             <div class="col-12">
-                                            ${scope}
+                                            ${scopeData.allowOn}
                                             ${service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase() === 'integrator') ? `
                                                 <div class="form-check form-switch">
                                                     <input class="form-check-input integrator-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator">
