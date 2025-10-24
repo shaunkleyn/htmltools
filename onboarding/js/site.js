@@ -608,7 +608,7 @@ if (scopeData.services && scopeData.services.length > 0) {
         html += `</div></div>
         
         <!-- Service Settings Accordion (only show if any service has settings) -->
-        ${scopeData.services.some(service => service.settings && service.settings.length > 0) ? `
+        ${scopeData.services.some(service) ? `
             <div class="service-settings-panel mt-4">
                 <h6>Service Configuration</h6>
                 <div class="accordion" id="${scope}-service-settings">
