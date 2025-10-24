@@ -1081,19 +1081,27 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName, dependsOnA
 
 /**
  * Renders a standard checkbox setting.
+ * The dependsOnAttr is applied to the outermost container.
  */
 function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr = '') {
-    // The shared attributes must be applied to the checkbox input itself
-    // The dependsOnAttr must be applied to the surrounding container div
+    // Determine if the checkbox should be checked based on its defaultValue
     const isChecked = settingObj.defaultValue === true || String(settingObj.defaultValue).toLowerCase() === 'true' ? 'checked' : '';
     const label = settingObj.label || settingObj.settingName;
+    
+    // Apply shared attributes directly to the input field
+    const sharedAttrs = `
+        service-setting="${settingObj.settingName}"
+        role="set-service-setting-value"
+        data-setting="${settingObj.settingName}"
+        service-setting-field="${settingObj.settingField || ''}"
+    `;
 
+    // The outermost div gets the dependency logic
     return `
         <div class="mb-3 col-md-6 d-flex align-items-center" ${dependsOnAttr}>
-            <div class="form-check form-switch mt-4">
-                <input class="form-check-input" type="checkbox" role="set-service-setting-value" id="${inputId}" ${isChecked}
-                    data-setting="${settingObj.settingName}"
-                    service-setting-field="${settingObj.settingField || ''}">
+            <div class="form-check form-switch mt-4 w-100">
+                <input class="form-check-input" type="checkbox" id="${inputId}" ${isChecked}
+                    ${sharedAttrs}>
                 <label class="form-check-label" for="${inputId}">
                     ${label}
                     ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${safeReplace(settingObj.description, '"', '&#34;')}"></i>` : ''}
