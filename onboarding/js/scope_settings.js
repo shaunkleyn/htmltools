@@ -52,18 +52,16 @@ const scopes = {
     },
     'AVS': {
         name: 'Account Verification',
+        allowOn: ['parent', 'integrator'],
         services: [
             {
                 name: 'avs.services.avs',
                 description: 'Account Verification',
-                allowOn: ['parent', 'integrator'],
-                excludeFrom: ['deviceuser'],
                 settings: [
                     'entity.avs.webhook.url'
                 ]
             }
         ],
-        excludeFrom: ['deviceuser'],
         settings: []
     },
     'BIVS': {
