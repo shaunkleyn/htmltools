@@ -782,6 +782,8 @@
 }
 .accordion-body {
     overflow: hidden;
+    border-bottom-left-radius: var(--bs-accordion-border-radius);
+    border-bottom-right-radius: var(--bs-accordion-border-radius);
 }
 
 .bg-none {
