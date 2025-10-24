@@ -44,6 +44,7 @@ const scopes = {
             {
                 name: 'aml.service.aml',
                 description: 'Anti-Money Laundering Service',
+                allowOn: ['parent', 'integrator'],
                 settings: []
             }
         ],
