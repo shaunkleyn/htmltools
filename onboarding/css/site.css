@@ -780,7 +780,9 @@
     border-top-left-radius: var(--bs-accordion-border-radius);
     border-top-right-radius: var(--bs-accordion-border-radius);
 }
-
+.accordion-body {
+    overflow: hidden;
+}
 
 .bg-none {
     background: transparent !important;
