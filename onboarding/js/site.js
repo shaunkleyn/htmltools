@@ -477,8 +477,9 @@ if (scopeData.services && scopeData.services.length > 0) {
         <h5>Service Assignment</h5>
         
         <div class="entity-services-assignment">
-            <div class="row">
-                // <!-- Parent Column -->`
+            <div class="row">`
+
+                // <!-- Parent Column -->
                 // html += renderScopeServiceCardForEntity(scopeData, scope, 'parent');
                 // <div class="col-md-4">
                 //     <div class="entity-card card">
