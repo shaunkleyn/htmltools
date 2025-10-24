@@ -633,7 +633,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                     class="accordion-collapse collapse" 
                                     ignore-data-bs-parent="#${scope}-service-settings">
                                     <div class="accordion-body">
-
+                                        ${service.allowOn}
                                     <div class="container-fluid">
                                         <div class="row mb-2">
                                             <div class="col-12">
