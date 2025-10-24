@@ -789,3 +789,28 @@
 .bg-none {
     background: transparent !important;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .accordion-button::after {
+        transition: none;
+        position: absolute;
+        right: 10px;
+        pointer-events: none;
+    }
+}
+
+.accordion-button [data-bs-toggle="collapse"] {
+    padding: 0.7rem 1rem;
+}
+
+
+.accordion-button::after {
+    transition: none;
+    position: absolute;
+    right: 10px;
+    pointer-events: none;
+}
+
+.accordion-button > .form-switch {
+    min-height: 0;
+}

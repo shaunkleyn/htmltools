@@ -615,7 +615,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                         service.settings && service.settings.length > 0 ? `
                             <div class="accordion-item">
                                 <h2 class="accordion-header d-flex align-items-center flex-row">
-                                    <div class="accordion-button accordion-button-sm collapsed">
+                                    <div class="accordion-button accordion-button-sm collapsed p-0">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input parent-service" type="checkbox" 
                                                 data-service="${service.name}"
@@ -625,7 +625,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                                 data-entity="parent" checked="" readonly="">
                                         </div>
                                         <div type="button" 
-                                        class="w-100"
+                                        class="w-100 ps-1"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#${scope}-${safeRename(service.name)}-config">${service.description}</div>
                                     </div>
