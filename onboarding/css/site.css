@@ -819,3 +819,7 @@
     background: #e9ecef;
     border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color);
 }
+
+.accordion.shadow { 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+}
