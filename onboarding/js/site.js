@@ -1286,10 +1286,10 @@ function createControlId(prefix, name, field) {
         console.log(`Updating dependency state for element:`, $dependentElement, `Enabled: ${isEnabled}`);
         
         if (isEnabled) {
-            $dependentElement.show();
+            // $dependentElement.show();
             $dependentElement.find('input, select, textarea').prop('disabled', false);
         } else {
-            $dependentElement.hide();
+            // $dependentElement.hide();
             $dependentElement.find('input, select, textarea').prop('disabled', true);
             
             // Clear values when disabled
