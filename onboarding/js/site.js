@@ -463,8 +463,8 @@ $('#createDeviceUser, #createIntegrator').change(function() {
 if (scopeData.settings && scopeData.settings.length > 0) {
     html += `<div class="settings-section">
         <h5>Scope Settings</h5>`;
-    
-    html += renderGroupedSettings(scopeData.settings, scope, 'scope');
+    console.log('scopeData.settings:', scopeData.settings);
+    html += renderGroupedSettings(scopeData.settings, scope, 'scope', );
     
     html += `</div>`;
 }
