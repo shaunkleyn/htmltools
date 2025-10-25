@@ -566,7 +566,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
 
     settings.forEach(setting => {
         // ... (Parsing logic remains the same, assuming it correctly extracts properties)
-        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName, values, dependencyAction;
+        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName, values, dependencyAction, services;
         
         if (typeof setting === 'string') {
             groupName = 'General Settings';
@@ -581,11 +581,13 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             settingTableName = 'entity_service_type_setting';
             currentServiceName = serviceName;
             values = null;
+            services = services || [currentServiceName];
         } else if (typeof setting === 'object' && Array.isArray(setting)) {
             groupName = setting.group || 'General Settings';
             settingName = 'setting_group';
             currentServiceName = serviceName;
             values = null;
+            services = services || [serviceName];
         } else {
             groupName = setting.group || 'General Settings';
             settingName = setting.name;
@@ -604,6 +606,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             settingTableName = setting.table || 'entity_service_type_setting';
             currentServiceName = setting.serviceName || serviceName;
             values = setting.values;
+            services = setting.services || [serviceName];
         }
 
         // Determine Main Group and Subgroup (Logic remains the same)
