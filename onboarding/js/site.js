@@ -647,7 +647,8 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             settingName: settingName,
             settingTableName: settingTableName,
             serviceName: currentServiceName,
-            values: values
+            values: values,
+            services: services
         });
     });
     // --- END: MODIFIED GROUPING LOGIC ---
