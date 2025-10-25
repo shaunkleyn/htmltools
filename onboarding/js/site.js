@@ -1831,7 +1831,8 @@ function extractScopeConfiguration() {
         });
 
         // 5) Get scope-level settings
-        $scopeTab.find('[service-setting]:not([role="set-service-setting-value"])').each(function() {
+        $scopeTab.find('[role="set-service-setting-value"]').each(function() {
+        // $scopeTab.find('[service-setting]:not([role="set-service-setting-value"])').each(function() {
             const $setting = $(this);
             const settingName = $setting.attr('service-setting');
             const settingField = $setting.attr('service-setting-field') || '';
