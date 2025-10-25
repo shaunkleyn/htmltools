@@ -553,6 +553,7 @@ if (scopeData.services && scopeData.services.length > 0) {
     // NOTE: Assuming all required helper functions (safeRename, safeReplace, renderSetting) are available.
 
 function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceName = '', allSettings) {
+    console.log(`Rendering grouped settings for type: ${type}, scope: ${scope}, service: ${serviceName}`);
     let html = '';
     prefix = safeRename(prefix);
 
