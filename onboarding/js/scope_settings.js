@@ -509,39 +509,46 @@ const scopes = {
                 group: 'EasyDebit.Webservice', 
                 name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
                 placeholder: 'EasyDebit Webservice Password', 
-                description: 'EasyDebit Webservice Password for web service authentication'
+                description: 'EasyDebit Webservice Password for web service authentication',
+                services: ['ocs.services.mandate']
             },
             {
                 group: 'EasyDebit.Webservice', 
                 name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
                 placeholder: 'EasyDebit Webservice Group Code', 
-                description: 'EasyDebit Webservice Group Code'
+                description: 'EasyDebit Webservice Group Code',
+                services: ['ocs.services.mandate']
             },
             {
                 group: 'EasyDebit', // OCS "Parent" Settings
                 name: 'ocs.df.scheme', 
                 placeholder: 'Default Scheme', 
-                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' 
+                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' ,
+                services: ['ocs.services.mandate']
             },
             {
                 group: 'EasyDebit',
                 name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
                 placeholder: 'EasyDebit SC GC Map',
                 description: 'Mapping between scheme names and group codes',
-                helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.'
+                helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.',
+                services: ['ocs.services.mandate']
             },
             { 
                 group: 'EasyDebit', 
                 name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
                 placeholder: 'EasyDebit UL GC Map', 
-                description: 'EasyDebit UL GC Map' },
+                description: 'EasyDebit UL GC Map',
+                services: ['ocs.services.mandate'] 
+            },
             {
                 group: 'EasyDebit',
                 name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
                 type: 'checkbox',
                 placeholder: 'EasyDebit Passthrough',
                 description: 'EasyDebit Passthrough',
-                defaultValue: true
+                defaultValue: true,
+                services: ['ocs.services.mandate']
             },
             { 
                         group: 'Default Mandate Details',
@@ -552,6 +559,7 @@ const scopes = {
                         description: 'Enable tracking',
                         type: 'checkbox',
                         defaultValue: true,
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -563,6 +571,7 @@ const scopes = {
                         type: 'dropdown',
                         defaultValue: 'MONTHLY',
                         values: ['ADHOC', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'BIANUALLY', 'ANNUALLY', 'ONCE_OFF'],
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -574,6 +583,7 @@ const scopes = {
                         type: 'dropdown',
                         defaultValue: 'Usage',
                         values: [{key: 1, value: 'Fixed'}, {key: 2, value: 'Variable'}, {key: 3, value: 'Usage'}],
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -585,6 +595,7 @@ const scopes = {
                         type: 'radio',
                         defaultValue: 'RATE',
                         values: [{key: 1, value: 'RATE'}, {key: 2, value: 'AMOUNT'}],
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -595,6 +606,7 @@ const scopes = {
                         description: 'Enter default adjustment value for mandates',
                         type: 'textbox',
                         defaultValue: '1',
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -605,6 +617,7 @@ const scopes = {
                         description: 'Enter default adjustment frequency for mandates',
                         type: 'textbox',
                         defaultValue: 'ANNUALLY',
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -615,6 +628,7 @@ const scopes = {
                         description: 'Enter default generate contract reference for mandates',
                         type: 'checkbox',
                         defaultValue: 'true',
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -627,7 +641,8 @@ const scopes = {
                         maxLength: 14,
                         defaultValue: '',
                         dependsOn: 'generateContractReference:true',
-                        dependencyAction: 'disable'
+                        dependencyAction: 'disable',
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -638,6 +653,7 @@ const scopes = {
                         description: 'Enter default debit classification for mandates',
                         type: 'textbox',
                         defaultValue: 'LRM',
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -648,6 +664,7 @@ const scopes = {
                         description: 'generate installment for mandates',
                         type: 'checkbox',
                         defaultValue: true,
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -658,6 +675,7 @@ const scopes = {
                         description: 'calculate installment for mandates',
                         type: 'checkbox',
                         defaultValue: false,
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -668,6 +686,7 @@ const scopes = {
                         description: 'Allow date adjustment for mandates',
                         type: 'checkbox',
                         defaultValue: true,
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -678,6 +697,7 @@ const scopes = {
                         description: 'Enter default maximum installment amount for mandates',
                         type: 'textbox',
                         defaultValue: '1000',
+                        services: ['ocs.services.mandate']
                     },
                     { 
                         group: 'Default Mandate Details',
@@ -689,6 +709,7 @@ const scopes = {
                         helpText: 'This is used to retrieve mandates with the same scheme from TCA',
                         type: 'textbox',
                         defaultValue: '',
+                        services: ['ocs.services.mandate']
                     },
             {
                 group: 'Integrations',
@@ -696,7 +717,8 @@ const scopes = {
                 placeholder: 'Easy Loan Webhook URL',
                 description: 'Webhook URL for Easy Loan integration',
                 helpText: 'This setting is only applicable if you are using the Easy Loan integration.',
-                applyTo: 'integrator'
+                applyTo: 'integrator',
+                services : ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'Integrations',
@@ -704,7 +726,8 @@ const scopes = {
                 description: 'Webhook URL for receipt printing on the EasyPOS.',
                 placeholder: 'External Status Webhook URL',
                 helpText: 'This setting is only applicable if you are using EasyPOS.',
-                applyTo: 'deviceuser'
+                applyTo: 'deviceuser',
+                services : ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'Nedbank Settings',
