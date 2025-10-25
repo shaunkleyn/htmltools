@@ -1811,7 +1811,7 @@ function extractScopeConfiguration() {
             }
             
             const serviceConfig = servicesMap.get(serviceName);
-            
+            console.log('Service Config:', serviceConfig);
             if ($checkbox.is(':checked') && !$checkbox.is(':disabled')) {
                 if (!serviceConfig.linkTo.includes(entityType)) {
                     serviceConfig.linkTo.push(entityType);
