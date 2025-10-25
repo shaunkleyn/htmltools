@@ -810,7 +810,7 @@ function renderSetting(settingObj, prefix, serviceName) {
 
     // Standard attributes shared by most inputs/selects
     const inputId = createControlId(prefix, settingObj.settingName, settingObj.settingField);
-    
+    console.log('Rendering setting:', settingObj.settingName, ' for service:' , serviceName, 'with ID:', inputId);
     const sharedAttrs = `
         service-setting="${settingObj.settingName}"
         role="set-service-setting-value"
@@ -1845,6 +1845,7 @@ function extractScopeConfiguration() {
             }
             
             if (settingField) {
+                console.log(`Processing field-level setting: ${settingName} - ${settingField}`);
                 let existingSetting = scopeConfig.settings.find(s => s.name === settingName);
                 if (!existingSetting) {
                     existingSetting = {
