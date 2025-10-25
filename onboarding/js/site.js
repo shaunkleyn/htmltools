@@ -1825,6 +1825,7 @@ function extractScopeConfiguration() {
             console.log(`Processing service: ${serviceName}, enabled: ${serviceConfig.enabled}`);
             if (serviceConfig.enabled) {
                 const serviceSettings = getServiceSettings($scopeTab, serviceName, serviceConfig.linkTo);
+                console.log(`Service Settings for ${serviceName}:`, serviceSettings);
                 serviceConfig.settings = serviceSettings;
                 scopeConfig.services.push(serviceConfig);
             }
@@ -1845,7 +1846,6 @@ function extractScopeConfiguration() {
             
             if (settingField) {
                 let existingSetting = scopeConfig.settings.find(s => s.name === settingName);
-                
                 if (!existingSetting) {
                     existingSetting = {
                         name: settingName,
