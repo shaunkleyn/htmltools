@@ -821,6 +821,7 @@ function renderSetting(settingObj, prefix, serviceName) {
         role="set-service-setting-value"
         data-service-name="${serviceName}"
         data-setting="${settingObj.settingName}"
+        data-service="${settingObj.services ? settingObj.services.join(',') : serviceName}"
         data-setting-table="${settingObj.settingTableName || ''}"
         service-setting-field="${settingObj.settingField || ''}"
     `;
