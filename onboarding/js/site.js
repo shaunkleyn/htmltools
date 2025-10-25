@@ -1950,7 +1950,7 @@ function generatePostgresScriptData() {
 // Helper function to get service settings
 function getServiceSettings($scopeTab, serviceName, serviceLinkTo) {
     const serviceSettings = [];
-    
+    console.log(`Getting settings for service: ${serviceName} with linkTo:`, serviceLinkTo);
     $scopeTab.find(`[role="set-service-setting-value"][data-service-name="${serviceName}"], [role="set-service-setting-value"][data-service="${serviceName}"]`).each(function() {
         const $setting = $(this);
         const settingName = $setting.data('setting');
