@@ -1822,7 +1822,7 @@ function extractScopeConfiguration() {
         // 4) Process services and get settings
         servicesMap.forEach((serviceConfig, serviceName) => {
             serviceConfig.enabled = serviceConfig.linkTo.length > 0;
-            
+            console.log(`Processing service: ${serviceName}, enabled: ${serviceConfig.enabled}`);
             if (serviceConfig.enabled) {
                 const serviceSettings = getServiceSettings($scopeTab, serviceName, serviceConfig.linkTo);
                 serviceConfig.settings = serviceSettings;
