@@ -1774,7 +1774,7 @@ function extractScopeConfiguration() {
         
         const scopeConfig = {
             scope: scope,
-            linkTo: [],
+            linkTo: ['parent'],
             rateLimit: {
                 enabled: false,
                 numberOfRequests: null,
