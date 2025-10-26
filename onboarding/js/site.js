@@ -1765,9 +1765,12 @@ function extractScopeConfiguration() {
     const scopeConfigs = [];
     
     // Get all visible/enabled scope tabs
-    $('.scope-tab:visible').each(function() {
-        const $scopeTab = $(this);
-        const scope = $scopeTab.attr('scope');
+    $('.scope-checkbox-input:checked').each(function() {
+    // $('.scope-tab:visible').each(function() {
+        const scope = $(this).val();
+        const $scopeTab = $(`#${scope}`);
+        // const $scopeTab = $(this);
+        // const scope = $scopeTab.attr('scope');
         
         const scopeConfig = {
             scope: scope,
@@ -1839,19 +1842,21 @@ function extractScopeConfiguration() {
 
         // 5) Get scope-level settings
         $scopeTab.find('[role="set-service-setting-value"]').each(function() {
-        // $scopeTab.find('[service-setting]:not([role="set-service-setting-value"])').each(function() {
             const $setting = $(this);
             const settingName = $setting.attr('service-setting');
             const settingField = $setting.attr('service-setting-field') || '';
             const settingValue = $setting.val();
+            const services = $setting.data('setting') || [serviceName];
             
             let finalValue = settingValue;
             if ($setting.is(':checkbox')) {
                 finalValue = $setting.is(':checked');
             }
             
-            if (settingField) {
-                console.log(`Processing field-level setting: ${settingName} - ${settingField}`);
+            ($setting.data('service').split(',') || [serviceName]).forEach(function(x,i)  {
+                var serviceExist = scopeConfig.services.find(s => s.name.trim().toLowerCase() === x.trim().toLowerCase());
+                if (serviceExist) {
+                console.log(`Processing field-level setting: ${settingName} - ${serviceExist}`);
                 let existingSetting = scopeConfig.settings.find(s => s.name === settingName);
                 if (!existingSetting) {
                     existingSetting = {
@@ -1872,6 +1877,11 @@ function extractScopeConfiguration() {
                     settingType: 'scope'
                 });
             }
+
+            });
+            
+
+            
         });
 
         // Convert JSON object settings to string
