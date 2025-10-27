@@ -906,7 +906,31 @@ const scopes = {
             }
         ],
         settings: [
-            
+            { 
+                        group: 'Default Mandate Details',
+                        name: 'ocs.ed.mandate.default.details',
+                        field: 'generateContractReference',
+                        label: 'Generate Contract Reference',
+                        placeholder: 'Enter Generate Contract Reference',
+                        description: 'Enter default generate contract reference for mandates',
+                        type: 'checkbox',
+                        defaultValue: 'true',
+                        services: ['ocs.services.mandate']
+                    },
+                    { 
+                        group: 'Default Mandate Details',
+                        name: 'ocs.ed.mandate.default.details',
+                        field: 'referenceFormat',
+                        label: 'Contract Reference Format',
+                        placeholder: 'XXXXXXX_******',
+                        description: 'Enter default contract reference format for mandates',
+                        type: 'textbox',
+                        maxLength: 14,
+                        defaultValue: '',
+                        dependsOn: 'generateContractReference:true',
+                        dependencyAction: 'disable',
+                        services: ['ocs.services.mandate']
+                    },
         ]
     },
     'VMS': {
