@@ -807,9 +807,12 @@ function renderSetting(settingObj, prefix, serviceName) {
                 dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
             }
         } else {
-            // 2. Standard single-setting dependency on a different setting name.
-            // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
-            dependsOnAttr = `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}" data-required-value="${requiredValue.toLowerCase()}"`;
+            if (controllingField && requiredValue !== undefined) {
+                const controllingId = createDependencyId(prefix, settingName + '___' + controllingField);
+                // 2. Standard single-setting dependency on a different setting name.
+                // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
+                dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
+            }
         }
     }
     // --- END: Dependency ID Generation Logic ---
