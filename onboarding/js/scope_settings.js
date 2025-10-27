@@ -267,6 +267,7 @@ const scopes = {
                         description: 'Allow manual payment processing in the system',
                         defaultValue: false,
                         dependsOn: 'manual.payments.enabled',
+                        dependencyAction: 'disable',
                         group: "Manual Payments",
                         settings: [
                             {
