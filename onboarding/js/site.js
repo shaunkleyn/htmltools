@@ -808,7 +808,7 @@ function renderSetting(settingObj, prefix, serviceName) {
             console.log('Generating dependency for single-setting:', settingObj.settingName);
             if (controllingField && requiredValue !== undefined) {
                 // const controllingId = createDependencyId(prefix, controllingField);
-                const controllingId = createDependencyId(prefix, settingName + '___' + controllingField);
+                const controllingId = createDependencyId(prefix, settingName + '_-_' + controllingField);
                 console.log('Controlling ID (multi-field):', controllingField);
                 // 2. Standard single-setting dependency on a different setting name.
                 // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
