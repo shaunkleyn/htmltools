@@ -786,7 +786,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
 function renderSetting(settingObj, prefix, serviceName) {
     let html = '';
     const settingName = safeRename(settingObj.name);
-    
+console.log(settingObj);
     // --- START: Dependency ID Generation Logic ---
     let dependsOnAttr = '';
     let controllingId = '';
