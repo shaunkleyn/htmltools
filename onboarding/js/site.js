@@ -822,7 +822,7 @@ function renderSetting(settingObj, prefix, serviceName) {
     const inputId = createControlId(prefix, settingObj.settingName, settingObj.settingField);
     console.log('Rendering setting:', settingObj.settingName, ' for service:' , serviceName, 'with ID:', inputId);
     const sharedAttrs = `
-        data-dependant_name="${controllingId}"
+        data-dependant-name="${controllingId}"
         service-setting="${settingObj.settingName}"
         role="set-service-setting-value"
         data-service-name="${serviceName}"
@@ -1054,7 +1054,7 @@ function createControlId(prefix, name, field) {
                 console.log(`Found dependent element with dependency: ${dependsOnId}`);
                 
                 if (dependsOnId) {
-                    const $masterElement = $(`#${dependsOnId}`);
+                    const $masterElement = $(`#${dependsOnId}`) || $('[data-dependant-name="' + dependsOnId + '"]');
                     
                     if ($masterElement.length > 0) {
                         console.log(`Found master element: ${dependsOnId}, is checkbox: ${$masterElement.is(':checkbox')}`);
