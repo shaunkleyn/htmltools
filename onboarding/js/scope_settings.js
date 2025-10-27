@@ -521,27 +521,27 @@ const scopes = {
         settings: [
             {
                 group: 'EasyDebit.Webservice',
-                name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
+                name: 'ocs.ed.ws.usr', 
                 placeholder: 'EasyDebit Webservice User',
                 helpText: 'EasyDebit Webservice User for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'EasyDebit.Webservice',
-                name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
+                name: 'ocs.ed.ws.pwd', 
                 placeholder: 'EasyDebit Webservice Password',
                 description: 'EasyDebit Webservice Password for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'EasyDebit.Webservice',
-                name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
+                name: 'ocs.ed.ws.gc', 
                 placeholder: 'EasyDebit Webservice Group Code',
                 description: 'EasyDebit Webservice Group Code',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit', // OCS "Parent" Settings
+                group: 'EasyDebit', 
                 name: 'ocs.df.scheme',
                 placeholder: 'Default Scheme',
                 description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent',
@@ -549,7 +549,7 @@ const scopes = {
             },
             {
                 group: 'EasyDebit',
-                name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
+                name: 'ocs.ed.sc.gc.map',  
                 placeholder: 'EasyDebit SC GC Map',
                 description: 'Mapping between scheme names and group codes',
                 helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.',
@@ -557,14 +557,14 @@ const scopes = {
             },
             {
                 group: 'EasyDebit',
-                name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
+                name: 'ocs.ed.ul.gc.map',  
                 placeholder: 'EasyDebit UL GC Map',
                 description: 'EasyDebit UL GC Map',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'EasyDebit',
-                name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
+                name: 'ocs.ed.passthrough',  
                 type: 'checkbox',
                 placeholder: 'EasyDebit Passthrough',
                 description: 'EasyDebit Passthrough',
@@ -908,27 +908,29 @@ const scopes = {
         settings: [
             {
                 group: 'EPOS.Menu Options',
-                name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
+                title: 'Show EasyPOS Menu?',
+                name: 'app.payments.enabled', 
+                type: 'checkbox',
                 placeholder: 'EasyDebit Webservice User',
                 helpText: 'EasyDebit Webservice User for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'EPOS.Webservice',
-                name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
+                name: 'ocs.ed.ws.pwd', 
                 placeholder: 'EasyDebit Webservice Password',
                 description: 'EasyDebit Webservice Password for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'EPOS.Webservice',
-                name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
+                name: 'ocs.ed.ws.gc', 
                 placeholder: 'EasyDebit Webservice Group Code',
                 description: 'EasyDebit Webservice Group Code',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDEPOSebit', // OCS "Parent" Settings
+                group: 'EasyDEPOSebit', 
                 name: 'ocs.df.scheme',
                 placeholder: 'Default Scheme',
                 description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent',
@@ -936,7 +938,7 @@ const scopes = {
             },
             {
                 group: 'EPOS',
-                name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
+                name: 'ocs.ed.sc.gc.map',  
                 placeholder: 'EasyDebit SC GC Map',
                 description: 'Mapping between scheme names and group codes',
                 helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.',
@@ -944,14 +946,14 @@ const scopes = {
             },
             {
                 group: 'EPOS',
-                name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
+                name: 'ocs.ed.ul.gc.map',  
                 placeholder: 'EasyDebit UL GC Map',
                 description: 'EasyDebit UL GC Map',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'EPOS',
-                name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
+                name: 'ocs.ed.passthrough',  
                 type: 'checkbox',
                 placeholder: 'EasyDebit Passthrough',
                 description: 'EasyDebit Passthrough',
