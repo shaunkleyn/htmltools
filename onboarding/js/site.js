@@ -1008,127 +1008,6 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
         `;
     }
 
-    // function renderRadioSetting(settingObj, inputId, prefix) {
-    //     let optionsHtml = '';
-        
-    //     if (settingObj.options && settingObj.options.length > 0) {
-    //         settingObj.options.forEach(option => {
-    //             optionsHtml += `
-    //                 <div class="form-check">
-    //                     <input class="form-check-input" type="radio" name="${inputId}" value="${option.value}" id="${inputId}-${option.value}">
-    //                     <label class="form-check-label" for="${inputId}-${option.value}">
-    //                         ${option.label}
-    //                     </label>
-    //                 </div>
-    //             `;
-    //         });
-    //     }
-        
-    //     const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
-        
-    //     return `
-    //         <div class="mb-3 col-md-12" ${dependsOnAttr}>
-    //             <label class="form-label mb-2">
-    //                 ${settingObj.label}
-    //                 ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
-    //             </label>
-    //             <div>
-    //                 ${optionsHtml}
-    //             </div>
-    //             ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
-    //         </div>
-    //     `;
-    // }
-
-    function renderScopeServiceCardForEntity(scopeData, scope, entity) {
-        console.log(scopeData);
-        let entityDisplayName = entity.charAt(0).toUpperCase() + entity.slice(1);
-        entity = entity.toLowerCase();
-        console.log(`Rendering service card for entity: ${entityDisplayName} (${entity}) in scope: ${scope}`);
-        if (scopeData.excludeFrom && scopeData.excludeFrom.includes(entity) ) {
-            return `
-            <div class="col-md-4">
-                <div class="entity-card card shadow-none entity-disabled opacity-50" 
-                    data-bs-toggle="tooltip" data-bs-title="${scope} is not applicable to the  ${splitCamelCase(entityDisplayName).toLowerCase()}." data-bs-placement="top">
-                    <div class="card-header bg-entity text-white d-flex justify-content-between align-items-center opacity-50">
-                        <div>
-                            <i class="bi bi-gear me-2"></i>${entityDisplayName}
-                        </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" disabled>
-                            </div>
-                        </div>
-                    <div class="card-body">
-                        ${scopeData.services.map(service => `
-                            <div class="service-item d-flex justify-content-between align-items-center mb-2">
-                                <div class="form-check mb-0">
-                                    <input class="form-check-input ${entity}-service" type="checkbox" disabled>
-                                    <label class="form-check-label text-muted">${service.description}</label>
-                                </div>                   
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-            `;
-        }
-
-        let html = `
-            <div class="col-md-4">
-                <div class="entity-card card ${$('#create' + entityDisplayName + '').is(':checked') ? '' : 'entity-disabled'}" 
-                    ${!$('#create' + entityDisplayName + '').is(':checked') ? `data-bs-toggle="tooltip" data-bs-title="The ${splitCamelCase(entityDisplayName)} has not been created in the Entity Setup section. Please enable it there first." data-bs-placement="top"` : ''}>
-                    <div class="card-header bg-entity text-white d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="bi bi-gear me-2"></i>${entityDisplayName}
-                        </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input entity-toggle-all" type="checkbox"
-                                role="link-scope-to-entity"
-                                data-scope="${scope}"
-                                id="${scope}-${entity}-toggle-all"
-                                data-entity="${entity}"
-                                ${(scopeData.excludeFrom && scopeData.excludeFrom.includes(entity)) || (scopeData.services.every(s => s.allowOn?.includes(entity))) ? 'data-exclude-on-entity="true"' : ''}
-                                ${$('#create' + entityDisplayName + '').is(':checked') ? '' : 'disabled'}
-                                ${entity === 'parent' ? 'checked' : ''}
-                                ${entity === 'parent' ? 'readonly' : ''}
-                                ${$('#create' + entityDisplayName + '').is(':checked') && scopeData.services.some(s => s.allowOn?.includes(entity)) ? 'checked' : ''}>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        ${scopeData.services.map(service => `
-                            <div class="service-item d-flex justify-content-between align-items-center mb-2">
-                                <div class="form-check mb-0">
-                                    <input class="form-check-input ${entity}-service" type="checkbox" 
-                                        role="link-service-to-entity"
-                                        id="${scope}-${safeRename(service.name)}-${entity}"
-                                        data-service="${service.name}"
-                                        data-entity="${entity}" service.exclude
-                                        ${service.excludeFrom && service.excludeFrom.includes(entity) ? 'data-exclude-on-entity="true"' : ''}
-                                        ${service.allowOn && !service.allowOn.includes(entity) ? 'disabled' : ''}
-                                        ${$('#create' + entityDisplayName + '').is(':checked') ? '' : 'disabled'}
-                                        ${!$('#create' + entityDisplayName + '').is(':checked') ? `data-bs-toggle="tooltip" data-bs-title="Enable ${entityDisplayName} in Entity Setup to assign services" data-bs-placement="left"` : ''}
-                                        ${entity === 'parent' ? 'checked' : ''}
-                                        ${$('#create' + entityDisplayName + '').is(':checked') && service.allowOn?.includes(entity) ? 'checked' : ''}>
-                                    <label for="${scope}-${safeRename(service.name)}-${entity}" class="form-check-label">${service.description}</label>
-                                </div>
-                                ${service.settings && service.settings.length > 0 ? `
-                                    <button type="button" class="btn btn-sm btn-outline-secondary service-settings-btn" 
-                                        data-service="${service.name}" 
-                                        data-scope="${scope}"
-                                        data-bs-toggle="tooltip1" title="Configure settings">
-                                        <i class="bi bi-gear"></i>
-                                    </button>
-                                ` : `
-                                    
-                                `}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>`;
-        return html;
-    }
-
 /**
  * Creates the dependency target ID based on a setting name (used for lookups).
  * This function must be consistent with createControlId logic.
@@ -1624,85 +1503,85 @@ function initializeTooltips(container = document) {
         return config;
     }
 
-function extractScopeConfiguration_old() {
-    const config = {
-        parentName: $('#parentName').val(),
-        website: $('#website').val(),
-        createDeviceUser: $('#createDeviceUser').is(':checked'),
-        deviceUsername: $('#deviceUsername').val(),
-        deviceEmail: $('#deviceEmail').val(),
-        createIntegrator: $('#createIntegrator').is(':checked'),
-        integratorName: $('#integratorName').val(),
-        scopes: {}
-    };
+// function extractScopeConfiguration_old() {
+//     const config = {
+//         parentName: $('#parentName').val(),
+//         website: $('#website').val(),
+//         createDeviceUser: $('#createDeviceUser').is(':checked'),
+//         deviceUsername: $('#deviceUsername').val(),
+//         deviceEmail: $('#deviceEmail').val(),
+//         createIntegrator: $('#createIntegrator').is(':checked'),
+//         integratorName: $('#integratorName').val(),
+//         scopes: {}
+//     };
 
-    $('.scope-checkbox-input:checked').each(function() {
-        const scope = $(this).val();
-        const $scopeTab = $(`#${scope}`);
+//     $('.scope-checkbox-input:checked').each(function() {
+//         const scope = $(this).val();
+//         const $scopeTab = $(`#${scope}`);
         
-        if ($scopeTab.length === 0) return;
+//         if ($scopeTab.length === 0) return;
 
-        const scopeConfig = {
-            allowOn: [],
-            rateLimit: {
-                enabled: false,
-                numberOfRequests: null,
-                duration: null
-            },
-            services: [],
-            settings: []
-        };
+//         const scopeConfig = {
+//             allowOn: [],
+//             rateLimit: {
+//                 enabled: false,
+//                 numberOfRequests: null,
+//                 duration: null
+//             },
+//             services: [],
+//             settings: []
+//         };
 
-        // Get scope entity linking
-        $scopeTab.find('[section="entity-linking"] [scope-link]').each(function() {
-            const $checkbox = $(this);
-            if ($checkbox.is(':checked') && !$checkbox.is(':disabled')) {
-                scopeConfig.allowOn.push($checkbox.attr('scope-link'));
-            }
-        });
+//         // Get scope entity linking
+//         $scopeTab.find('[section="entity-linking"] [scope-link]').each(function() {
+//             const $checkbox = $(this);
+//             if ($checkbox.is(':checked') && !$checkbox.is(':disabled')) {
+//                 scopeConfig.allowOn.push($checkbox.attr('scope-link'));
+//             }
+//         });
 
-        // Get rate limiting
-        const $rateLimitCheckbox = $(`#${scope}-rate-limit`);
-        scopeConfig.rateLimit.enabled = $rateLimitCheckbox.is(':checked');
-        scopeConfig.rateLimit.numberOfRequests = $(`#${scope}-limit-count`).val() || null;
-        scopeConfig.rateLimit.duration = $(`#${scope}-limit-period`).val() || null;
+//         // Get rate limiting
+//         const $rateLimitCheckbox = $(`#${scope}-rate-limit`);
+//         scopeConfig.rateLimit.enabled = $rateLimitCheckbox.is(':checked');
+//         scopeConfig.rateLimit.numberOfRequests = $(`#${scope}-limit-count`).val() || null;
+//         scopeConfig.rateLimit.duration = $(`#${scope}-limit-period`).val() || null;
 
-        // Get global service entities
-        const serviceEntities = ['parent']; // Parent is always included
-        if ($(`#${scope}-services-integrator`).is(':checked')) serviceEntities.push('integrator');
-        if ($(`#${scope}-services-device`).is(':checked')) serviceEntities.push('user');
+//         // Get global service entities
+//         const serviceEntities = ['parent']; // Parent is always included
+//         if ($(`#${scope}-services-integrator`).is(':checked')) serviceEntities.push('integrator');
+//         if ($(`#${scope}-services-device`).is(':checked')) serviceEntities.push('user');
 
-        // Get services
-        $scopeTab.find('.service-group[service]').each(function() {
-            const $serviceGroup = $(this);
-            const serviceName = $serviceGroup.attr('service');
-            const serviceEnabled = $serviceGroup.find('[role="service-enabled"]').is(':checked');
+//         // Get services
+//         $scopeTab.find('.service-group[service]').each(function() {
+//             const $serviceGroup = $(this);
+//             const serviceName = $serviceGroup.attr('service');
+//             const serviceEnabled = $serviceGroup.find('[role="service-enabled"]').is(':checked');
             
-            if (!serviceEnabled) return;
+//             if (!serviceEnabled) return;
 
-            const serviceConfig = {
-                name: serviceName,
-                enabled: serviceEnabled,
-                allowOn: [...serviceEntities], // Copy the global entities
-                settings: []
-            };
+//             const serviceConfig = {
+//                 name: serviceName,
+//                 enabled: serviceEnabled,
+//                 allowOn: [...serviceEntities], // Copy the global entities
+//                 settings: []
+//             };
 
-            // Get service settings
-            $serviceGroup.find('[service-setting]').each(function() {
-                // ... (same settings extraction logic as before)
-            });
+//             // Get service settings
+//             $serviceGroup.find('[service-setting]').each(function() {
+//                 // ... (same settings extraction logic as before)
+//             });
 
-            scopeConfig.services.push(serviceConfig);
-        });
+//             scopeConfig.services.push(serviceConfig);
+//         });
 
-        // Get scope-level settings
-        // ... (same as before)
+//         // Get scope-level settings
+//         // ... (same as before)
 
-        config.scopes[scope] = scopeConfig;
-    });
+//         config.scopes[scope] = scopeConfig;
+//     });
 
-    return config;
-}
+//     return config;
+// }
 
 
 
