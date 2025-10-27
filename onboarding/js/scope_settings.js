@@ -295,10 +295,32 @@ const scopes = {
                             }
                         ]
                     },
+                    { 
+                        group: 'Manual Payments',
+                        name: 'app.manual.payments.reference.customer',
+                        field: 'generateContractReference',
+                        label: 'Show Customer Reference Field',
+                        placeholder: 'Show Customer Reference Field',
+                        description: 'Enter default generate contract reference for mandates',
+                        type: 'checkbox',
+                        defaultValue: 'false',
+                        services: ['ocs.services.mandate']
+                    },
+                    { 
+                        group: 'Manual Payments',
+                        name: 'ocs.ed.mandate.default.details',
+                        field: 'referenceFormat',
+                        label: 'Contract Reference Format',
+                        placeholder: 'XXXXXXX_******',
+                        description: 'Enter default contract reference format for mandates',
+                        type: 'textbox',
+                        maxLength: 14,
+                        defaultValue: '',
+                        dependsOn: 'generateContractReference:true',
+                        dependencyAction: 'disable',
+                        services: ['ocs.services.mandate']
+                    },
                     {
-
-
-
                         group: 'Payments',
                         name: 'reference.settings',
                         type: 'radio-group',
@@ -331,8 +353,6 @@ const scopes = {
                                 defaultValue: 'disabled'
                             }
                         ]
-
-
                     }
                 ]
             }
