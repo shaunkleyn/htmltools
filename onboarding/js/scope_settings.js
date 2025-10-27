@@ -910,8 +910,9 @@ const scopes = {
             {
                 group: 'EPOS.Menu Options',
                 label: 'Show EasyPOS Menu?',
-                name: 'app.payments.enabled', 
+                name: 'app.payments.enabled',
                 type: 'checkbox',
+                defaultValue: true,
                 services: ['tca.services.mca']
             },
             {
