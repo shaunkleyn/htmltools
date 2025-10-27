@@ -789,7 +789,7 @@ function renderSetting(settingObj, prefix, serviceName) {
     
     // --- START: Dependency ID Generation Logic ---
     let dependsOnAttr = '';
-    
+    let controllingId = '';
     if (settingObj.dependsOn) {
         // Format: 'otherFieldName:requiredValue'
         const [controllingField, requiredValue] = settingObj.dependsOn.split(':');
@@ -799,7 +799,7 @@ function renderSetting(settingObj, prefix, serviceName) {
             if (controllingField && requiredValue !== undefined) {
                 // The controlling element's ID is the settingName + controllingField
                 // e.g., 'scope-parent-ocs-ed-mandate-default-details___generateContractReference'
-                const controllingId = createDependencyId(prefix, settingName + '___' + controllingField);
+                controllingId = createDependencyId(prefix, settingName + '___' + controllingField);
                 
                 // The data attribute now holds both the target ID and the required value
                 dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
@@ -808,7 +808,7 @@ function renderSetting(settingObj, prefix, serviceName) {
             console.log('Generating dependency for single-setting:', settingObj.settingName);
             if (controllingField && requiredValue !== undefined) {
                 // const controllingId = createDependencyId(prefix, controllingField);
-                const controllingId = createDependencyId(prefix, settingName + '_-_' + controllingField);
+                controllingId = createDependencyId(prefix, settingName + '_-_' + controllingField);
                 console.log('Controlling ID (multi-field):', controllingField);
                 // 2. Standard single-setting dependency on a different setting name.
                 // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
@@ -822,7 +822,7 @@ function renderSetting(settingObj, prefix, serviceName) {
     const inputId = createControlId(prefix, settingObj.settingName, settingObj.settingField);
     console.log('Rendering setting:', settingObj.settingName, ' for service:' , serviceName, 'with ID:', inputId);
     const sharedAttrs = `
-        data-dependant_name="-${dependsOnAttr}"
+        data-dependant_name="${controllingId}"
         service-setting="${settingObj.settingName}"
         role="set-service-setting-value"
         data-service-name="${serviceName}"
