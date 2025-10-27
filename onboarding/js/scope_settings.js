@@ -905,7 +905,9 @@ const scopes = {
                 settings: []
             }
         ],
-        settings: []
+        settings: [
+            
+        ]
     },
     'VMS': {
         name: 'VerifyMe Service',
