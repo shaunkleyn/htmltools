@@ -891,7 +891,22 @@ const scopes = {
                         placeholder: 'TCA Merchant Username',
                         description: 'Merchant Username for Transaction Card Authorization',
                         allowOn: ['deviceuser'],
-                    },{
+                    }
+                ]
+            },
+            {
+                name: 'tca.services.pca',
+                description: 'Authorize Payment',
+                settings: []
+            },
+            {
+                name: 'tca.services.rcp',
+                description: 'Recurring Card Payment',
+                settings: []
+            }
+        ],
+        settings: [
+            {
                 group: 'EasyDebit.Webservice', 
                 name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
                 placeholder: 'EasyDebit Webservice User', 
@@ -943,45 +958,6 @@ const scopes = {
                 defaultValue: true,
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
-                ]
-            },
-            {
-                name: 'tca.services.pca',
-                description: 'Authorize Payment',
-                settings: []
-            },
-            {
-                name: 'tca.services.rcp',
-                description: 'Recurring Card Payment',
-                settings: []
-            }
-        ],
-        settings: [
-            { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'generateContractReference',
-                        label: 'Generate Contract Reference',
-                        placeholder: 'Enter Generate Contract Reference',
-                        description: 'Enter default generate contract reference for mandates',
-                        type: 'checkbox',
-                        defaultValue: 'true',
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'referenceFormat',
-                        label: 'Contract Reference Format',
-                        placeholder: 'XXXXXXX_******',
-                        description: 'Enter default contract reference format for mandates',
-                        type: 'textbox',
-                        maxLength: 14,
-                        defaultValue: '',
-                        dependsOn: 'generateContractReference:true',
-                        dependencyAction: 'disable',
-                        services: ['ocs.services.mandate']
-                    },
         ]
     },
     'VMS': {
