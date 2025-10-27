@@ -45,7 +45,7 @@ const scopes = {
             {
                 name: 'aml.service.aml',
                 description: 'Anti-Money Laundering Service',
-                
+
                 settings: []
             }
         ],
@@ -218,7 +218,7 @@ const scopes = {
                 name: 'crs.services.report',
                 description: 'Credit Report Service',
                 settings: [
-                    { 
+                    {
                         name: 'crs.cpb.enquiry.done.by',
                         description: 'This name will appear on CPB enquiries made through the Credit Report Service',
                         placeholder: 'CRS CPB Enquiry Done By',
@@ -295,7 +295,7 @@ const scopes = {
                             }
                         ]
                     },
-                    { 
+                    {
                         group: 'Manual Payments',
                         name: 'app.manual.payments.reference.customer',
                         field: 'generateContractReference',
@@ -306,7 +306,7 @@ const scopes = {
                         defaultValue: 'false',
                         services: ['ocs.services.mandate']
                     },
-                    { 
+                    {
                         group: 'Manual Payments',
                         name: 'ocs.ed.mandate.default.details',
                         field: 'referenceFormat',
@@ -487,7 +487,7 @@ const scopes = {
                         name: 'ocs.webhook.url.collection',
                         placeholder: 'Collection webhook URL',
                         description: 'Webhook URL for collection notifications',
-                        helpText: 'Enter the webhook URL for collection notifications',                        
+                        helpText: 'Enter the webhook URL for collection notifications',
                         table: 'entity_service_setting'
                     }
                 ]
@@ -497,21 +497,21 @@ const scopes = {
                 description: 'Debit Order',
                 allowOn: ['parent', 'integrator'],
                 settings: [
-                    { 
-                        name: 'ocs.ed.do.sc.gc.map', 
-                        placeholder: 'EasyDebit DO SC GC Map', 
+                    {
+                        name: 'ocs.ed.do.sc.gc.map',
+                        placeholder: 'EasyDebit DO SC GC Map',
                         description: 'EasyDebit DO SC GC Map',
                         applyTo: 'integrator'
-                        },
-                    { 
-                        name: 'ocs.ed.do.ul.gc.map', 
-                        placeholder: 'EasyDebit DO UL GC Map', 
+                    },
+                    {
+                        name: 'ocs.ed.do.ul.gc.map',
+                        placeholder: 'EasyDebit DO UL GC Map',
                         description: 'EasyDebit DO UL GC Map',
                         applyTo: 'integrator'
                     },
-                    { 
-                        name: 'ocs.ed.do.gc', 
-                        placeholder: 'EasyDebit DO GC', 
+                    {
+                        name: 'ocs.ed.do.gc',
+                        placeholder: 'EasyDebit DO GC',
                         description: 'EasyDebit DO GC',
                         applyTo: 'integrator'
                     },
@@ -520,31 +520,31 @@ const scopes = {
         ],
         settings: [
             {
-                group: 'EasyDebit.Webservice', 
+                group: 'EasyDebit.Webservice',
                 name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice User', 
+                placeholder: 'EasyDebit Webservice User',
                 helpText: 'EasyDebit Webservice User for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit.Webservice', 
+                group: 'EasyDebit.Webservice',
                 name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Password', 
+                placeholder: 'EasyDebit Webservice Password',
                 description: 'EasyDebit Webservice Password for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit.Webservice', 
+                group: 'EasyDebit.Webservice',
                 name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Group Code', 
+                placeholder: 'EasyDebit Webservice Group Code',
                 description: 'EasyDebit Webservice Group Code',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'EasyDebit', // OCS "Parent" Settings
-                name: 'ocs.df.scheme', 
-                placeholder: 'Default Scheme', 
-                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' ,
+                name: 'ocs.df.scheme',
+                placeholder: 'Default Scheme',
+                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
@@ -555,10 +555,10 @@ const scopes = {
                 helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
-            { 
-                group: 'EasyDebit', 
+            {
+                group: 'EasyDebit',
                 name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
-                placeholder: 'EasyDebit UL GC Map', 
+                placeholder: 'EasyDebit UL GC Map',
                 description: 'EasyDebit UL GC Map',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
@@ -571,167 +571,167 @@ const scopes = {
                 defaultValue: true,
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
-            { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'tracking',
-                        label: 'Tracking',
-                        placeholder: 'Enable tracking',
-                        description: 'Enable tracking',
-                        type: 'checkbox',
-                        defaultValue: true,
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'frequency',
-                        label: 'Frequency',
-                        placeholder: 'Enter Frequency',
-                        description: 'Enter default frequency for mandates',
-                        type: 'dropdown',
-                        defaultValue: 'MONTHLY',
-                        values: ['ADHOC', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'BIANUALLY', 'ANNUALLY', 'ONCE_OFF'],
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'mandateType',
-                        label: 'Mandate Type',
-                        placeholder: 'Enter Mandate Type',
-                        description: 'Enter default mandate type for mandates',
-                        type: 'dropdown',
-                        defaultValue: 'Usage',
-                        values: [{key: 1, value: 'Fixed'}, {key: 2, value: 'Variable'}, {key: 3, value: 'Usage'}],
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'adjustmentType',
-                        label: 'Adjustment Type',
-                        placeholder: 'Enter Adjustment Type',
-                        description: 'Enter default adjustment type for mandates',
-                        type: 'radio',
-                        defaultValue: 'RATE',
-                        values: [{key: 1, value: 'RATE'}, {key: 2, value: 'AMOUNT'}],
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'adjustmentValue',
-                        label: 'Adjustment Value',
-                        placeholder: 'Enter Adjustment Value',
-                        description: 'Enter default adjustment value for mandates',
-                        type: 'textbox',
-                        defaultValue: '1',
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'adjustmentFrequency',
-                        label: 'Adjustment Frequency',
-                        placeholder: 'Enter Adjustment Frequency',
-                        description: 'Enter default adjustment frequency for mandates',
-                        type: 'textbox',
-                        defaultValue: 'ANNUALLY',
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'generateContractReference',
-                        label: 'Generate Contract Reference',
-                        placeholder: 'Enter Generate Contract Reference',
-                        description: 'Enter default generate contract reference for mandates',
-                        type: 'checkbox',
-                        defaultValue: 'true',
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'referenceFormat',
-                        label: 'Contract Reference Format',
-                        placeholder: 'XXXXXXX_******',
-                        description: 'Enter default contract reference format for mandates',
-                        type: 'textbox',
-                        maxLength: 14,
-                        defaultValue: '',
-                        dependsOn: 'generateContractReference:true',
-                        dependencyAction: 'disable',
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'debitClassification',
-                        label: 'Debit Classification',
-                        placeholder: 'Enter Debit Classification',
-                        description: 'Enter default debit classification for mandates',
-                        type: 'textbox',
-                        defaultValue: 'LRM',
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'generateInstallment',
-                        label: 'Generate Installment',
-                        placeholder: 'Generate Installment',
-                        description: 'generate installment for mandates',
-                        type: 'checkbox',
-                        defaultValue: true,
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'calculateInstallment',
-                        label: 'Calculate Installment',
-                        placeholder: 'Calculate Installment',
-                        description: 'calculate installment for mandates',
-                        type: 'checkbox',
-                        defaultValue: false,
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'dateAdjustmentAllowed',
-                        label: 'Date Adjustment Allowed',
-                        placeholder: 'Date Adjustment Allowed',
-                        description: 'Allow date adjustment for mandates',
-                        type: 'checkbox',
-                        defaultValue: true,
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'maximumInstallmentAmount',
-                        label: 'Maximum Installment Amount',
-                        placeholder: 'Enter Maximum Installment Amount',
-                        description: 'Enter default maximum installment amount for mandates',
-                        type: 'textbox',
-                        defaultValue: '1000',
-                        services: ['ocs.services.mandate']
-                    },
-                    { 
-                        group: 'Default Mandate Details',
-                        name: 'ocs.ed.mandate.default.details',
-                        field: 'scheme',
-                        label: 'Scheme',
-                        placeholder: 'Enter Scheme',
-                        description: 'Enter default scheme for mandates',
-                        helpText: 'This is used to retrieve mandates with the same scheme from TCA',
-                        type: 'textbox',
-                        defaultValue: '',
-                        services: ['ocs.services.mandate']
-                    },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'tracking',
+                label: 'Tracking',
+                placeholder: 'Enable tracking',
+                description: 'Enable tracking',
+                type: 'checkbox',
+                defaultValue: true,
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'frequency',
+                label: 'Frequency',
+                placeholder: 'Enter Frequency',
+                description: 'Enter default frequency for mandates',
+                type: 'dropdown',
+                defaultValue: 'MONTHLY',
+                values: ['ADHOC', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'BIANUALLY', 'ANNUALLY', 'ONCE_OFF'],
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'mandateType',
+                label: 'Mandate Type',
+                placeholder: 'Enter Mandate Type',
+                description: 'Enter default mandate type for mandates',
+                type: 'dropdown',
+                defaultValue: 'Usage',
+                values: [{ key: 1, value: 'Fixed' }, { key: 2, value: 'Variable' }, { key: 3, value: 'Usage' }],
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'adjustmentType',
+                label: 'Adjustment Type',
+                placeholder: 'Enter Adjustment Type',
+                description: 'Enter default adjustment type for mandates',
+                type: 'radio',
+                defaultValue: 'RATE',
+                values: [{ key: 1, value: 'RATE' }, { key: 2, value: 'AMOUNT' }],
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'adjustmentValue',
+                label: 'Adjustment Value',
+                placeholder: 'Enter Adjustment Value',
+                description: 'Enter default adjustment value for mandates',
+                type: 'textbox',
+                defaultValue: '1',
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'adjustmentFrequency',
+                label: 'Adjustment Frequency',
+                placeholder: 'Enter Adjustment Frequency',
+                description: 'Enter default adjustment frequency for mandates',
+                type: 'textbox',
+                defaultValue: 'ANNUALLY',
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'generateContractReference',
+                label: 'Generate Contract Reference',
+                placeholder: 'Enter Generate Contract Reference',
+                description: 'Enter default generate contract reference for mandates',
+                type: 'checkbox',
+                defaultValue: 'true',
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'referenceFormat',
+                label: 'Contract Reference Format',
+                placeholder: 'XXXXXXX_******',
+                description: 'Enter default contract reference format for mandates',
+                type: 'textbox',
+                maxLength: 14,
+                defaultValue: '',
+                dependsOn: 'generateContractReference:true',
+                dependencyAction: 'disable',
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'debitClassification',
+                label: 'Debit Classification',
+                placeholder: 'Enter Debit Classification',
+                description: 'Enter default debit classification for mandates',
+                type: 'textbox',
+                defaultValue: 'LRM',
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'generateInstallment',
+                label: 'Generate Installment',
+                placeholder: 'Generate Installment',
+                description: 'generate installment for mandates',
+                type: 'checkbox',
+                defaultValue: true,
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'calculateInstallment',
+                label: 'Calculate Installment',
+                placeholder: 'Calculate Installment',
+                description: 'calculate installment for mandates',
+                type: 'checkbox',
+                defaultValue: false,
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'dateAdjustmentAllowed',
+                label: 'Date Adjustment Allowed',
+                placeholder: 'Date Adjustment Allowed',
+                description: 'Allow date adjustment for mandates',
+                type: 'checkbox',
+                defaultValue: true,
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'maximumInstallmentAmount',
+                label: 'Maximum Installment Amount',
+                placeholder: 'Enter Maximum Installment Amount',
+                description: 'Enter default maximum installment amount for mandates',
+                type: 'textbox',
+                defaultValue: '1000',
+                services: ['ocs.services.mandate']
+            },
+            {
+                group: 'Default Mandate Details',
+                name: 'ocs.ed.mandate.default.details',
+                field: 'scheme',
+                label: 'Scheme',
+                placeholder: 'Enter Scheme',
+                description: 'Enter default scheme for mandates',
+                helpText: 'This is used to retrieve mandates with the same scheme from TCA',
+                type: 'textbox',
+                defaultValue: '',
+                services: ['ocs.services.mandate']
+            },
             {
                 group: 'Integrations',
                 name: 'ocs.easy.loan.webhook.url', // OCS Integrator Specific Setting
@@ -739,7 +739,7 @@ const scopes = {
                 description: 'Webhook URL for Easy Loan integration',
                 helpText: 'This setting is only applicable if you are using the Easy Loan integration.',
                 applyTo: 'integrator',
-                services : ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
+                services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'Integrations',
@@ -748,7 +748,7 @@ const scopes = {
                 placeholder: 'External Status Webhook URL',
                 helpText: 'This setting is only applicable if you are using EasyPOS.',
                 applyTo: 'deviceuser',
-                services : ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
+                services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
                 group: 'Nedbank Settings',
@@ -907,50 +907,50 @@ const scopes = {
         ],
         settings: [
             {
-                group: 'EasyDebit.Webservice', 
+                group: 'EPOS.Menu Options',
                 name: 'ocs.ed.ws.usr', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice User', 
+                placeholder: 'EasyDebit Webservice User',
                 helpText: 'EasyDebit Webservice User for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit.Webservice', 
+                group: 'EPOS.Webservice',
                 name: 'ocs.ed.ws.pwd', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Password', 
+                placeholder: 'EasyDebit Webservice Password',
                 description: 'EasyDebit Webservice Password for web service authentication',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit.Webservice', 
+                group: 'EPOS.Webservice',
                 name: 'ocs.ed.ws.gc', // OCS "Parent" Settings
-                placeholder: 'EasyDebit Webservice Group Code', 
+                placeholder: 'EasyDebit Webservice Group Code',
                 description: 'EasyDebit Webservice Group Code',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit', // OCS "Parent" Settings
-                name: 'ocs.df.scheme', 
-                placeholder: 'Default Scheme', 
-                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent' ,
+                group: 'EasyDEPOSebit', // OCS "Parent" Settings
+                name: 'ocs.df.scheme',
+                placeholder: 'Default Scheme',
+                description: 'This is what the scheme name is which maps back to the Easy Debit Group code. We set to settings to act as a default value to be used for children inheriting from a parent',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit',
+                group: 'EPOS',
                 name: 'ocs.ed.sc.gc.map',  // OCS "Parent" Settings
                 placeholder: 'EasyDebit SC GC Map',
                 description: 'Mapping between scheme names and group codes',
                 helpText: 'Define the mapping between scheme names and EasyDebit group codes in JSON format.',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
-            { 
-                group: 'EasyDebit', 
+            {
+                group: 'EPOS',
                 name: 'ocs.ed.ul.gc.map',  // OCS "Parent" Settings
-                placeholder: 'EasyDebit UL GC Map', 
+                placeholder: 'EasyDebit UL GC Map',
                 description: 'EasyDebit UL GC Map',
                 services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
             },
             {
-                group: 'EasyDebit',
+                group: 'EPOS',
                 name: 'ocs.ed.passthrough',  // OCS "Parent" Settings
                 type: 'checkbox',
                 placeholder: 'EasyDebit Passthrough',
