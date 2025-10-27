@@ -822,6 +822,7 @@ function renderSetting(settingObj, prefix, serviceName) {
     const inputId = createControlId(prefix, settingObj.settingName, settingObj.settingField);
     console.log('Rendering setting:', settingObj.settingName, ' for service:' , serviceName, 'with ID:', inputId);
     const sharedAttrs = `
+        data-dependant_name="-${dependsOnAttr}"
         service-setting="${settingObj.settingName}"
         role="set-service-setting-value"
         data-service-name="${serviceName}"
