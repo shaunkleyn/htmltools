@@ -911,9 +911,16 @@ const scopes = {
                 label: 'Show EasyPOS Menu?',
                 name: 'app.payments.enabled', 
                 type: 'checkbox',
-                placeholder: 'EasyDebit Webservice User',
-                helpText: 'EasyDebit Webservice User for web service authentication',
-                services: ['ocs.services.collection', 'ocs.services.mandate', 'ocs.services.debitorder']
+                services: ['tca.services.mca']
+            },
+            {
+                group: 'EPOS.Menu Options',
+                label: 'Show Manual Payments Option?',
+                name: 'app.manual.payments.enabled', 
+                type: 'checkbox',
+                dependsOn: 'app.payments.enabled:true',
+                dependencyAction: 'disable',
+                services: ['tca.services.mca']
             },
             {
                 group: 'EPOS.Webservice',
