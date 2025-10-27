@@ -860,7 +860,7 @@ function renderSetting(settingObj, prefix, serviceName) {
         
     } else if (settingObj.type === 'checkbox') {
         // Updated call to pass dependsOnAttr for the container div
-        html += renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr); 
+        html += renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs); 
     } 
     // ... (other types like dual-checkbox, radio-button-group, etc.)
     else {
@@ -966,12 +966,12 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
 // 'settingDescriptions', 'createDependencyId', 'renderCheckboxSetting', etc. are defined 
 // elsewhere in your scope for the full code to run.
 
-    function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr) {
+    function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs) {
        
         return `
             <div class="mb-3 col-md-12" ${dependsOnAttr}>
                 <div class="form-check form-switch">
-                    <input class="form-check-input setting-checkbox" type="checkbox" id="${inputId}">
+                    <input class="form-check-input setting-checkbox" type="checkbox" id="${inputId}" ${sharedAttrs}>
                     <label class="form-check-label" for="${inputId}">
                         ${settingObj.label}
                         ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
