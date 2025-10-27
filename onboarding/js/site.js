@@ -808,7 +808,7 @@ function renderSetting(settingObj, prefix, serviceName) {
         } else {
             // 2. Standard single-setting dependency on a different setting name.
             // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
-            dependsOnAttr = `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"`;
+            dependsOnAttr = `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}" data-required-value="${requiredValue.toLowerCase()}"`;
         }
     }
     // --- END: Dependency ID Generation Logic ---
