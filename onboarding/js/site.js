@@ -1054,7 +1054,7 @@ function createControlId(prefix, name, field) {
                 console.log(`Found dependent element with dependency: ${dependsOnId}`);
                 
                 if (dependsOnId) {
-                    const $masterElement = $(`#${dependsOnId}`) || $('[data-dependant-name="' + dependsOnId + '"]');
+                    const $masterElement = $(`#${dependsOnId}`) ?? $('[data-dependant-name="' + dependsOnId + '"]');
                     
                     if ($masterElement.length > 0) {
                         console.log(`Found master element: ${dependsOnId}, is checkbox: ${$masterElement.is(':checkbox')}`);
