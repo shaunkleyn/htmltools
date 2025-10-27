@@ -2008,3 +2008,659 @@ function getServiceSettings($scopeTab, serviceName, serviceLinkTo) {
     
     return serviceSettings;
 }
+
+/**
+ * Generates the full PostgreSQL setup script based on the provided JSON configuration.
+ *
+ * @param {string} jsonString The raw JSON string as provided.
+ * @returns {string} The complete, populated PostgreSQL script.
+ */
+function generateSqlScript(jsonString) {
+    let data;
+    try {
+        data = JSON.parse(jsonString);
+    } catch (e) {
+        console.error("Invalid JSON input:", e);
+        return "-- ERROR: Invalid JSON input. Could not parse. --";
+    }
+
+    const entityServiceTypesLines = [];
+    const entitySettingsLines = [];
+    
+    // Default values from template, to be overridden by JSON
+    const mandateDefaults = {
+        type: 'Usage',
+        classification: 'LRM',
+        maxAmount: '10000',
+        frequency: 'MONTHLY',
+        adjFrequency: 'ANUALLY',
+        adjValue: '1',
+        format: 'KATSON_*******',
+        scheme: 'KATSON'
+    };
+    
+    const entityMap = {
+        parent: 'p',
+        integrator: 'i',
+        deviceuser: 'd'
+    };
+
+    /**
+     * Formats a JavaScript value into a SQL string literal,
+     * correctly escaping single quotes and backslashes.
+     */
+    function formatSqlValue(value) {
+        if (value === null || typeof value === 'undefined') return 'null';
+        let strValue = String(value);
+        // Escape backslashes first, then single quotes
+        strValue = strValue.replace(/\\/g, "\\\\");
+        strValue = strValue.replace(/'/g, "''");
+        return `'${strValue}'`;
+    }
+
+    // --- Process the JSON data ---
+    data.forEach(scope => {
+        
+        // 1. Populate entity_service_types
+        const scopeName = scope.scope;
+        const limit = scope.rateLimit.enabled;
+        // The SQL array is TEXT[], so 'null' should be a string, not a SQL NULL
+        const count = scope.rateLimit.numberOfRequests === null ? 'null' : scope.rateLimit.numberOfRequests;
+        const period = scope.rateLimit.duration === null ? 'null' : scope.rateLimit.duration;
+        
+        entityServiceTypesLines.push(`\t[ ${formatSqlValue(scopeName)}, ${formatSqlValue(limit)},  ${count},    ${period} ]`);
+
+        // 2. Find OCS Mandate Settings to populate defaults
+        if (scope.scope === 'OCS') {
+            const mandateSetting = scope.settings.find(s => s.name === 'ocs.ed.mandate.default.details');
+            if (mandateSetting) {
+                try {
+                    // This value is a stringified JSON object
+                    const mandateValue = JSON.parse(mandateSetting.value);
+                    mandateDefaults.type = mandateValue.mandateType || mandateDefaults.type;
+                    mandateDefaults.classification = mandateValue.debitClassification || mandateDefaults.classification;
+                    mandateDefaults.maxAmount = mandateValue.maximumInstallmentAmount || mandateDefaults.maxAmount;
+                    mandateDefaults.frequency = mandateValue.frequency || mandateDefaults.frequency;
+                    mandateDefaults.adjFrequency = mandateValue.adjustmentFrequency || mandateDefaults.adjFrequency;
+                    mandateDefaults.adjValue = mandateValue.adjustmentValue || mandateDefaults.adjValue;
+                    mandateDefaults.format = mandateValue.referenceFormat || mandateDefaults.format;
+                    mandateDefaults.scheme = mandateValue.scheme || mandateDefaults.scheme;
+                } catch (e) {
+                    console.warn(`Could not parse OCS mandate defaults: ${e.message}`);
+                }
+            }
+        }
+
+        /**
+         * Processes a setting object (from scope.settings or service.settings)
+         * and adds it to the entitySettingsLines array for each entity it links to.
+         */
+        const processSetting = (setting) => {
+            let finalValue = setting.value;
+
+            // This logic handles the 3 different ways values are stored in the JSON:
+            // 1. Plain string: "ED_USERNAME"
+            // 2. JSON string (wrapped): "{\\"\\":\\"reference setting\\"}"
+            // 3. JSON string (object): "{\\"frequency\\":\\"MONTHLY\\",...}"
+            try {
+                const parsedVal = JSON.parse(finalValue);
+                if (parsedVal && typeof parsedVal === 'object') {
+                    // It's a JSON string. Check if it's the {"": "value"} format.
+                    if (parsedVal.hasOwnProperty("")) {
+                        finalValue = parsedVal[""]; // Use the unwrapped value
+                    }
+                    // If not, we keep finalValue as the original string (e.g., for mandate.default.details)
+                }
+            } catch (e) {
+                // Not a JSON string, so it's a plain value. Do nothing.
+            }
+
+            const links = setting.linkTo || ['parent'];
+            links.forEach(link => {
+                const entity = entityMap[link];
+                if (entity) {
+                    entitySettingsLines.push(`        ['${scope.scope}', '${entity}', '${setting.name}', ${formatSqlValue(finalValue)}]`);
+                }
+            });
+        };
+
+        // 3. Populate entity_settings from both scope and service settings
+        scope.settings.forEach(processSetting);
+        scope.services.forEach(service => {
+            service.settings.forEach(processSetting);
+        });
+    });
+
+    // --- Assemble the final SQL script ---
+    const finalScript = `
+DO $$
+
+DECLARE
+-- Parent Entity ---------------
+	parent_name 				TEXT := 	'Katli and Son Company'; -- << CHANGE
+	entity_service_types 		TEXT[] :=array[
+--  | Scope | Limit | Count | Period|
+${entityServiceTypesLines.join(',\n')}
+    ];
+
+-- Integration Entity ----------
+	create_integration_entity 	BOOLEAN:= 	true;  -- << CHANGE (true or false)
+
+-- Device User -----------------
+    create_device_user 			BOOLEAN:= 	true;  			-- << CHANGE (true or false)
+    device_user_username 		TEXT:= 		'katli'; 		-- << CHANGE
+    device_user_password 		TEXT:= 		'katli@123'; 	-- << CHANGE
+    device_user_email_address 	TEXT:= 		'development@bitventure.co.za'; -- << CHANGE
+    device_user_is_active 		BOOLEAN:= 	true;  			-- << CHANGE (true or false)
+
+
+-- Entity Settings
+	-- Each scope in these settings must be added to the parent's "entity_service_types"
+	-- p: Parent
+	-- d: Device User
+	-- i: Integrator
+    entity_settings TEXT[] := array[
+	-- Add 2 dashes in front of the setting if not needed or pass NULL as the value
+    --  | SCOPE 	|Entity | Identifier                  		| Value 		|
+${entitySettingsLines.join(',\n')}
+    ];
+
+-- Payment Reference Fields
+	manual_payments_reference_fields 		BOOLEAN:=		true;
+	manual_payments_customer_reference 		TEXT:= 			'disabled'; -- Acceptable values: enabled, disabled, required
+	manual_payments_internal_reference 		TEXT:= 			'disabled'; -- Acceptable values: enabled, disabled, required
+
+-- Mandate defaults
+    ocs_default_mandate_type 				TEXT:= 			'${mandateDefaults.type}';
+    ocs_default_debit_classification 		TEXT:= 			'${mandateDefaults.classification}';
+    ocs_default_max_installment_amount 		TEXT:= 			'${mandateDefaults.maxAmount}';
+    ocs_default_frequency 					TEXT:= 			'${mandateDefaults.frequency}'; 
+    ocs_default_tracking_enabled 			BOOLEAN:= 		true;
+    ocs_default_date_adjustment_allowed 	TEXT:= 			'Y'; -- Either 'Y' or 'N'
+    ocs_default_adjustment_frequency 		TEXT:= 			'${mandateDefaults.adjFrequency}';
+    ocs_default_adjustment_type 			TEXT:= 			'RATE';
+    ocs_default_adjustment_value 			TEXT:= 			'${mandateDefaults.adjValue}';
+    ocs_default_generate_installment 		BOOLEAN:= 		true;
+    ocs_default_calculate_installment 		BOOLEAN:= 		false;
+    ocs_default_generate_contract_reference BOOLEAN:= 		true;
+    ocs_default_contract_reference_format 	TEXT:= 			'${mandateDefaults.format}';
+	ocs_default_scheme 						TEXT:= 			'${mandateDefaults.scheme}';
+
+-- END OF SETUP SECTION
+-------------------------
+
+
+
+-------------------------
+-- FOR SCRIPT USE ONLY
+-- These are generated / used within the script !! DONT CHANGE !!!
+    parent_identifier TEXT;
+    integration_entity_identifier TEXT;
+    device_user_entity_identifier TEXT;
+    integration_entity_description TEXT;
+    device_user_entity_description TEXT;
+    entity_password TEXT;
+    entity_service_type TEXT[];
+    var_entity_service_type_id INT;
+    entity_service_type_setting TEXT[];
+    entity_scopes TEXT := '';
+    scope_identifier TEXT;
+	setting_entity TEXT;
+    setting_identifier TEXT;
+    setting_scope_identifier TEXT;
+	setting_entity_identifier TEXT;
+	setting_entity_type TEXT;
+	entity_setting TEXT[];
+    rate_limit BOOLEAN;
+    limit_count INTEGER;
+    limit_period TEXT;
+	setting_value jsonb := '{}'::jsonb;
+  	mandate_default_details jsonb := '{}'::jsonb;
+	manual_payments_reference_field_values jsonb := '{}'::jsonb;
+ 	inserted_count integer;
+	rows_affected integer;
+    action_taken text;
+	_current_value TEXT;
+	_new_value TEXT;
+	_service_type_id INT;
+	_results TEXT[][];
+	_result TEXT[];
+	_parsed jsonb;
+	_textObj TEXT;
+
+BEGIN
+	FOREACH entity_setting SLICE 1 IN ARRAY entity_settings
+		LOOP
+			SELECT entity_setting[1]::TEXT into setting_scope_identifier;
+			SELECT entity_setting[2]::TEXT into setting_entity;
+			SELECT entity_setting[3]::TEXT into setting_identifier;
+			SELECT to_jsonb(entity_setting[4]) into setting_value;
+
+			IF lower(setting_identifier) ='ocs.ed.ws.usr' THEN
+				entity_settings := entity_settings || array[
+					[setting_scope_identifier,	setting_entity,	'webservice.username',	trim(both '"' from setting_value::TEXT)]  -- VALIDATED
+				];
+			END IF;
+
+			IF lower(setting_identifier) = 'ocs.ed.ws.pwd' THEN
+				entity_settings := entity_settings || array[
+					[setting_scope_identifier,	setting_entity,	'webservice.password',	trim(both '"' from setting_value::TEXT)]  -- VALIDATED
+				];
+			END IF;
+		END LOOP;
+
+
+		mandate_default_details := jsonb_build_object(
+			'mandateType', ocs_default_mandate_type,
+			'debitClassification', ocs_default_debit_classification,
+			'maximumInstallmentAmount', ocs_default_max_installment_amount,
+			'frequency', ocs_default_frequency,
+			'tracking', ocs_default_tracking_enabled,
+			'dateAdjustmentAllowed', ocs_default_date_adjustment_allowed,
+			'adjustmentFrequency', ocs_default_adjustment_frequency,
+			'adjustmentType', ocs_default_adjustment_type,
+			'adjustmentValue', ocs_default_adjustment_value,
+			'generateInstallment', ocs_default_generate_installment,
+			'calculateInstallment', ocs_default_calculate_installment
+		);
+
+
+	-- Add optional values to the ocs.ed.mandate.default.details object
+	IF ocs_default_scheme IS NOT NULL AND ocs_default_scheme != '' THEN
+		mandate_default_details := mandate_default_details || jsonb_build_object('scheme', ocs_default_scheme);
+    END IF;
+
+	IF ocs_default_generate_contract_reference IS NOT NULL THEN
+		mandate_default_details := mandate_default_details || jsonb_build_object('generateContractReference', ocs_default_generate_contract_reference);
+    END IF;
+
+	IF ocs_default_contract_reference_format IS NOT NULL THEN
+		mandate_default_details := mandate_default_details || jsonb_build_object('referenceFormat', ocs_default_contract_reference_format);
+    END IF;
+
+    
+	-- Build & validate the manual.payments.reference.config json object
+	if manual_payments_reference_fields IS NOT NULL THEN
+        IF manual_payments_reference_fields = true THEN
+            IF manual_payments_customer_reference IS NOT NULL AND lower(manual_payments_customer_reference) NOT IN ('enabled', 'disabled', 'required') THEN
+                RAISE EXCEPTION 'Invalid value for manual_payments_customer_reference: "%". Allowed values: enabled, disabled, required.', manual_payments_customer_reference;
+            END IF;
+
+            IF manual_payments_internal_reference IS NOT NULL 
+            AND lower(manual_payments_internal_reference) NOT IN ('enabled', 'disabled', 'required') THEN RAISE EXCEPTION 'Invalid value for manual_payments_internal_reference: "%". Allowed values: enabled, disabled, required.', app_manual_payments_reference_internal;
+            END IF;
+        ELSE
+            manual_payments_customer_reference := 'disabled';
+            manual_payments_internal_reference:= 'disabled';
+        END IF;
+	    manual_payments_reference_field_values := jsonb_build_object(
+		    'app.manual.payments.reference.customer', manual_payments_customer_reference,
+		    'app.manual.payments.reference.internal', manual_payments_internal_reference
+		);
+	END IF;
+
+-------------------------
+	-- Entities Setup
+		SELECT parent_name || ' :Integrator' into integration_entity_description; -- Assuming we following the naming convention of "MY CUSTOMER :Integrator"
+		SELECT device_user_username into device_user_entity_description; -- Assuming we following the naming convention of "MY CUSTOMER :Device User"
+		SELECT UPPER(uuid_generate_v4()::varchar) into parent_identifier;
+	    SELECT uuid_generate_v4()::varchar into integration_entity_identifier;
+	    SELECT uuid_generate_v4()::varchar into device_user_entity_identifier;
+	    SELECT uuid_generate_v4()::varchar into entity_password;
+	    		
+		-- Parent Entity Setup
+			-- Only insert a parent record if the "parent_name" is not already in public.entity 
+			INSERT INTO public.entity (description, identifier, lookup_entity_type_id, active)
+				SELECT parent_name, parent_identifier, 1, true
+				WHERE NOT EXISTS(
+					SELECT id FROM public.entity WHERE lower(description) = lower(parent_name)
+				);
+				
+			-- Regardless of the insert statement outcome, we need to get identifier related to the "parent_name" (incase it was not inserted and we need to get the existing identifier)	
+			SELECT identifier INTO parent_identifier FROM public.entity WHERE lower(description) = lower(parent_name);
+				
+		-- Integrator Entity Setup
+			-- Only insert a record if the "integration_entity_description" is not already in public.entity
+			INSERT INTO public.entity (description, identifier, lookup_entity_type_id, active, parent_id)
+			SELECT	integration_entity_description
+					,integration_entity_identifier
+					,(select id from lookup_entity_type where description = 'Integrator') as lookupEntityTypeId			
+					,true
+					,(select id from entity where identifier = parent_identifier) as entityParentId			
+			WHERE NOT EXISTS(
+		        SELECT id FROM public.entity WHERE lower(description) = lower(integration_entity_description)
+		    );	
+		
+			-- Regardless of the insert statement outcome, we need to get identifier related to the "integration_entity_description" (incase it was not inserted and we need to get the existing identifier)		
+			SELECT identifier INTO integration_entity_identifier FROM public.entity WHERE lower(description) = lower(integration_entity_description);
+		   		
+			-- Integrator Entity Credentials
+			INSERT INTO public.integrator (entity_id, client_secret, email_address, active)
+			select 	(select id from entity where identifier = integration_entity_identifier) as entityId	
+					,(select encode(digest(entity_password::bytea,'sha256'),'base64')) as client_secret
+					,'development@bitventure.co.za'
+					,true 
+			WHERE NOT EXISTS(
+		        SELECT i.id FROM public.integrator i 
+					INNER JOIN public.entity e ON e.id = i.entity_id			
+				WHERE lower(e.identifier) = lower(integration_entity_identifier)
+		    );		
+	    
+		-- Device User Setup
+			-- Only insert a record if the "device_user_entity_description" is not already in public.entity
+		    IF create_device_user THEN
+		        INSERT INTO public.entity (description, identifier, lookup_entity_type_id, active, parent_id)
+		        SELECT	device_user_entity_description
+		                ,device_user_entity_identifier
+		                ,(select id from lookup_entity_type where description = 'User') as lookupEntityTypeId			
+		                ,true
+		                ,(select id from entity where identifier = parent_identifier) as entityParentId			
+		        WHERE NOT EXISTS(
+		            SELECT id FROM public.entity WHERE lower(description) = lower(device_user_entity_description)
+		        );	
+		
+		        -- Regardless of the insert statement outcome, we need to get identifier related to the "device_user_entity_description" (incase it was not inserted and we need to get the existing identifier)		
+		        SELECT identifier INTO device_user_entity_identifier FROM public.entity WHERE lower(description) = lower(device_user_entity_description);
+		
+		        -- Device user credentials
+		        INSERT INTO public.user (entity_id, username, password, email_address, active)
+		        select 	(select id from entity where identifier = device_user_entity_identifier) as entity_id	
+		        , device_user_username as username	
+		                ,(select encode(digest(device_user_password::bytea,'sha256'),'base64')) as password
+		                ,device_user_email_address as email_address
+		                ,device_user_is_active as active 
+		        WHERE NOT EXISTS(
+		            SELECT i.id FROM public.user i
+		                INNER JOIN public.entity e ON e.id = i.entity_id
+		            WHERE lower(e.identifier) = lower(device_user_entity_identifier)
+		        );	
+		    END IF;
+	-- End Entities Setup
+------------------------- 
+
+-------------------------
+	-- Entity Service Types Setup
+	FOREACH entity_service_type SLICE 1 IN ARRAY entity_service_types
+	LOOP
+		SELECT upper(entity_service_type[1]) into scope_identifier;	
+		SELECT entity_service_type[2]::BOOLEAN into rate_limit;
+		SELECT entity_service_type[3]::INTEGER into limit_count;
+		SELECT entity_service_type[4] into limit_period;
+		
+		RAISE notice 'Scope: %', scope_identifier;
+		
+		SELECT entity_scopes || ' ' || lower(scope_identifier) into entity_scopes; 
+
+		-- Add the Service Type to the parent entity if it does not exist
+		WITH serviceType (id) AS (
+			SELECT id FROM service_type st WHERE upper(st.identifier) = upper(scope_identifier)
+		)
+		INSERT INTO public.entity_service_type (entity_id, service_type_id, active)
+			SELECT 	(SELECT e.ID FROM entity e WHERE identifier = parent_identifier) as entityId
+					,st.id 
+					,true
+			FROM 	serviceType st
+			WHERE NOT EXISTS(
+				SELECT e.id FROM entity e 			
+					INNER JOIN entity_service_type est ON est.entity_id = e.id
+					INNER JOIN service_type st ON st.id = est.service_type_id
+				WHERE e.identifier = parent_identifier
+					AND upper(st.identifier) = upper(scope_identifier))	
+					RETURNING 1 INTO inserted_count;
+
+		-- Add the Service to the parent entity if it does not exist
+		-- The Parent must have all its "children" services (ideally if a parent does not have the service, the service should be disallowed for the child). 
+		IF rate_limit THEN 
+			WITH service (id) AS (
+				SELECT s.id 
+				FROM service s 
+				WHERE s.service_type_id  in (
+					SELECT id FROM service_type st WHERE upper(st.identifier) = upper(scope_identifier)
+				)
+			)
+			INSERT INTO public.entity_service (entity_id, service_id, active, rate_limit, limit_count, limit_period)
+				SELECT 	(SELECT e.ID FROM entity e WHERE identifier = parent_identifier) as entityId
+						,s.id 
+						,true
+						,true
+						,limit_count
+						,limit_period
+				FROM 	service s
+				WHERE NOT EXISTS(
+					SELECT s.id from service s			
+						INNER JOIN entity_service es ON es.service_id = s.id
+						INNER JOIN entity e ON e.id = es.entity_id
+					WHERE e.identifier = parent_identifier
+				);	
+			
+		ELSE
+			WITH service (id) AS (
+				SELECT s.id 
+				FROM service s 
+				WHERE s.service_type_id  in (
+					SELECT id FROM service_type st WHERE upper(st.identifier) = upper(scope_identifier)
+				)
+			)
+			INSERT INTO public.entity_service (entity_id, service_id, active, rate_limit)
+				SELECT 	(SELECT e.ID FROM entity e WHERE identifier = parent_identifier) as entityId
+						,s.id ,true,false
+				FROM 	service s
+				WHERE NOT EXISTS(
+					SELECT s.id from service s			
+						INNER JOIN entity_service es ON es.service_id = s.id
+						INNER JOIN entity e ON e.id = es.entity_id
+					WHERE e.identifier = parent_identifier
+				);
+		END IF;	
+
+	-- End Entity Service Types Setup
+-------------------------
+
+------------------------
+	-- Entity Service Type Settings Setup
+		RAISE NOTICE '	Settings:';
+		FOREACH entity_setting SLICE 1 IN ARRAY entity_settings
+		LOOP
+			SELECT entity_setting[1]::TEXT into setting_scope_identifier;
+			SELECT entity_setting[2]::TEXT into setting_entity;
+			SELECT entity_setting[3]::TEXT into setting_identifier;
+			SELECT to_jsonb(entity_setting[4]) into setting_value;
+			
+			CASE 
+			    WHEN upper(setting_entity) = 'P' THEN
+			        setting_entity_type := 'Parent';
+					setting_entity_identifier := parent_identifier;
+			    WHEN upper(setting_entity) = 'I' THEN
+			        setting_entity_type := 'Integrator';
+					setting_entity_identifier := integration_entity_identifier;
+			    WHEN upper(setting_entity) = 'D' THEN
+			        setting_entity_type := 'Device User';
+					setting_entity_identifier := device_user_entity_identifier;
+				ELSE
+					setting_entity_type := 'UNKNOWN';
+					setting_entity_identifier := 'ERROR';
+			END CASE;
+			
+			-- This is a special field that gets populated by the "Mandate defaults" section
+			IF lower(setting_identifier) = 'ocs.ed.mandate.default.details' THEN
+				setting_value := mandate_default_details;
+			END IF;
+			
+			-- This is a special field that gets populated by the "Payment Reference Fields" section
+			IF lower(setting_identifier) = 'manual.payments.reference.config' THEN
+				setting_value := manual_payments_reference_field_values;
+			END IF;
+
+			--RAISE NOTICE '		(%) Scope: %, Entity: % (%), Setting: %, Value: %', var_entity_service_type_id, upper(setting_scope_identifier), setting_entity_type, setting_entity_identifier, setting_identifier, setting_value;	
+		
+			-- We need to check if the setting we are trying to add is valid for the scope
+			SELECT 	st.id into _service_type_id
+			FROM 	service_type st
+			WHERE 	upper(st.identifier) = upper(setting_scope_identifier);
+		
+			IF _service_type_id IS NULL THEN
+				-- This scope is not in the DB
+				RAISE EXCEPTION 'This scope %s is not in the database (public.service_type)', setting_scope_identifier;
+			END IF;
+		
+			-- We need to check if the entity exists
+			IF NOT EXISTS(SELECT id FROM public.entity WHERE identifier = setting_entity_identifier) THEN
+				RAISE EXCEPTION 'This entity %s (%s) does not exist in the database (public.entity)', setting_entity_type, setting_entity_identifier;
+			END IF;
+
+			-- We need to check if the entity is allowed to use this scope
+			IF NOT EXISTS(
+				SELECT 	est.id
+				FROM 	public.entity_service_type est
+						INNER JOIN public.entity e on e.id = est.entity_id
+				WHERE 	e.identifier = setting_entity_identifier
+				AND 	est.service_type_id = _service_type_id
+			) THEN
+				-- This entity does not have this scope, so we add it
+				INSERT INTO public.entity_service_type (entity_id, service_type_id, active)
+					SELECT 	(SELECT e.ID FROM entity e WHERE identifier = setting_entity_identifier) as entityId
+							,_service_type_id
+							,true
+					WHERE NOT EXISTS(
+						SELECT e.id FROM entity e 			
+							INNER JOIN entity_service_type est ON est.entity_id = e.id
+						WHERE e.identifier = setting_entity_identifier
+							AND est.service_type_id = _service_type_id
+					);
+			END IF;
+		
+			-- We need to check if the setting we are adding is a service setting or scope setting
+			IF EXISTS(
+				SELECT 	s.id
+				FROM 	public.service s
+						INNER JOIN public.service_setting ss on ss.service_id = s.id
+				WHERE 	s.service_type_id = _service_type_id
+				AND 	upper(ss.identifier) = upper(setting_identifier)
+			) THEN
+				-- This is a service setting
+				RAISE NOTICE '		Adding Service Setting: %', setting_identifier;
+			
+				-- Check if the entity has the service
+				INSERT INTO public.entity_service (entity_id, service_id, active, rate_limit)
+					SELECT 	(SELECT e.ID FROM entity e WHERE identifier = setting_entity_identifier) as entityId
+							,s.id 
+							,true
+							,false
+					FROM 	public.service s
+							INNER JOIN public.service_setting ss on ss.service_id = s.id
+					WHERE 	s.service_type_id = _service_type_id
+					AND 	upper(ss.identifier) = upper(setting_identifier)
+					AND 	NOT EXISTS(
+								SELECT 	es.id 
+								FROM 	public.entity_service es
+										INNER JOIN public.entity e on e.id = es.entity_id
+								WHERE 	e.identifier = setting_entity_identifier
+								AND 	es.service_id = s.id
+							);
+			
+				-- Add the service setting
+				WITH current_setting AS (
+					SELECT 	ess.id, 
+							ess.value ->> '' AS current_value
+					FROM 	public.entity_service_setting ess
+							INNER JOIN public.entity_service es ON es.id = ess.entity_service_id
+							INNER JOIN public.entity e ON e.id = es.entity_id
+							INNER JOIN public.service s ON s.id = es.service_id
+							INNER JOIN public.service_setting ss ON ss.id = ess.service_setting_id
+					WHERE 	e.identifier = setting_entity_identifier
+					AND 	s.service_type_id = _service_type_id
+					AND 	upper(ss.identifier) = upper(setting_identifier)
+					LIMIT 1
+				),
+				service_details AS (
+					SELECT 	es.id as entity_service_id, 
+							ss.id as service_setting_id
+					FROM 	public.entity_service es
+							INNER JOIN public.entity e ON e.id = es.entity_id
+							INNER JOIN public.service s ON s.id = es.service_id
+							INNER JOIN public.service_setting ss ON ss.service_id = s.id
+					WHERE 	e.identifier = setting_entity_identifier
+					AND 	s.service_type_id = _service_type_id
+					AND 	upper(ss.identifier) = upper(setting_identifier)
+					LIMIT 1
+				)
+				INSERT INTO public.entity_service_setting (entity_service_id, service_setting_id, value, active)
+					SELECT 	sd.entity_service_id, 
+							sd.service_setting_id, 
+							jsonb_build_object('', setting_value), 
+							true
+					FROM 	service_details sd
+					WHERE 	NOT EXISTS (SELECT 1 FROM current_setting)
+				ON CONFLICT (entity_service_id, service_setting_id) DO UPDATE
+					SET value = jsonb_build_object('', setting_value),
+						active = true,
+						updated_at = NOW()
+					WHERE (SELECT current_value FROM current_setting) IS DISTINCT FROM trim(both '"' from setting_value::TEXT);
+			
+			ELSEIF EXISTS(
+				SELECT 	sts.id
+				FROM 	public.service_type_setting sts
+				WHERE 	sts.service_type_id = _service_type_id
+				AND 	upper(sts.identifier) = upper(setting_identifier)
+			) THEN
+				-- This is a scope setting
+				RAISE NOTICE '		Adding Scope Setting: %', setting_identifier;
+			
+				-- Add the scope setting
+				WITH current_setting AS (
+					SELECT 	ests.id, 
+							ests.value ->> '' AS current_value
+					FROM 	public.entity_service_type_setting ests
+							INNER JOIN public.entity_service_type est ON est.id = ests.entity_service_type_id
+							INNER JOIN public.entity e ON e.id = est.entity_id
+							INNER JOIN public.service_type st ON st.id = est.service_type_id
+							INNER JOIN public.service_type_setting sts ON sts.id = ests.service_type_setting_id
+					WHERE 	e.identifier = setting_entity_identifier
+					AND 	st.id = _service_type_id
+					AND 	upper(sts.identifier) = upper(setting_identifier)
+					LIMIT 1
+				),
+				service_type_details AS (
+					SELECT 	est.id as entity_service_type_id, 
+							sts.id as service_type_setting_id
+					FROM 	public.entity_service_type est
+							INNER JOIN public.entity e ON e.id = est.entity_id
+							INNER JOIN public.service_type_setting sts ON sts.service_type_id = est.service_type_id
+					WHERE 	e.identifier = setting_entity_identifier
+					AND 	est.service_type_id = _service_type_id
+					AND 	upper(sts.identifier) = upper(setting_identifier)
+					LIMIT 1
+				)
+				INSERT INTO public.entity_service_type_setting (entity_service_type_id, service_type_setting_id, value, active)
+					SELECT 	std.entity_service_type_id, 
+							std.service_type_setting_id, 
+							jsonb_build_object('', setting_value), 
+							true
+					FROM 	service_type_details std
+					WHERE 	NOT EXISTS (SELECT 1 FROM current_setting)
+				ON CONFLICT (entity_service_type_id, service_type_setting_id) DO UPDATE
+					SET value = jsonb_build_object('', setting_value),
+						active = true,
+						updated_at = NOW()
+					WHERE (SELECT current_value FROM current_setting) IS DISTINCT FROM trim(both '"' from setting_value::TEXT);
+
+			ELSE
+				-- This setting is not in the DB
+				RAISE EXCEPTION 'This setting %s is not in the database for this scope %s', setting_identifier, setting_scope_identifier;
+			END IF;
+		
+		END LOOP;
+	-- End Entity Service Type Settings Setup
+-------------------------
+
+	RAISE NOTICE 'Parent Entity: %', parent_identifier;
+	RAISE NOTICE 'Integration Entity: %', integration_entity_identifier;
+	RAISE NOTICE 'Device User Entity: %', device_user_entity_identifier;
+	RAISE NOTICE 'Password: %', entity_password;
+	RAISE NOTICE 'Scopes: %', entity_scopes;
+END;
+$$;
+`;
+
+    return finalScript.trim();
+}
