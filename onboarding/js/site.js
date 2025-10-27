@@ -964,9 +964,8 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
 // 'settingDescriptions', 'createDependencyId', 'renderCheckboxSetting', etc. are defined 
 // elsewhere in your scope for the full code to run.
 
-    function renderCheckboxSetting(settingObj, inputId, prefix) {
-        const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
-        
+    function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr) {
+       
         return `
             <div class="mb-3 col-md-12" ${dependsOnAttr}>
                 <div class="form-check form-switch">
