@@ -796,8 +796,6 @@ function renderSetting(settingObj, prefix, serviceName) {
         // 1. Check if the setting is a multi-field setting (i.e., has a field property)
         if (settingObj.settingField) {
             // This is a field-level dependency on another field within the same setting name.
-            
-            
             if (controllingField && requiredValue !== undefined) {
                 // The controlling element's ID is the settingName + controllingField
                 // e.g., 'scope-parent-ocs-ed-mandate-default-details___generateContractReference'
@@ -807,8 +805,10 @@ function renderSetting(settingObj, prefix, serviceName) {
                 dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
             }
         } else {
+            console.log('Generating dependency for single-setting:', settingObj.settingName);
             if (controllingField && requiredValue !== undefined) {
                 const controllingId = createDependencyId(prefix, settingName + '___' + controllingField);
+                console.log('Controlling ID (multi-field):', controllingId);
                 // 2. Standard single-setting dependency on a different setting name.
                 // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
                 dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
