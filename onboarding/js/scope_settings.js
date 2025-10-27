@@ -908,7 +908,7 @@ const scopes = {
         settings: [
             {
                 group: 'EPOS.Menu Options',
-                title: 'Show EasyPOS Menu?',
+                label: 'Show EasyPOS Menu?',
                 name: 'app.payments.enabled', 
                 type: 'checkbox',
                 placeholder: 'EasyDebit Webservice User',
