@@ -927,7 +927,7 @@ const scopes = {
             {
                 group: 'EPOS.Menu Options.Manual Payments',
                 label: 'Show Additional Reference Fields?',
-                name: 'app.manual.payments.enabled', 
+                name: 'manual.payments.reference.config', 
                 type: 'checkbox',
                 dependsOn: 'app.payments.enabled:true',
                 dependencyAction: 'disable',
