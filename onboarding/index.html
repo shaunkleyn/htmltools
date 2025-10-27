@@ -31,7 +31,7 @@
             </div>
         </div>
 
-<div class="content-area">
+        <div class="content-area">
 
     
             <div class="header text-center">
@@ -39,7 +39,7 @@
                 <p class="lead mb-0">Generate customized SQL integrator entity scripts based on your requirements</p>
             </div>
     
-            <div class="card mb-4">
+            <div class="card mb-4 d-none">
                 <div class="card-header">Quick Templates</div>
                 <div class="card-body">
                     <div class="d-flex gap-2 flex-wrap">
@@ -57,7 +57,7 @@
             </div>
            
             <!-- Import/Export Controls -->
-            <div class="card mb-4">
+            <div class="card mb-4 d-none">
                 <div class="card-header collapse-toggle" data-bs-toggle="collapse" data-bs-target="#importExportCollapse">
                     <span class="mb-0">
                         <i class="bi bi-chevron-down"></i> Import/Export Configuration
@@ -149,210 +149,7 @@
                     </div>
                 </div>
          </div>
-        <div class="card mb-4">
-            <div class="card-header">
-                <span>Basic Entity Information</span>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="parentName" class="form-label label-sm">Parent Entity Name</label>
-                            <input type="text" class="form-control form-control-sm" id="parentName" placeholder="Enter parent entity name">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="website" class="form-label label-sm">Website URL</label>
-                            <input type="text" class="form-control form-control-sm" id="website" placeholder="http://www.example.com">
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
 
-<div class="card mb-4">
-    <div class="card-header">
-        <span class="mb-0">Entity Setup</span>
-    </div>
-    <div class="card-body">
-        <div class="entity-builder">
-            <!-- Core Entity (Always Present) -->
-            <div class="entity-core mb-4">
-                <div class="entity-card core-entity">
-                    <div class="entity-icon">
-                        <i class="bi bi-building"></i>
-                    </div>
-                    <div class="entity-info">
-                        <h6 class="entity-title">Parent Entity</h6>
-                        <p class="entity-description">Your main organization entity</p>
-                    </div>
-                    <div class="entity-form">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <input class="form-check-input d-none" type="checkbox" id="createParent" checked disabled>
-                                <label class="form-label required">Entity Name</label>
-                                <input type="text" class="form-control" id="parentName" 
-                                    placeholder="Organization name" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Website</label>
-                                <input type="url" class="form-control" id="website" 
-                                    placeholder="https://example.com">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Additional Entities -->
-            <div class="entity-addons">
-                <h6 class="section-title">Add Additional Entities</h6>
-                <div class="row">
-                    <!-- Integrator Addon -->
-                    <div class="col-md-6">
-                        <div class="addon-card ">
-                            <div class="">
-                                <div class="form-check form-switch d-flex align-items-center">
-                                    <input class="form-check-input me-4" type="checkbox" id="createIntegrator">
-                                    <label class="form-check-label d-flex align-items-center w-100" for="createIntegrator">
-                                        <div class="addon-icon me-3">
-                                            <i class="bi bi-gear"></i>
-                                        </div>
-                                        <div class="addon-info">
-                                            <h6>Integrator</h6>
-                                            <small>Service management</small>
-                                        </div>
-                                    </label>
-                                </div>
-
-                            </div>
-                            <div class="addon-fields conditional-field" id="integratorFields">
-                                <div class="mt-2">
-                                    <label class="form-label">Integrator Name</label>
-                                    <input type="text" class="form-control form-control-sm" 
-                                        id="integratorName" readonly>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Device User Addon -->
-                    <div class="col-md-6">
-                        <div class="addon-card">
-                            <div class="">
-                                <div class="form-check form-switch d-flex align-items-center">
-                                    <input class="form-check-input me-4" type="checkbox" id="createDeviceUser">
-                                    <label class="form-check-label d-flex align-items-center w-100" for="createDeviceUser">
-                                        <div class="addon-icon me-3">
-                                            <i class="bi bi-phone"></i>
-                                        </div>
-                                        <div class="addon-info">
-                                            <h6>Device User</h6>
-                                            <small>API access & integration</small>
-                                        </div>
-                                    </label>
-                                </div>
-
-                            </div>
-                            <div class="addon-fields conditional-field" id="deviceUserFields">
-                                <div class="row g-2">
-                                    <div class="col-12">
-                                        <input type="text" class="form-control form-control-sm" 
-                                            id="deviceUsername" placeholder="Username" required>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="input-group input-group-sm">
-                                            <input type="password" class="form-control password-field" id="devicePassword" name="devicePassword" placeholder="Enter device password" required>
-                                            <div class="input-group-text" id="togglePassword">
-                                                <i class="bi bi-eye-slash"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <input type="email" class="form-control form-control-sm" 
-                                            id="deviceEmail" placeholder="Email" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-            <!-- Basic Entity Information -->
-            <!-- <div class="card mb-4">
-                    <div class="card-header" data-bs-toggle="collapse" data-bs-target="#basicEntityCardBody">
-                        <span class="mb-0">Basic Entity Information</span>
-                    </div>
-                    <div class="card-body" id="basicEntityCardBody">
-                        <form class="prevent-default" id="basicEntityForm" name="basicEntityForm" novalidate>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="parentName" class="form-label">Parent Entity Name</label>
-                                    <input type="text" class="form-control" id="parentName" name="parentName" placeholder="Enter parent entity name" required maxlength="250">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="website" class="form-label">Website URL</label>
-                                    <input type="text" class="form-control" id="website" placeholder="http://www.example.com">
-                                    <div class="form-text">Required for BSS &amp; FVS settings</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="createDeviceUser">
-                                    <label class="form-check-label" for="createDeviceUser">
-                                        Create Device User
-                                    </label>
-                                </div>
-                                <div class="conditional-field" id="deviceUserFields">
-                                    <div class="mb-3">
-                                        <label for="deviceUsername" class="form-label">Username</label>
-                                        <input type="text" class="form-control" id="deviceUsername" placeholder="Enter device username" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="devicePassword" class="form-label">Password</label>
-                                        <div class="input-group">
-                                            <input type="password" class="form-control password-field" id="devicePassword" name="devicePassword" placeholder="Enter device password" required>
-                                            <div class="input-group-text" id="togglePassword">
-                                                <i class="bi bi-eye-slash"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                    <label for="deviceEmail" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="deviceEmail" placeholder="development@bitventure.co.za" required>
-                                </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="createIntegrator">
-                                    <label class="form-check-label" for="createIntegrator">Create Integrator</label>
-                                </div>
-                                <div class="conditional-field" id="integratorFields">
-                                    <div class="mb-3">
-                                        <label for="integratorName" class="form-label">Integrator Name</label>
-                                        <input type="text" readonly class="form-control" id="integratorName" placeholder="Integrator name will be auto-generated">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
-                    </div>
-            </div> -->
             
             <!-- Scope Selection -->
             <div class="card mb-4">
