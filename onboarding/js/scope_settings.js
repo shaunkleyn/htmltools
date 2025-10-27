@@ -266,7 +266,7 @@ const scopes = {
                         label: 'Reference Settings',
                         description: 'Allow manual payment processing in the system',
                         defaultValue: false,
-                        dependsOn: 'manual.payments.enabled',
+                        dependsOn: 'manual.payments.enabled1',
                         dependencyAction: 'disable',
                         group: "Manual Payments",
                         settings: [
@@ -317,7 +317,7 @@ const scopes = {
                         type: 'textbox',
                         maxLength: 14,
                         defaultValue: '',
-                        dependsOn: 'generateContractReference:true',
+                        dependsOn: 'generateContractReference1:true1',
                         dependencyAction: 'disable',
                         services: ['ocs.services.mandate']
                     },
@@ -326,7 +326,7 @@ const scopes = {
                         name: 'reference.settings',
                         type: 'radio-group',
                         label: 'Reference Settings',
-                        dependsOn: 'manual.payments.enabled',
+                        dependsOn: 'manual.payments.enabled1',
                         description: 'Configure how references are handled for manual payments',
                         settings: [
                             {
