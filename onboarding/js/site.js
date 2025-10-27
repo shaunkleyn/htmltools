@@ -807,8 +807,8 @@ function renderSetting(settingObj, prefix, serviceName) {
         } else {
             console.log('Generating dependency for single-setting:', settingObj.settingName);
             if (controllingField && requiredValue !== undefined) {
-                const controllingId = createDependencyId(prefix, settingName);
-                console.log('Controlling ID (multi-field):', controllingId);
+                const controllingId = createDependencyId(prefix, controllingField);
+                console.log('Controlling ID (multi-field):', controllingField);
                 // 2. Standard single-setting dependency on a different setting name.
                 // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
                 dependsOnAttr = `data-depends-on="${controllingId}" data-required-value="${requiredValue.toLowerCase()}"`;
@@ -980,36 +980,36 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
         `;
     }
 
-    function renderDualCheckboxSetting(settingObj, inputId, prefix) {
-        let checkboxesHtml = '';
+    // function renderDualCheckboxSetting(settingObj, inputId, prefix) {
+    //     let checkboxesHtml = '';
         
-        if (settingObj.checkboxes && settingObj.checkboxes.length > 0) {
-            settingObj.checkboxes.forEach((checkbox, index) => {
-                const checkboxId = `${inputId}-${checkbox.name}`;
-                const dependsOnAttr = checkbox.dependsOn ? `data-depends-on="${createDependencyId(prefix, checkbox.dependsOn)}"` : '';
-                const indentClass = index > 0 ? 'ms-4' : '';
+    //     if (settingObj.checkboxes && settingObj.checkboxes.length > 0) {
+    //         settingObj.checkboxes.forEach((checkbox, index) => {
+    //             const checkboxId = `${inputId}-${checkbox.name}`;
+    //             const dependsOnAttr = checkbox.dependsOn ? `data-depends-on="${createDependencyId(prefix, checkbox.dependsOn)}"` : '';
+    //             const indentClass = index > 0 ? 'ms-4' : '';
                 
-                checkboxesHtml += `
-                    <div class="form-check ${indentClass}" ${dependsOnAttr}>
-                        <input class="form-check-input reference-checkbox" type="checkbox" id="${checkboxId}">
-                        <label class="form-check-label" for="${checkboxId}">
-                            ${checkbox.label}
-                        </label>
-                    </div>
-                `;
-            });
-        }
+    //             checkboxesHtml += `
+    //                 <div class="form-check ${indentClass}" ${dependsOnAttr}>
+    //                     <input class="form-check-input reference-checkbox" type="checkbox" id="${checkboxId}">
+    //                     <label class="form-check-label" for="${checkboxId}">
+    //                         ${checkbox.label}
+    //                     </label>
+    //                 </div>
+    //             `;
+    //         });
+    //     }
         
-        const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
+    //     const dependsOnAttr = settingObj.dependsOn ? `data-depends-on="${createDependencyId(prefix, settingObj.dependsOn)}"` : '';
         
-        return `
-            <div class="mb-3 col-md-12 reference-setting-group" ${dependsOnAttr}>
-                <h6 class="mb-2">${settingObj.label}</h6>
-                ${checkboxesHtml}
-                ${settingObj.helpText ? `<div class="form-text text-muted mt-1">${settingObj.helpText}</div>` : ''}
-            </div>
-        `;
-    }
+    //     return `
+    //         <div class="mb-3 col-md-12 reference-setting-group" ${dependsOnAttr}>
+    //             <h6 class="mb-2">${settingObj.label}</h6>
+    //             ${checkboxesHtml}
+    //             ${settingObj.helpText ? `<div class="form-text text-muted mt-1">${settingObj.helpText}</div>` : ''}
+    //         </div>
+    //     `;
+    // }
 
 /**
  * Creates the dependency target ID based on a setting name (used for lookups).
