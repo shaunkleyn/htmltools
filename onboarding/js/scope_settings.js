@@ -925,6 +925,24 @@ const scopes = {
                 services: ['tca.services.mca']
             },
             {
+                group: 'EPOS.Menu Options.Manual Payments',
+                label: 'Show Additional Reference Fields?',
+                name: 'app.manual.payments.enabled', 
+                type: 'checkbox',
+                dependsOn: 'app.payments.enabled:true',
+                dependencyAction: 'disable',
+                services: ['tca.services.mca']
+            },
+            {
+                group: 'EPOS.Menu Options',
+                label: 'Show Transaction History Option?',
+                name: 'app.transaction.history.enabled', 
+                type: 'checkbox',
+                dependsOn: 'app.payments.enabled:true',
+                dependencyAction: 'disable',
+                services: ['tca.services.mca']
+            },
+            {
                 group: 'EPOS.Webservice',
                 name: 'ocs.ed.ws.pwd', 
                 placeholder: 'EasyDebit Webservice Password',
