@@ -791,11 +791,12 @@ function renderSetting(settingObj, prefix, serviceName) {
     let dependsOnAttr = '';
     
     if (settingObj.dependsOn) {
+        // Format: 'otherFieldName:requiredValue'
+            const [controllingField, requiredValue] = settingObj.dependsOn.split(':');
         // 1. Check if the setting is a multi-field setting (i.e., has a field property)
         if (settingObj.settingField) {
             // This is a field-level dependency on another field within the same setting name.
-            // Format: 'otherFieldName:requiredValue'
-            const [controllingField, requiredValue] = settingObj.dependsOn.split(':');
+            
             
             if (controllingField && requiredValue !== undefined) {
                 // The controlling element's ID is the settingName + controllingField
