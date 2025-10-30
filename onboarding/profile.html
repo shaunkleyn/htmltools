@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Business Card</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .business-card {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: visible;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 24px 24px 0 0;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+            border-radius: 0 0 50% 50%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        .header-title {
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .bell-icon {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        .content {
+            padding: 0 24px 24px;
+            position: relative;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #f3f4f6;
+            position: relative;
+            margin-top: -40px;
+            z-index: 10;
+        }
+
+        .profile-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 12px;
+            box-shadow: 0 0 0 4px #f3f4f6;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .profile-id {
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .menu-item {
+            background: #f9fafb;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        .menu-icon-container {
+            width: 48px;
+            height: 48px;
+            background: #dbeafe;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-icon-container svg {
+            width: 24px;
+            height: 24px;
+            color: #2563eb;
+        }
+
+        .menu-label {
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .teachers-section {
+            margin-top: 24px;
+        }
+
+        .teachers-title {
+            color: #374151;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .teachers-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .teacher-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 2px white, 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .teacher-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="business-card">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <svg class="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <span class="header-title">DASHBOARD</span>
+            </div>
+            <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-image">
+                    <img src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="Ansh Sharma">
+                </div>
+                <h2 class="profile-name">Ansh Sharma</h2>
+                <p class="profile-id">STD - 12(B)</p>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <div class="menu-icon-container">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                    <span class="menu-label">Syllabus</span>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon-container">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <span class="menu-label">Attendance</span>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon-container">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <span class="menu-label">Home Work</span>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon-container">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <span class="menu-label">Result</span>
+                </div>
+            </div>
+
+            <!-- Teachers Section -->
+            <div class="teachers-section">
+                <h3 class="teachers-title">Teachers</h3>
+                <div class="teachers-list">
+                    <div class="teacher-avatar">
+                        <img src="https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="Teacher 1">
+                    </div>
+                    <div class="teacher-avatar">
+                        <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="Teacher 2">
+                    </div>
+                    <div class="teacher-avatar">
+                        <img src="https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="Teacher 3">
+                    </div>
+                    <div class="teacher-avatar">
+                        <img src="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="Teacher 4">
+                    </div>
+                    <div class="teacher-avatar">
+                        <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="Teacher 5">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
