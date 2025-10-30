@@ -790,14 +790,6 @@ console.log(settingObj);
     // --- START: Dependency ID Generation Logic ---
     let dependsOnAttr = '';
     let controllingId = '';
-    const hasElementDependency = dataArray.some(obj => {
-        // 1. Check if obj.dependsOn exists (is not undefined/null)
-        if (obj.dependsOn) {
-            const parts = obj.dependsOn.split(':');
-            return parts[0] === 'element';
-        }
-        return false; // Safely ignore objects without the property
-        });
     if (settingObj.dependsOn) {
         // Format: 'otherFieldName:requiredValue'
         const [controllingField, requiredValue] = settingObj.dependsOn.split(':');
