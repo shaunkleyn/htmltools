@@ -1051,7 +1051,7 @@ function createControlId(prefix, name, field) {
                 const $dependentElement = $(this);
                 const dependsOnId = $dependentElement.data('depends-on');
                 
-                console.log(`Found dependent element with dependency: ${dependsOnId}`);
+                console.log(`Found dependent element (${$dependentElement.attr('id')}) with dependency: ${dependsOnId}`);
                 
                 if (dependsOnId) {
                     let $masterElement = $(`#${dependsOnId}`);
