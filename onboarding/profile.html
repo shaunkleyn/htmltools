@@ -128,9 +128,17 @@
 
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            /* grid-template-columns: repeat(2, 1fr); */
             gap: 16px;
             margin-top: 24px;
+        }
+
+        .grid-2x1 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-1x1 {
+            grid-template-columns: repeat(1, 1fr);
         }
 
         .menu-item {
@@ -225,7 +233,7 @@
         <!-- Content -->
         <div class="content">
             <!-- Profile Card -->
-            <div class="profile-card">
+            <div class="profile-card mb-5">
                 <div class="profile-image">
                     <img src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="Ansh Sharma">
                 </div>
@@ -235,31 +243,36 @@
                 <p class="text-black-50">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora nam cum assumenda expedita velit magnam perspiciatis minus, quam neque fugiat quas, accusantium incidunt molestias quibusdam voluptatum distinctio eum maiores voluptatibus!</p>
             </div>
 
-            <div class="profile-card">
-                <div class="profile-image">
-                    <img src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop" alt="Ansh Sharma">
-                </div>
-                <h2 class="profile-name">Ansh Sharma</h2>
-                <p class="profile-id">STD - 12(B)</p>
-                <hr class="w-100">
-                <p class="text-black-50">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora nam cum assumenda expedita velit magnam perspiciatis minus, quam neque fugiat quas, accusantium incidunt molestias quibusdam voluptatum distinctio eum maiores voluptatibus!</p>
+            <div class="card shadow border-white rounded-4">
+                <div class="card-body">
+                    <div class="container-fluid"><div class="row mb-3"><div class="col-2">
+                        <i class="fa fa-phone"></i>
+                    </div><div class="col-10">
+                        +27 11 123 4568
+                    </div></div><div class="row"><div class="col-2">
+                        <i class="fa fa-phone"></i>
+                    </div><div class="col-10">
+                        +27 11 123 4568
+                    </div></div></div>
             </div>
 
             <!-- Menu Grid -->
             <div class="menu-grid">
-                <div class="menu-item">
+                <div class="menu-item justify-content-start p-2">
                     <div class="menu-icon-container">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                         </svg>
                     </div>
-                    <span class="menu-label">Syllabus</span>
+                    <span class="menu-label">mail@mail.com</span><div class="menu-icon-container">
+                        <i class="fa fa-arrow-right"></i>
+                    </div>
                 </div>
 
                 <div class="menu-item">
                     <div class="menu-icon-container">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
                     <span class="menu-label">Attendance</span>
@@ -268,7 +281,7 @@
                 <div class="menu-item">
                     <div class="menu-icon-container">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                     </div>
                     <span class="menu-label">Home Work</span>
@@ -277,7 +290,7 @@
                 <div class="menu-item">
                     <div class="menu-icon-container">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
                     </div>
                     <span class="menu-label">Result</span>
