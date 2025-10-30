@@ -808,7 +808,7 @@ console.log(settingObj);
             console.log('Generating dependency for single-setting:', settingObj.settingName);
             if (controllingField && requiredValue !== undefined) {
                 // const controllingId = createDependencyId(prefix, controllingField);
-                controllingId = createDependencyId(prefix, settingName + '_-_' + controllingField);
+                controllingId = createDependencyId(prefix, controllingField);
                 console.log('Controlling ID (multi-field):', controllingField);
                 // 2. Standard single-setting dependency on a different setting name.
                 // Format: 'otherSettingName' or 'otherSettingName:requiredValue'
