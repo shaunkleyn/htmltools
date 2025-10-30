@@ -1048,34 +1048,40 @@ function createControlId(prefix, name, field) {
             
             // Find all elements with dependencies
             $(container).find('[data-depends-on]').each(function() {
-                const $dependentElement = $(this);
-                const dependsOnId = $dependentElement.data('depends-on');
-                
-                console.log(`Found dependent element (${$dependentElement.attr('id')}) with dependency: ${dependsOnId}`);
-                
-                if (dependsOnId) {
-                    let $masterElement = $(`#${dependsOnId}`);
-                    if ($masterElement.length === 0) {
-                         $masterElement = $('#' + dependsOnId);
-                    }
-                    
-                    if ($masterElement.length > 0) {
-                        console.log(`Found master element: ${dependsOnId}, is checkbox: ${$masterElement.is(':checkbox')}`);
-                        
-                        // Set initial state
-                        updateDependencyState($dependentElement, $masterElement.is(':checked'));
-                        
-                        // Handle changes to the master element
-                        $masterElement.off('change.dependency').on('change.dependency', function() {
-                            console.log(`Master element ${dependsOnId} changed to: ${$(this).is(':checked')}`);
-                            updateDependencyState($dependentElement, $(this).is(':checked'));
-                        });
-                    } else {
-                        console.warn(`Master element not found: ${dependsOnId}`);
-                        console.log('Available checkboxes in container:', $(container).find('input[type="checkbox"]').map(function() { return this.id; }).get());
-                    }
-                }
+    const $dependentElement = $(this);
+    const dependsOnId = $dependentElement.data('depends-on');
+    
+    console.log(`Found dependent element (${$dependentElement.attr('id')}) with dependency: ${dependsOnId}`);
+    
+    if (dependsOnId) {
+        let $masterElement = $(`#${dependsOnId}`);
+        if ($masterElement.length === 0) {
+            $masterElement = $('#' + dependsOnId);
+        }
+        
+        if ($masterElement.length > 0) {
+            console.log(`Found master element: ${dependsOnId}, is checkbox: ${$masterElement.is(':checkbox')}`);
+            
+            // Create unique namespace for this dependency
+            const uniqueNamespace = `dependency.${dependsOnId}`;
+            
+            // Set initial state
+            updateDependencyState($dependentElement, $masterElement.is(':checked'));
+            
+            // Remove only this specific dependency's handlers
+            $masterElement.off(`.${uniqueNamespace}`);
+            
+            // Handle changes to the master element with unique namespace
+            $masterElement.on(`change.${uniqueNamespace}`, function() {
+                console.log(`Master element ${dependsOnId} changed to: ${$(this).is(':checked')}`);
+                updateDependencyState($dependentElement, $(this).is(':checked'));
             });
+        } else {
+            console.warn(`Master element not found: ${dependsOnId}`);
+            console.log('Available checkboxes in container:', $(container).find('input[type="checkbox"]').map(function() { return this.id; }).get());
+        }
+    }
+});
 
         }, 300);
     }
