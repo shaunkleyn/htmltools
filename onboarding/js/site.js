@@ -1056,7 +1056,7 @@ function createControlId(prefix, name, field) {
                 if (dependsOnId) {
                     let $masterElement = $(`#${dependsOnId}`);
                     if ($masterElement.length === 0) {
-                         $masterElement = $('[data-dependant-name="' + dependsOnId + '"]');
+                         $masterElement = $('#' + dependsOnId);
                     }
                     
                     if ($masterElement.length > 0) {
