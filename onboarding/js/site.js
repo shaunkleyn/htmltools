@@ -969,9 +969,9 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
     function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs) {
        
         return `
-            <div class="mb-3 col-md-12" ${dependsOnAttr}>
+            <div class="mb-3 col-md-12">
                 <div class="form-check form-switch">
-                    <input class="form-check-input setting-checkbox" type="checkbox" id="${inputId}" ${sharedAttrs}>
+                    <input class="form-check-input setting-checkbox" type="checkbox" id="${inputId}" ${sharedAttrs} ${dependsOnAttr}>
                     <label class="form-check-label" for="${inputId}">
                         ${settingObj.label}
                         ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
