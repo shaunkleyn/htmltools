@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BIN Importer</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- xlsx -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    /* small tweak for contenteditable focus */
+    td[contenteditable="true"]:focus {
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
+    }
+    .truncate-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Loading indicator styles */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-in-out;
+    }
+    .loading-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .spinner {
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid #0ea5e9;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Accordion styles */
+    .accordion-button {
+      cursor: pointer;
+      user-select: none;
+    }
+    .accordion-button:hover {
+      background-color: #f8fafc;
+    }
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    .accordion-content.open {
+      max-height: 1000px;
+    }
+    .accordion-icon {
+      transition: transform 0.3s ease;
+    }
+    .accordion-icon.rotate {
+      transform: rotate(180deg);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-semibold">BIN Importer</h1>
+      <p class="text-sm text-slate-600 mt-1">Upload Excel, paste DB tables (tab/comma separated), map any unmatched banks, fix errors inline, then generate SQL.</p>
+    </header>
+
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Left column: Inputs -->
+      <section class="space-y-4">
+
+        <div class="bg-white p-4 rounded-lg shadow relative" id="uploadCard">
+          <h2 class="font-medium">1) Upload Excel</h2>
+          <p class="text-sm text-slate-500">Excel should contain columns: <span class="font-medium">Bank</span>, <span class="font-medium">BIN</span>, <span class="font-medium">BranchCode</span> (case-insensitive).</p>
+          <input id="excelFile" type="file" accept=".xlsx,.xls" class="mt-3 block" />
+          <div class="text-sm text-slate-500 mt-2">Uploaded rows: <span id="excelCount">0</span></div>
+          <div class="loading-overlay" id="uploadLoading">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow relative" id="banksCard">
+          <h2 class="font-medium">2) Bank Lookup Table</h2>
+          <div class="text-sm text-slate-500 mb-3">Paste banks from <code>lookup_bank</code> table to match against. Banks will be parsed automatically.</div>
+
+          <!-- Accordion Item 1: Paste Banks -->
+          <div class="border rounded mb-2">
+            <div class="accordion-button p-3 flex justify-between items-center" id="banksPasteHeader">
+              <span class="font-medium text-sm">Paste Bank Data</span>
+              <svg class="w-5 h-5 accordion-icon" id="banksPasteIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+            <div class="accordion-content open" id="banksPasteContent">
+              <div class="p-3 border-t">
+                <p class="text-xs text-slate-500 mb-2">Paste rows like: <code>1,bank.ABSA,ABSA</code> or tab-separated</p>
+                <textarea id="bankPaste" class="w-full h-28 p-2 border rounded text-sm" placeholder="id[TAB|,]identifier[TAB|,]description"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion Item 2: Preview Banks -->
+          <div class="border rounded">
+            <div class="accordion-button p-3 flex justify-between items-center" id="banksPreviewHeader">
+              <span class="font-medium text-sm">Parsed Banks (<span id="bankCount">0</span>)</span>
+              <svg class="w-5 h-5 accordion-icon" id="banksPreviewIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+            <div class="accordion-content" id="banksPreviewContent">
+              <div class="p-3 border-t">
+                <div id="banksPreviewTable" class="overflow-auto max-h-60"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="loading-overlay" id="banksLoading">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow relative" id="binsCard">
+          <h2 class="font-medium">3) Existing BIN Numbers</h2>
+          <div class="text-sm text-slate-500 mb-3">Paste existing BINs from <code>lookup_bin_number</code> to avoid duplicates. BINs will be parsed automatically.</div>
+
+          <!-- Accordion Item 1: Paste BINs -->
+          <div class="border rounded mb-2">
+            <div class="accordion-button p-3 flex justify-between items-center" id="binsPasteHeader">
+              <span class="font-medium text-sm">Paste BIN Data</span>
+              <svg class="w-5 h-5 accordion-icon" id="binsPasteIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+            <div class="accordion-content open" id="binsPasteContent">
+              <div class="p-3 border-t">
+                <p class="text-xs text-slate-500 mb-2">Example: <code>12,1,445566,123456</code> (id, bank_id, bin_number, branch_code)</p>
+                <textarea id="existingBinPaste" class="w-full h-28 p-2 border rounded text-sm" placeholder="id[TAB|,]bank_id[TAB|,]bin_number[TAB|,]branch_code"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion Item 2: Preview BINs -->
+          <div class="border rounded">
+            <div class="accordion-button p-3 flex justify-between items-center" id="binsPreviewHeader">
+              <span class="font-medium text-sm">Parsed BINs (<span id="existingBinCount">0</span>)</span>
+              <svg class="w-5 h-5 accordion-icon" id="binsPreviewIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+            <div class="accordion-content" id="binsPreviewContent">
+              <div class="p-3 border-t">
+                <div id="binsPreviewTable" class="overflow-auto max-h-60"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="loading-overlay" id="binsLoading">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h2 class="font-medium">4) Options</h2>
+          <div class="mt-3">
+            <label class="inline-flex items-center gap-2">
+              <input id="branchAsError" type="checkbox" checked class="form-checkbox h-4 w-4 text-sky-600"/>
+              <span class="text-sm">Treat empty <code>branch_code</code> as <strong>error</strong></span>
+            </label>
+          </div>
+          <div class="mt-3 text-sm space-y-2" id="branchOptionsContainer">
+            <div>
+              <label class="inline-flex items-center gap-2">
+                <input type="radio" name="emptyBranchOption" value="NULL" checked class="form-radio h-4 w-4 text-sky-600"/>
+                <span>Insert <code>NULL</code> when branch empty</span>
+              </label>
+            </div>
+            <div>
+              <label class="inline-flex items-center gap-2">
+                <input type="radio" name="emptyBranchOption" value="EMPTY" class="form-radio h-4 w-4 text-sky-600"/>
+                <span>Insert empty string <code>''</code> when branch empty</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h2 class="font-medium">5) Generate SQL</h2>
+          <p class="text-sm text-slate-500 mt-2">Once you've uploaded your Excel file and pasted the lookup tables, click the button below to generate your SQL script.</p>
+          <div class="flex gap-2 mt-3">
+            <button id="generateBtn" class="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">Generate SQL Script</button>
+            <button id="downloadBtn" class="px-4 py-2 rounded bg-slate-500 text-white hover:bg-slate-600" disabled>Download .sql File</button>
+          </div>
+          <div class="text-sm text-slate-500 mt-3">
+            <strong>Note:</strong> The tool will automatically validate your data and show any issues below. Fix any errors in the Validation section, then regenerate.
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right column: Preview, mapping, errors, SQL output -->
+      <section class="space-y-4">
+
+        <div class="bg-white p-4 rounded-lg shadow relative" id="previewCard">
+          <h2 class="font-medium">Excel Preview</h2>
+          <div class="mt-2 text-sm text-slate-500">First 200 rows shown from your uploaded Excel file.</div>
+          <div id="previewArea" class="mt-3 overflow-auto max-h-48 border rounded p-2 bg-slate-50"></div>
+          <div class="loading-overlay" id="previewLoading">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h2 class="font-medium">Validation Issues</h2>
+          <div class="text-sm text-slate-500 mt-1">
+            Review and resolve any issues found in your data. You can edit values inline, then click "Apply Changes" at the bottom and regenerate the SQL.
+          </div>
+
+          <!-- Error Filters -->
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button class="error-filter px-2 py-1 text-xs rounded bg-slate-200 hover:bg-slate-300" data-filter="all">All Issues (<span id="errorCount">0</span>)</button>
+            <button class="error-filter px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200" data-filter="missing-bank">Missing Bank</button>
+            <button class="error-filter px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200" data-filter="missing-bin">Missing BIN</button>
+            <button class="error-filter px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200" data-filter="missing-branch">Missing Branch</button>
+            <button class="error-filter px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200" data-filter="duplicate">Duplicates</button>
+            <button class="error-filter px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200" data-filter="invalid-bin">Invalid BIN</button>
+            <button class="error-filter px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200" data-filter="unmapped">Bank Not Mapped</button>
+          </div>
+
+          <div id="errorsArea" class="mt-3 overflow-auto max-h-96"></div>
+
+          <!-- Apply Changes Button -->
+          <div class="mt-4 pt-4 border-t" id="applyChangesSection" style="display: none;">
+            <button id="applyChangesBtn" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700">
+              Apply Changes & Re-validate
+            </button>
+            <p class="text-xs text-slate-500 mt-2">Click this after editing any values to update the data and re-run validation.</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h2 class="font-medium">Bank Mapping</h2>
+          <div class="text-sm text-slate-500 mt-1">
+            Banks in your Excel that don't match the lookup table. Map each to an existing bank or create a new one. <strong>New banks will be included in the final SQL script.</strong>
+          </div>
+          <div id="unmappedArea" class="mt-3"></div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h2 class="font-medium">Generated SQL</h2>
+          <div class="text-sm text-slate-500 mt-1">SQL will include new bank INSERTs (if any), followed by BIN inserts. New banks are created first; BIN inserts reference banks by description so new bank ids are used after creation.</div>
+          <pre id="sqlArea" class="mt-3 text-xs leading-5 max-h-80 overflow-auto bg-slate-50 p-3 rounded"></pre>
+        </div>
+
+      </section>
+
+    </main>
+
+    <footer class="mt-6 text-sm text-slate-500">
+      Built for interactive local use — runs completely in your browser. No data leaves your machine.
+    </footer>
+  </div>
+
+<script>
+/* -------------------------
+   Utility functions
+   ------------------------- */
+function parseSeparatedRow(line) {
+  if (line.includes("\t")) return line.split("\t").map(x => x.trim());
+  if (line.includes(",")) return line.split(",").map(x => x.trim());
+  return line.split(/\s+/).map(x => x.trim());
+}
+
+function normalize(str) {
+  return (str || "").toString().trim().toUpperCase();
+}
+
+function uniqueBy(arr, keyFn) {
+  const seen = new Set();
+  const out = [];
+  for (const el of arr) {
+    const k = keyFn(el);
+    if (!seen.has(k)) {
+      seen.add(k);
+      out.push(el);
+    }
+  }
+  return out;
+}
+
+/* -------------------------
+   State
+   ------------------------- */
+let parsedBanks = {};       // description (UPPER) => {id, identifier, description}
+let existingBinSet = new Set(); // strings
+let existingBinList = [];   // array of parsed bin objects for preview
+let excelRows = [];         // {rowIndex, Bank, BIN, BranchCode, _orig}
+let mappings = {};          // bankNameUpper => { type: "existing", id, description } OR { type: "new", identifier, description }
+let currentErrorFilter = 'all';
+let allErrors = [];
+
+/* -------------------------
+   Utility: Loading Indicator
+   ------------------------- */
+function showLoading(elementId, minDuration = 300) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  const startTime = Date.now();
+  setTimeout(() => el.classList.add('show'), 10);
+
+  return () => {
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, minDuration - elapsed);
+    setTimeout(() => el.classList.remove('show'), remaining);
+  };
+}
+
+/* -------------------------
+   Utility: Accordion Toggle
+   ------------------------- */
+function setupAccordion(headerId, contentId, iconId) {
+  const header = document.getElementById(headerId);
+  const content = document.getElementById(contentId);
+  const icon = document.getElementById(iconId);
+
+  if (!header || !content || !icon) return;
+
+  header.addEventListener('click', () => {
+    const isOpen = content.classList.contains('open');
+    if (isOpen) {
+      content.classList.remove('open');
+      icon.classList.remove('rotate');
+    } else {
+      content.classList.add('open');
+      icon.classList.add('rotate');
+    }
+  });
+}
+
+function openAccordion(contentId, iconId) {
+  const content = document.getElementById(contentId);
+  const icon = document.getElementById(iconId);
+  if (content) content.classList.add('open');
+  if (icon) icon.classList.add('rotate');
+}
+
+function closeAccordion(contentId, iconId) {
+  const content = document.getElementById(contentId);
+  const icon = document.getElementById(iconId);
+  if (content) content.classList.remove('open');
+  if (icon) icon.classList.remove('rotate');
+}
+
+/* -------------------------
+   Parse bank paste (auto-parse on input)
+   ------------------------- */
+document.getElementById('bankPaste').addEventListener('input', () => {
+  const txt = document.getElementById('bankPaste').value.trim();
+  if (!txt) return;
+
+  const hideLoading = showLoading('banksLoading');
+
+  setTimeout(() => {
+    parsedBanks = {};
+    const lines = txt.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      const parts = parseSeparatedRow(line);
+      if (parts.length < 3) continue;
+      const id = parts[0];
+      const identifier = parts[1];
+      const description = parts.slice(2).join(",").trim();
+      parsedBanks[normalize(description)] = { id: id.trim(), identifier: (identifier||'').trim(), description: description.trim() };
+    }
+
+    document.getElementById('bankCount').textContent = Object.keys(parsedBanks).length;
+    renderBanksPreview();
+
+    // Auto-collapse paste section and open preview
+    if (Object.keys(parsedBanks).length > 0) {
+      closeAccordion('banksPasteContent', 'banksPasteIcon');
+      openAccordion('banksPreviewContent', 'banksPreviewIcon');
+    }
+
+    hideLoading();
+    runValidationAndUI();
+  }, 100);
+});
+
+function renderBanksPreview() {
+  const area = document.getElementById('banksPreviewTable');
+  area.innerHTML = '';
+
+  const banks = Object.values(parsedBanks);
+  if (!banks.length) {
+    area.innerHTML = '<div class="text-sm text-slate-500">No banks parsed yet.</div>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'min-w-full text-sm border-collapse';
+  table.innerHTML = `
+    <thead class="bg-slate-100">
+      <tr class="text-left text-xs text-slate-600">
+        <th class="p-2 border">ID</th>
+        <th class="p-2 border">Identifier</th>
+        <th class="p-2 border">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${banks.map(b => `
+        <tr class="border-b hover:bg-slate-50">
+          <td class="p-2 border">${escapeHtml(b.id)}</td>
+          <td class="p-2 border font-mono text-xs">${escapeHtml(b.identifier)}</td>
+          <td class="p-2 border">${escapeHtml(b.description)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+  area.appendChild(table);
+}
+
+/* -------------------------
+   Parse existing BINs (auto-parse on input)
+   ------------------------- */
+document.getElementById('existingBinPaste').addEventListener('input', () => {
+  const txt = document.getElementById('existingBinPaste').value.trim();
+  if (!txt) return;
+
+  const hideLoading = showLoading('binsLoading');
+
+  setTimeout(() => {
+    existingBinSet = new Set();
+    existingBinList = [];
+    const lines = txt.split(/\r?\n/).filter(Boolean);
+
+    for (const line of lines) {
+      const parts = parseSeparatedRow(line);
+      if (parts.length >= 3) {
+        const id = parts[0];
+        const bankId = parts[1];
+        const binNumber = parts.find(p => /^\d{4,}$/.test(p));
+        const branchCode = parts.length >= 4 ? parts[3] : '';
+
+        if (binNumber) {
+          existingBinSet.add(String(binNumber).trim());
+          existingBinList.push({ id, bankId, binNumber, branchCode });
+        }
+      }
+    }
+
+    document.getElementById('existingBinCount').textContent = existingBinSet.size;
+    renderBinsPreview();
+
+    // Auto-collapse paste section and open preview
+    if (existingBinSet.size > 0) {
+      closeAccordion('binsPasteContent', 'binsPasteIcon');
+      openAccordion('binsPreviewContent', 'binsPreviewIcon');
+    }
+
+    hideLoading();
+    runValidationAndUI();
+  }, 100);
+});
+
+function renderBinsPreview() {
+  const area = document.getElementById('binsPreviewTable');
+  area.innerHTML = '';
+
+  if (!existingBinList.length) {
+    area.innerHTML = '<div class="text-sm text-slate-500">No existing BINs parsed yet.</div>';
+    return;
+  }
+
+  const maxShow = Math.min(existingBinList.length, 200);
+  const table = document.createElement('table');
+  table.className = 'min-w-full text-sm border-collapse';
+  table.innerHTML = `
+    <thead class="bg-slate-100">
+      <tr class="text-left text-xs text-slate-600">
+        <th class="p-2 border">ID</th>
+        <th class="p-2 border">Bank ID</th>
+        <th class="p-2 border">BIN Number</th>
+        <th class="p-2 border">Branch Code</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${existingBinList.slice(0, maxShow).map(b => `
+        <tr class="border-b hover:bg-slate-50">
+          <td class="p-2 border">${escapeHtml(b.id)}</td>
+          <td class="p-2 border">${escapeHtml(b.bankId)}</td>
+          <td class="p-2 border font-mono">${escapeHtml(b.binNumber)}</td>
+          <td class="p-2 border">${escapeHtml(b.branchCode)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+  area.appendChild(table);
+
+  if (existingBinList.length > maxShow) {
+    const note = document.createElement('div');
+    note.className = 'text-xs text-slate-500 mt-2';
+    note.textContent = `Showing first ${maxShow} of ${existingBinList.length} BINs`;
+    area.appendChild(note);
+  }
+}
+
+/* -------------------------
+   Read Excel & Preview
+   ------------------------- */
+document.getElementById('excelFile').addEventListener('change', (ev) => {
+  const file = ev.target.files[0];
+  excelRows = [];
+  document.getElementById('previewArea').innerHTML = '';
+  document.getElementById('excelCount').textContent = '0';
+
+  if (!file) return;
+
+  const hideUploadLoading = showLoading('uploadLoading');
+  const hidePreviewLoading = showLoading('previewLoading');
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    setTimeout(() => {
+      const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      excelRows = rows.map((r, idx) => {
+        // attempt to find relevant columns in a case-insensitive manner
+        const keys = Object.keys(r);
+        const getCol = names => {
+          for (const k of keys) {
+            if (names.includes(k.toString().toUpperCase())) return r[k];
+          }
+          return '';
+        };
+        const Bank = getCol(['BANK','BANK NAME','BANK_NAME','BANKNAME','INSTITUTION', 'DESCRIPTION']);
+        const BIN = getCol(['BIN','BIN_NUMBER','BINS','BINARY','CARD BIN','BINNUMBER']);
+        const BranchCode = getCol(['BRANCH','BRANCHCODE','BRANCH_CODE','BRANCH CODE','BRANCHCODE ']);
+        return { rowIndex: idx+1, Bank: String(Bank||'').trim(), BIN: String(BIN||'').trim(), BranchCode: String(BranchCode||'').trim(), _orig: r };
+      });
+      document.getElementById('excelCount').textContent = excelRows.length;
+      renderPreview();
+      runValidationAndUI();
+      hideUploadLoading();
+      hidePreviewLoading();
+    }, 100);
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function renderPreview() {
+  const area = document.getElementById('previewArea');
+  area.innerHTML = '';
+  if (!excelRows.length) {
+    area.textContent = 'No Excel data loaded yet.';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'min-w-full text-sm';
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr class="text-left text-xs text-slate-600"><th class="p-1">Row</th><th class="p-1">Bank</th><th class="p-1">BIN</th><th class="p-1">Branch</th></tr>`;
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+
+  const max = Math.min(excelRows.length, 200);
+  for (let i=0;i<max;i++) {
+    const r = excelRows[i];
+    const tr = document.createElement('tr');
+    tr.className = 'border-b';
+    tr.innerHTML = `<td class="p-1">${r.rowIndex}</td><td class="p-1 truncate">${escapeHtml(r.Bank)}</td><td class="p-1">${escapeHtml(r.BIN)}</td><td class="p-1">${escapeHtml(r.BranchCode)}</td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  area.appendChild(table);
+}
+
+/* -------------------------
+   Validation & UI Update
+   ------------------------- */
+function runValidationAndUI() {
+  if (!excelRows.length) {
+    document.getElementById('errorsArea').innerHTML = '<div class="text-sm text-slate-500">Upload an Excel file first.</div>';
+    document.getElementById('unmappedArea').innerHTML = '<div class="text-sm text-slate-500">Upload an Excel file first.</div>';
+    return;
+  }
+
+  // reset maps - keep existing user-created mappings
+  // Pre-fill mappings for exact matches
+  for (const r of excelRows) {
+    const bankU = normalize(r.Bank);
+    if (!bankU) continue;
+    if (parsedBanks[bankU] && !mappings[bankU]) {
+      mappings[bankU] = { type: 'existing', id: parsedBanks[bankU].id, description: parsedBanks[bankU].description };
+    }
+  }
+
+  // Validate rows, build errors & unmapped
+  const errors = [];
+  const unmappedSet = new Set();
+
+  const branchAsError = document.getElementById('branchAsError').checked;
+
+  const seenExcelBins = new Set();
+
+  for (const r of excelRows) {
+    const rowNum = r.rowIndex;
+    const bankU = normalize(r.Bank);
+    const bin = (r.BIN || '').toString().trim();
+    const branch = (r.BranchCode || '').toString().trim();
+
+    // Basic validation
+    let rowErrors = [];
+    let errorTags = [];
+
+    if (!bankU) {
+      rowErrors.push('Bank name is missing');
+      errorTags.push('missing-bank');
+    }
+
+    if (!bin) {
+      rowErrors.push('BIN number is missing');
+      errorTags.push('missing-bin');
+    } else if (!/^\d+$/.test(bin)) {
+      rowErrors.push('BIN must contain only digits');
+      errorTags.push('invalid-bin');
+    }
+
+    if (branchAsError && !branch) {
+      rowErrors.push('Branch code is missing');
+      errorTags.push('missing-branch');
+    }
+
+    if (seenExcelBins.has(bin) && bin) {
+      rowErrors.push('Duplicate BIN in your Excel file');
+      errorTags.push('duplicate');
+    }
+
+    // Check if bank is unmapped
+    if (bankU && !parsedBanks[bankU] && !mappings[bankU]) {
+      rowErrors.push('Bank not mapped to lookup table');
+      errorTags.push('unmapped');
+      unmappedSet.add(bankU);
+    }
+
+    if (rowErrors.length) {
+      errors.push({
+        rowIndex: rowNum,
+        Bank: r.Bank,
+        BIN: r.BIN,
+        BranchCode: r.BranchCode,
+        errors: rowErrors,
+        tags: errorTags
+      });
+    }
+
+    if (bin) seenExcelBins.add(bin);
+  }
+
+  allErrors = errors;
+  renderUnmapped(Array.from(unmappedSet).sort());
+  renderErrors(currentErrorFilter);
+}
+
+/* -------------------------
+   Unmapped area (mapping UI) - Table format
+   ------------------------- */
+function renderUnmapped(unmappedList) {
+  const area = document.getElementById('unmappedArea');
+  area.innerHTML = '';
+
+  if (!unmappedList.length) {
+    area.innerHTML = '<div class="text-sm text-slate-500">✓ All banks are mapped.</div>';
+    return;
+  }
+
+  const existingBanks = Object.values(parsedBanks);
+
+  const table = document.createElement('table');
+  table.className = 'min-w-full text-sm border-collapse';
+  table.innerHTML = `
+    <thead class="bg-slate-100">
+      <tr class="text-left text-xs text-slate-600">
+        <th class="p-2 border">Excel Bank Name</th>
+        <th class="p-2 border">Map To / Create New</th>
+        <th class="p-2 border">Identifier</th>
+      </tr>
+    </thead>
+    <tbody id="unmappedTableBody"></tbody>
+  `;
+
+  const tbody = table.querySelector('#unmappedTableBody');
+
+  for (const bankNameUpper of unmappedList) {
+    const orig = excelRows.find(r => normalize(r.Bank) === bankNameUpper);
+    const displayName = orig ? orig.Bank : bankNameUpper;
+
+    const tr = document.createElement('tr');
+    tr.className = 'border-b';
+    tr.setAttribute('data-bank', bankNameUpper);
+
+    // Column 1: Bank Name
+    const td1 = document.createElement('td');
+    td1.className = 'p-2 border font-medium';
+    td1.textContent = displayName;
+
+    // Column 2: Dropdown (combobox style)
+    const td2 = document.createElement('td');
+    td2.className = 'p-2 border';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'relative';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'w-full p-1 border rounded text-sm';
+    input.placeholder = 'Select or type to create new...';
+    input.setAttribute('data-bank', bankNameUpper);
+    input.setAttribute('list', `datalist-${bankNameUpper}`);
+
+    const datalist = document.createElement('datalist');
+    datalist.id = `datalist-${bankNameUpper}`;
+
+    // Add existing banks
+    for (const b of existingBanks) {
+      const option = document.createElement('option');
+      option.value = b.description;
+      option.setAttribute('data-id', b.id);
+      option.setAttribute('data-identifier', b.identifier);
+      datalist.appendChild(option);
+    }
+
+    // Add "Create new bank" option
+    const createOption = document.createElement('option');
+    createOption.value = `[Create New: ${displayName}]`;
+    datalist.appendChild(createOption);
+
+    wrapper.appendChild(input);
+    wrapper.appendChild(datalist);
+    td2.appendChild(wrapper);
+
+    // Column 3: Identifier (read-only, populated when selection made)
+    const td3 = document.createElement('td');
+    td3.className = 'p-2 border text-xs font-mono text-slate-500';
+    td3.setAttribute('data-bank', bankNameUpper);
+
+    // Handle input change
+    input.addEventListener('change', () => {
+      const value = input.value.trim();
+
+      if (value.startsWith('[Create New:')) {
+        // User selected create new
+        const newDesc = displayName.trim();
+        const newId = generateIdentifierFromName(newDesc);
+        mappings[bankNameUpper] = { type: 'new', identifier: newId, description: newDesc };
+        td3.textContent = newId + ' (new)';
+        td3.classList.add('text-emerald-600', 'font-semibold');
+        input.value = newDesc;
+        runValidationAndUI();
+      } else if (value) {
+        // Check if it matches an existing bank
+        const existing = existingBanks.find(b => b.description === value);
+        if (existing) {
+          mappings[bankNameUpper] = { type: 'existing', id: existing.id, description: existing.description };
+          td3.textContent = existing.identifier;
+          td3.classList.remove('text-emerald-600', 'font-semibold');
+          td3.classList.add('text-slate-700');
+          runValidationAndUI();
+        } else {
+          // Create new bank with custom name
+          const newId = generateIdentifierFromName(value);
+          mappings[bankNameUpper] = { type: 'new', identifier: newId, description: value };
+          td3.textContent = newId + ' (new)';
+          td3.classList.add('text-emerald-600', 'font-semibold');
+          runValidationAndUI();
+        }
+      }
+    });
+
+    // Check if already mapped
+    if (mappings[bankNameUpper]) {
+      const mapping = mappings[bankNameUpper];
+      input.value = mapping.description;
+      if (mapping.type === 'new') {
+        td3.textContent = mapping.identifier + ' (new)';
+        td3.classList.add('text-emerald-600', 'font-semibold');
+      } else {
+        td3.textContent = parsedBanks[normalize(mapping.description)]?.identifier || mapping.id;
+        td3.classList.add('text-slate-700');
+      }
+    }
+
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    tbody.appendChild(tr);
+  }
+
+  area.appendChild(table);
+}
+
+function generateIdentifierFromName(name) {
+  const cleaned = name.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  return 'bank.' + (cleaned || 'NEWBANK');
+}
+
+/* -------------------------
+   Errors Area (inline edit with filters)
+   ------------------------- */
+function renderErrors(filter) {
+  const area = document.getElementById('errorsArea');
+  area.innerHTML = '';
+
+  document.getElementById('errorCount').textContent = allErrors.length;
+
+  // Filter errors based on selected filter
+  let filteredErrors = allErrors;
+  if (filter !== 'all') {
+    filteredErrors = allErrors.filter(err => err.tags && err.tags.includes(filter));
+  }
+
+  if (!allErrors.length) {
+    area.innerHTML = '<div class="text-sm text-slate-500">✓ No validation issues found.</div>';
+    document.getElementById('applyChangesSection').style.display = 'none';
+    return;
+  }
+
+  if (!filteredErrors.length) {
+    area.innerHTML = '<div class="text-sm text-slate-500">No issues match this filter.</div>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'min-w-full text-sm border-collapse';
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr class="text-left text-xs text-slate-600 bg-slate-100">
+      <th class="p-2 border">Row</th>
+      <th class="p-2 border">Bank</th>
+      <th class="p-2 border">BIN</th>
+      <th class="p-2 border">Branch</th>
+      <th class="p-2 border">Issues</th>
+    </tr>
+  `;
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+
+  for (const err of filteredErrors) {
+    const tr = document.createElement('tr');
+    tr.className = 'border-b align-top hover:bg-slate-50';
+    tr.setAttribute('data-error-row', err.rowIndex);
+
+    tr.innerHTML = `
+      <td class="p-2 border text-center">${err.rowIndex}</td>
+      <td class="p-2 border">
+        <div contenteditable="true" data-field="Bank" data-row="${err.rowIndex}" class="editable p-1 rounded hover:bg-white focus:bg-white border border-transparent focus:border-sky-400">${escapeHtml(err.Bank)}</div>
+      </td>
+      <td class="p-2 border">
+        <div contenteditable="true" data-field="BIN" data-row="${err.rowIndex}" class="editable p-1 rounded hover:bg-white focus:bg-white border border-transparent focus:border-sky-400">${escapeHtml(err.BIN)}</div>
+      </td>
+      <td class="p-2 border">
+        <div contenteditable="true" data-field="BranchCode" data-row="${err.rowIndex}" class="editable p-1 rounded hover:bg-white focus:bg-white border border-transparent focus:border-sky-400">${escapeHtml(err.BranchCode)}</div>
+      </td>
+      <td class="p-2 border">
+        <div class="text-xs text-rose-600">${err.errors.map(e => `• ${e}`).join('<br>')}</div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  area.appendChild(table);
+
+  // Show apply changes button
+  document.getElementById('applyChangesSection').style.display = 'block';
+}
+
+/* -------------------------
+   Generate SQL
+   ------------------------- */
+document.getElementById('generateBtn').addEventListener('click', () => {
+  // Run validation first
+  runValidationAndUI();
+
+  // Check for Excel data
+  if (!excelRows.length) {
+    alert('Please upload an Excel file first.');
+    return;
+  }
+
+  // collect final valid rows
+  const branchBehavior = document.querySelector('input[name="emptyBranchOption"]:checked')?.value || 'NULL';
+  const branchAsError = document.getElementById('branchAsError').checked;
+
+  // find unmapped banks left (if any)
+  const unmappedBanks = [];
+  for (const r of excelRows) {
+    const bankU = normalize(r.Bank);
+    if (!bankU) continue;
+    if (!mappings[bankU] && !parsedBanks[bankU]) {
+      if (!unmappedBanks.includes(bankU)) unmappedBanks.push(bankU);
+    }
+  }
+  if (unmappedBanks.length) {
+    alert(`There are ${unmappedBanks.length} unmapped bank(s). Please map them in the "Bank Mapping" section before generating SQL.`);
+    return;
+  }
+
+  // run validation again to collect invalid rows (but skip "already exists" errors)
+  const errors = [];
+  const validRows = [];
+  const seenExcelBins = new Set();
+
+  for (const r of excelRows) {
+    const bankU = normalize(r.Bank);
+    const bin = (r.BIN||'').toString().trim();
+    const branch = (r.BranchCode||'').toString().trim();
+
+    // validate
+    let rowErrors = [];
+    if (!bankU) rowErrors.push('Bank missing');
+    if (!bin) rowErrors.push('BIN missing');
+    else if (!/^\d+$/.test(bin)) rowErrors.push('BIN must be digits only');
+    if (branchAsError && !branch) rowErrors.push('Branch code missing');
+    if (seenExcelBins.has(bin) && bin) rowErrors.push('Duplicate BIN in Excel');
+
+    // Skip rows that already exist in DB (don't treat as error for SQL generation)
+    if (bin && existingBinSet.has(bin)) {
+      if (bin) seenExcelBins.add(bin);
+      continue; // Skip this row
+    }
+
+    if (rowErrors.length) {
+      errors.push({rowIndex: r.rowIndex, errors: rowErrors});
+      continue;
+    }
+
+    // resolved bank mapping
+    let mapping = parsedBanks[bankU] ? { type: 'existing', id: parsedBanks[bankU].id, description: parsedBanks[bankU].description } : mappings[bankU];
+
+    if (!mapping) {
+      alert('Unexpected unmapped bank for row ' + r.rowIndex);
+      return;
+    }
+
+    validRows.push({ rowIndex: r.rowIndex, bankU, mapping, bin, branch });
+    if (bin) seenExcelBins.add(bin);
+  }
+
+  // build SQL
+  let sqlParts = [];
+  // 1) new bank inserts (unique)
+  const newBanks = [];
+  for (const k in mappings) {
+    const m = mappings[k];
+    if (m.type === 'new') {
+      newBanks.push({ identifier: m.identifier, description: m.description });
+    }
+  }
+  // ensure unique descriptions
+  const uniqNewBanks = uniqueBy(newBanks, b => normalize(b.description));
+
+  if (uniqNewBanks.length) {
+    sqlParts.push('-- New banks to insert (if they do not already exist).');
+    for (const nb of uniqNewBanks) {
+      // use INSERT ... ON CONFLICT DO NOTHING to avoid duplicates (if unique constraints exist)
+      sqlParts.push(`INSERT INTO lookup_bank (identifier, description) VALUES ('${escapeSql(nb.identifier)}', '${escapeSql(nb.description)}');`);
+    }
+    sqlParts.push('');
+  }
+
+  // 2) BIN inserts
+  sqlParts.push('-- BIN inserts (only for rows that passed validation).');
+  for (const vr of validRows) {
+    // determine insert expression for bank_id:
+    // always use a SELECT to resolve id by description so new banks inserted above will be found
+    const desc = vr.mapping.type === 'existing' ? vr.mapping.description : vr.mapping.description;
+    const branchVal = (vr.branch || '') === '' ? (branchBehavior === 'NULL' ? 'NULL' : "''") : `'${escapeSql(vr.branch)}'`;
+    sqlParts.push(`INSERT INTO lookup_bin_number (bank_id, bin_number, branch_code)`);
+    sqlParts.push(`SELECT id, '${escapeSql(vr.bin)}', ${branchVal} FROM lookup_bank WHERE UPPER(description) = '${escapeSql(normalize(desc))}' LIMIT 1;`);
+    sqlParts.push('');
+  }
+
+  const finalSql = sqlParts.join('\n');
+  document.getElementById('sqlArea').textContent = finalSql || '-- No SQL generated --';
+  document.getElementById('downloadBtn').disabled = !finalSql;
+});
+
+/* -------------------------
+   Download .sql
+   ------------------------- */
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const sql = document.getElementById('sqlArea').textContent;
+  if (!sql) return alert('No SQL to download.');
+  const blob = new Blob([sql], { type: 'text/sql' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bin_import_' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.sql';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+/* -------------------------
+   Helpers
+   ------------------------- */
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+
+function escapeSql(s) {
+  if (s === null || s === undefined) return '';
+  return s.toString().replaceAll("'", "''");
+}
+
+/* -------------------------
+   Initialization
+   ------------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  // Setup accordions
+  setupAccordion('banksPasteHeader', 'banksPasteContent', 'banksPasteIcon');
+  setupAccordion('banksPreviewHeader', 'banksPreviewContent', 'banksPreviewIcon');
+  setupAccordion('binsPasteHeader', 'binsPasteContent', 'binsPasteIcon');
+  setupAccordion('binsPreviewHeader', 'binsPreviewContent', 'binsPreviewIcon');
+
+  // Branch options visibility toggle
+  const branchAsErrorCheckbox = document.getElementById('branchAsError');
+  const branchOptionsContainer = document.getElementById('branchOptionsContainer');
+
+  function updateBranchOptions() {
+    if (branchAsErrorCheckbox.checked) {
+      branchOptionsContainer.style.display = 'none';
+    } else {
+      branchOptionsContainer.style.display = 'block';
+    }
+  }
+
+  branchAsErrorCheckbox.addEventListener('change', updateBranchOptions);
+  updateBranchOptions(); // Initial state
+
+  // Error filter buttons
+  document.querySelectorAll('.error-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update active state
+      document.querySelectorAll('.error-filter').forEach(b => {
+        b.classList.remove('bg-slate-200', 'font-semibold');
+        b.classList.add('bg-slate-100');
+      });
+      btn.classList.remove('bg-slate-100');
+      btn.classList.add('bg-slate-200', 'font-semibold');
+
+      // Filter errors
+      currentErrorFilter = btn.getAttribute('data-filter');
+      renderErrors(currentErrorFilter);
+    });
+  });
+
+  // Apply changes button
+  document.getElementById('applyChangesBtn').addEventListener('click', () => {
+    // Collect all edited values from the errors table
+    const editables = document.querySelectorAll('.editable');
+    let hasChanges = false;
+
+    for (const cell of editables) {
+      const rowNum = Number(cell.getAttribute('data-row'));
+      const field = cell.getAttribute('data-field');
+      const value = cell.textContent.trim();
+
+      const ex = excelRows.find(x => x.rowIndex === rowNum);
+      if (ex && ex[field] !== value) {
+        ex[field] = value;
+        hasChanges = true;
+      }
+    }
+
+    if (hasChanges) {
+      runValidationAndUI();
+      alert('Changes applied. Validation has been updated.');
+    } else {
+      alert('No changes detected.');
+    }
+  });
+});
+
+</script>
+</body>
+</html>
