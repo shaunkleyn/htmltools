@@ -1,8 +1,6 @@
 let importConfiguration, exportConfiguration, renderSettings, getAllServiceSettings;
 
 $(document).ready(function () {
-
-
     // Check if configuration data is loaded
     if (typeof scopes === 'undefined' || typeof settingDescriptions === 'undefined') {
         console.error('Configuration data not loaded. Please make sure config-data.js is included before this file.');
@@ -50,13 +48,21 @@ $(document).ready(function () {
         Object.keys(scopes).forEach(scope => {
             const scopeData = scopes[scope];
             const checkboxHtml = `
-            <label class="list-group-item list-group-item-action no-text-select py-2 d-flex flex-row justify-content-between align-items-center" for="scope-${scope}">
-                <div><input class="form-check-input me-2 scope-checkbox-input" type="checkbox" value="${scope}" id="scope-${scope}">${scope} - ${scopeData.name}</div>
-                <span class="badge bg-primary rounded-pill">${scopeData.services.length}</span>
-            </label>
+            <label  class="list-group-item list-group-item-action no-text-select" for="scope-${scope}">
+                <input class="form-check-input me-2 scope-checkbox-input" type="checkbox" value="${scope}" id="scope-${scope}">${scope} - ${scopeData.name}
+            </a>
             `;
+            // const checkboxHtml = `
+            //     <div class="col-md-4 scope-checkbox">
+            //         <div class="form-check">
+            //             <input class="form-check-input scope-checkbox-input" type="checkbox" value="${scope}" id="scope-${scope}">
+            //             <label class="form-check-label" for="scope-${scope}">
+            //                 ${scope} - ${scopeData.name}
+            //             </label>
+            //         </div>
+            //     </div>
+            // `;
             scopeCheckboxesContainer.append(checkboxHtml);
-            console.log(`Added checkbox for scope: ${scopeData}`);
         });
 
         // Create empty tabs container
@@ -97,7 +103,7 @@ $(document).ready(function () {
         });
 
         // Update the event handler for entity toggles to refresh tooltips
-    $('#createDeviceUser, #createIntegrator').change(function() {
+$('#createDeviceUser, #createIntegrator').change(function() {
     const createDeviceUser = $('#createDeviceUser').is(':checked');
     const createIntegrator = $('#createIntegrator').is(':checked');
     
@@ -393,7 +399,6 @@ $('#createDeviceUser, #createIntegrator').change(function() {
     }
 
     function renderScopeTab(scope) {
-        console.log(`Rendering tab content for scope: ${scope}`);
         const scopeData = scopes[scope];
         let html = '';
 
@@ -431,7 +436,7 @@ $('#createDeviceUser, #createIntegrator').change(function() {
 
         // Rate limit section
         html += `
-            <div class="settings-section rounded-4" section="rate-limiting">
+            <div class="settings-section" section="rate-limiting">
                 <div class="row">
                     <div class="col-auto align-content-center">
                         <div class="form-check form-check-sm">
@@ -454,27 +459,37 @@ $('#createDeviceUser, #createIntegrator').change(function() {
         `;
 
 
-
+// Scope-level settings section
+if (scopeData.settings && scopeData.settings.length > 0) {
+    html += `<div class="settings-section">
+        <h5>Scope Settings</h5>`;
+    console.log('scopeData.settings:', scopeData.settings);
+    html += renderGroupedSettings(scopeData.settings, scope, 'scope', );
+    
+    html += `</div>`;
+}
 
 console.log(scopeData);
 // Services section
 // In renderScopeTab function:
 // In renderScopeTab function, replace the services section with:
 if (scopeData.services && scopeData.services.length > 0) {
-    html += `<div class="settings-section rounded-4">
-        <h3 class="fw-600 text-white mb-3">Service Assignment</h3>`
+    html += `<div class="settings-section">
+        <h5>Service Assignment</h5>
+        <div class="entity-services-assignment">
+            <div class="row">`
 
-        html += `
+        html += `</div></div>
         
         <!-- Service Settings Accordion (only show if any service has settings) -->
-            <div class="service-settings-panel rounded-3 bg-white p-3 shadow-sm">
-                <h5>Service Configuration</h5>
+            <div class="service-settings-panel mt-4">
+                <h6>Service Configuration</h6>
                 <div class="${scopeData.services.some(service => service.settings && service.settings.length > 0) ? 'accordion' : ''}" id="${scope}-service-settings">
                     ${scopeData.services.map((service, index) => 
-                        `<div class="accordion-item rounded-3">
+                        `<div class="accordion-item">
                                 <h2 class="accordion-header d-flex align-items-center flex-row">
-                                    <div class="accordion-button accordion-button-sm bg-light px-3">
-                                        <div class="form-check form-switch">
+                                    <div class="accordion-button accordion-button-sm collapsed p-0">
+                                        <div class="form-check form-switch ms-3">
                                             <input class="form-check-input parent-service" type="checkbox" 
                                                 data-service="${service.name}"
                                                 data-entity="parent"
@@ -483,47 +498,34 @@ if (scopeData.services && scopeData.services.length > 0) {
                                                 data-entity="parent" checked="" readonly="">
                                         </div>
                                         <div type="button" 
-                                        class="w-100 ps-1 ${service.settings && service.settings.length > 0 ? '' : 'collapsed'}"
+                                        class="w-100 ps-1"
                                         data-bs-toggle="collapse"
-                                        aria-expanded="${service.settings && service.settings.length > 0 ? 'true' : 'false'}"
-                                        data-bs-target="#${scope}-${safeRename(service.name)}-config">${service.display || service.description}.
-                                        <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" title="${service.description}"></i>
-                                        </div>
-                                            
+                                        data-bs-target="#${scope}-${safeRename(service.name)}-config">${service.display || service.description}</div>
                                     </div>
                                 </h2>
                                 <div id="${scope}-${safeRename(service.name)}-config" 
-                                    class="bg-light ${service.settings && service.settings.length > 0 ? 'collapse show' : ''}" 
+                                    class="${service.settings && service.settings.length > 0 ? 'accordion-collapse collapse' : ''}" 
                                     ignore-data-bs-parent="#${scope}-service-settings">
-                                    <div class="accordion-body pt-0">
+                                    <div class="accordion-body">
                                     <div class="container-fluid">
                                         <div class="row mb-2">
                                             <div class="col-12">
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase() === 'integrator')) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase() === 'integrator')) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input integrator-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator">
+                                                    <input class="form-check-input integrator-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-integrator">
                                                         Link to Integrator
-                                                        <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.name} to Integrator"></i>
+                                                        <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Integrator"></i>
                                                     </label>
                                                 </div>` : ''}
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase().indexOf('user') > -1)) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase().indexOf('user') > -1)) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input deviceuser-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${service.name}" data-entity="deviceuser">
+                                                    <input class="form-check-input deviceuser-service" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${service.name}" data-entity="deviceuser">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-deviceuser">
                                                         Link to Device User
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Device User"></i>
-                                                    </label>
-                                                </div>` : ''}
-                                            ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase().indexOf('webservice') > -1)) &&
-                                                (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase().indexOf('webservice') > -1)) ? `
-                                                <div class="form-check form-switch">
-                                                    <input class="form-check-input webservice-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-webservice" data-service="${service.name}" data-entity="webservice">
-                                                    <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-webservice">
-                                                        Link to Web Service
-                                                        <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Web Service"></i>
                                                     </label>
                                                 </div>` : ''}
                                             </div>
@@ -543,15 +545,6 @@ if (scopeData.services && scopeData.services.length > 0) {
     // (The entity-linking section will no longer be rendered)
 }
 
-// Scope-level settings section
-if (scopeData.settings && scopeData.settings.length > 0) {
-    html += `<div class="settings-section rounded-4">
-        <h3 class="fw-600 text-white mb-3">Scope Settings</h3>`;
-    console.log('scopeData.settings:', scopeData.settings);
-    html += renderGroupedSettings(scopeData.settings, scope, 'scope', );
-    
-    html += `</div>`;
-}
 
 
         return html;
@@ -561,9 +554,6 @@ if (scopeData.settings && scopeData.settings.length > 0) {
 
 function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceName = '', allSettings) {
     console.log(`Rendering grouped settings for type: ${type}, scope: ${scope}, service: ${serviceName}`);
-    console.group('Settings to Render:');
-    console.log(settings);
-    console.groupEnd();
     let html = '';
     prefix = safeRename(prefix);
 
@@ -575,32 +565,10 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
     const groupedSettings = {};
 
     settings.forEach(setting => {
-        console.group('Processing setting:');
-        console.log('Processing setting:', setting);
         // ... (Parsing logic remains the same, assuming it correctly extracts properties)
-        let groupName, 
-        settingName, 
-        description, 
-        placeholder, 
-        helpText, 
-        inputType, 
-        dependsOn, 
-        options, 
-        checkboxes, 
-        label, 
-        defaultValue, 
-        settingField, 
-        settingTableName, 
-        currentServiceName, 
-        values, 
-        dependencyAction, 
-        services,
-        allowOn,
-        sort,
-        name;
-        console.log(setting.name);
+        let groupName, settingName, description, placeholder, helpText, inputType, dependsOn, options, checkboxes, label, defaultValue, settingField, settingTableName, currentServiceName, values, dependencyAction, services;
+        
         if (typeof setting === 'string') {
-            console.log('Setting is a string:', setting);
             groupName = 'General Settings';
             settingName = setting;  
             description = settingDescriptions[setting] || 'No description available';
@@ -613,26 +581,17 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             settingTableName = 'entity_service_type_setting';
             currentServiceName = serviceName;
             values = null;
-            sort = false;
             services = services || [currentServiceName];
-            name = setting;
-            allowOn = ["parent"];
         } else if (typeof setting === 'object' && Array.isArray(setting)) {
-            console.log('Setting is an array:', setting);
             groupName = setting.group || 'General Settings';
             settingName = 'setting_group';
             currentServiceName = serviceName;
             values = null;
-            settingTableName = 'entity_service_type_setting';
             services = services || [serviceName];
-            allowOn = setting.allowOn || [];
-            sort = setting.sort || false;
         } else {
-            console.log('Setting is an object:', setting);
             groupName = setting.group || 'General Settings';
             settingName = setting.name;
-            name = setting.name;
-            allowOn = setting.allowOn || [];
+            // ... (fill other properties from setting object)
             description = setting.description || settingDescriptions[settingName] || 'No description available';
             placeholder = safeReplace(setting.placeholder, '"', '&#34;') || `Enter value for ${settingName}`;
             helpText = setting.helpText || null;
@@ -647,22 +606,18 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             settingTableName = setting.table || 'entity_service_type_setting';
             currentServiceName = setting.serviceName || serviceName;
             values = setting.values;
-            sort = setting.sort || false;
             services = setting.services || [serviceName];
         }
 
-        
         // Determine Main Group and Subgroup (Logic remains the same)
         let mainGroup = groupName;
         let subGroup = null;
         const delimiter = '.';
         if (groupName.includes(delimiter)) {
-            console.log('Group name contains delimiter:', groupName);
             const parts = groupName.split(delimiter);
             subGroup = parts.pop().trim();
             mainGroup = parts.join(delimiter).trim() || 'General Settings';
         } else {
-            console.log('Group name does not contain delimiter:', groupName);
             mainGroup = groupName;
             subGroup = 'General Settings';
         }
@@ -693,18 +648,10 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             settingTableName: settingTableName,
             serviceName: currentServiceName,
             values: values,
-            services: services,
-            sort: sort,
-            allowOn: allowOn
+            services: services
         });
-
-        console.groupEnd();
     });
     // --- END: MODIFIED GROUPING LOGIC ---
-
-    console.group('Grouped Settings Structure');
-    console.log(groupedSettings);
-    console.groupEnd();
 
     // --- NEW: Determine if an outer accordion is needed ---
     const mainGroupNames = Object.keys(groupedSettings);
@@ -712,14 +659,13 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
 
     // If there is only one main group, we skip the outer accordion wrapper and its header.
     if (hasMultipleMainGroups) {
-        html += `<div class="accordion accordion-spaced rounded-3 overflow-hidden">`;
+        html += `<div class="accordion accordion-spaced">`;
     }
 
     let mainGroupIndex = 0;
 
     // --- START: RENDERING LOGIC (Updated) ---
     mainGroupNames.forEach(mainGroupName => {
-        console.group(`Rendering Main Group: ${mainGroupName}`);
         const subGroups = groupedSettings[mainGroupName];
         const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
         
@@ -738,12 +684,11 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         
         // Conditional Main Group Accordion Header/Wrapper
         if (hasMultipleMainGroups) {
-            console.log('Setting has multiple main groups:', mainGroupName);
-             html += `<div class="accordion-item rounded-3 mb-4">
+             html += `<div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button ${mainGroupButtonClass} bg-none" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
-                        <div class="d-flex justify-content-between w-100 me-2 align-items-center">
-                            <h4 class="p-0 m-0">${mainGroupName}</h4>
+                        <div class="d-flex justify-content-between w-100 me-2">
+                            <span>${mainGroupName}</span>
                             <span class="badge bg-secondary rounded-pill me-3">${totalSettingsCount}</span>
                         </div>
                     </button>
@@ -751,24 +696,21 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                 <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}" data-bs-parent=".accordion">
                     <div class="accordion-body">`;
         } else {
-            console.log('Setting has only one main group, rendering without accordion:', mainGroupName);
              // If only one main group, start the container here (no collapse/header)
              html += `<div class="p-0 mt-3"><h6>${mainGroupName}</h6>`; // Use a simple div to contain content
         }
 
         // Subgroup Rendering Logic (Nested Accordion vs. Direct Render)
         const subGroupNames = Object.keys(subGroups);
-        console.log('Subgroups found:', subGroupNames);
+        
         // This condition correctly checks for more than one subgroup, or if the only subgroup is NOT 'General Settings'
         const hasMultipleSubgroups = subGroupNames.length > 1 || (subGroupNames.length === 1 && subGroupNames[0] !== 'General Settings');
 
         if (hasMultipleSubgroups) {
-            console.info('Rendering nested accordion for subgroups under main group:', mainGroupName);
             // Nested Accordion for Subgroups (If multiple subgroups exist)
             html += `<div class="accordion accordion-flush" id="${mainGroupHtmlId}-subgroups">`;
             
             subGroupNames.forEach(subGroupName => {
-                console.group(`Rendering Subgroup: ${subGroupName}`);   
                 const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
                 const subgroupCount = subGroups[subGroupName].length;
                 
@@ -778,7 +720,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                 const subGroupShowClass = 'show';
                 
                 // Subgroup Accordion Item
-                html += `<div class="accordion-item bg-light border-bottom rounded-3">
+                html += `<div class="accordion-item bg-light border-bottom">
                     <h2 class="accordion-header">
                         <button class="accordion-button accordion-button-sm ${subGroupButtonClass} bg-light pe-4" type="button" data-bs-toggle="collapse" data-bs-target="#${subGroupHtmlId}" aria-expanded="${subGroupAriaExpanded}" aria-controls="${subGroupHtmlId}">
                             <div class="d-flex justify-content-between w-100">
@@ -793,26 +735,21 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                             
                 // Render settings within the Subgroup
                 subGroups[subGroupName].forEach(settingObj => {
-                    console.group('Rendering setting within subgroup:');
-                    console.log('Setting Object:', settingObj);
                     // Pass the complete list of settings (needed for dependency initial state)
                     html += renderSetting(settingObj, prefix, serviceName, settings);
-                    console.groupEnd();
                 });
                 
                 html += `           </div>
                         </div>
                     </div>
                 </div>`;
-                console.groupEnd();
             });
             html += `</div>`; // Close nested accordion
         } else {
             // Render settings directly if there's only one subgroup (General Settings or not)
-            console.warn('Rendering settings directly for single subgroup under main group:', mainGroupName);
             const settingsArray = subGroups[subGroupNames[0]];
             // Render the row directly, without an extra header/accordion wrapper
-            html += `<div class="p-3 bg-light border rounded-3"><div class="row">`;
+            html += `<div class="p-3 bg-light"><div class="row">`;
             settingsArray.forEach(settingObj => {
                  // Pass the complete list of settings (needed for dependency initial state)
                 html += renderSetting(settingObj, prefix, serviceName, settings);
@@ -828,7 +765,6 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         } else {
             html += `</div>`; // Close simple p-0 div
         }
-        console.groupEnd();
     });
 
     if (hasMultipleMainGroups) {
@@ -889,7 +825,6 @@ console.log(settingObj);
         data-dependant-name="${controllingId}"
         service-setting="${settingObj.settingName}"
         role="set-service-setting-value"
-        data-allow-on="${settingObj.allowOn ? settingObj.allowOn.join(',') : 'parent'}"
         data-service-name="${serviceName}"
         data-setting="${settingObj.settingName}"
         data-service="${settingObj.services ? settingObj.services.join(',') : serviceName}"
@@ -910,12 +845,11 @@ console.log(settingObj);
     // --- Input Type Routing ---
 
     if (settingObj.type === 'dropdown') {
-        console.error(settingObj.sort);
         html += `
             <div class="mb-3 col-md-6" ${dependsOnAttr}>
                 ${inputHeader}
                 <select class="form-select form-select-sm" id="${inputId}" ${sharedAttrs}>
-                    ${renderOptionsHtml(settingObj.values, settingObj.defaultValue, true, settingObj.sort)}
+                    ${renderOptionsHtml(settingObj.values, settingObj.defaultValue, true)}
                 </select>
                 ${helpTextHtml}
             </div>
@@ -957,7 +891,7 @@ console.log(settingObj);
  * @param {boolean} isSelect - True if rendering for a <select> element.
  * @returns {string} HTML string of options or radio buttons.
  */
-function renderOptionsHtml(values, defaultValue, isSelect = false, sort = false) {
+function renderOptionsHtml(values, defaultValue, isSelect = false) {
     if (!values || values.length === 0) {
         return isSelect ? `<option value="">No options available</option>` : '';
     }
@@ -966,16 +900,6 @@ function renderOptionsHtml(values, defaultValue, isSelect = false, sort = false)
     const defValue = defaultValue ? String(defaultValue) : '';
     
     const isKeyValObject = typeof values[0] === 'object' && values[0] !== null;
-
-    if (sort && isKeyValObject) {
-        values.sort((a, b) => {
-            const valueA = a.value.toUpperCase(); // Ignore case
-            const valueB = b.value.toUpperCase(); // Ignore case
-            if (valueA < valueB) return -1;
-            if (valueA > valueB) return 1;
-            return 0;
-        });
-    }
 
     values.forEach(val => {
         let optionValue, optionText;
@@ -1123,11 +1047,11 @@ function createControlId(prefix, name, field) {
             console.log('Initializing dependency handlers...');
             
             // Find all elements with dependencies
-    $(container).find('[data-depends-on]').each(function() {
-        const $dependentElement = $(this);
-        const dependsOnId = $dependentElement.data('depends-on');
+            $(container).find('[data-depends-on]').each(function() {
+    const $dependentElement = $(this);
+    const dependsOnId = $dependentElement.data('depends-on');
     
-        console.log(`Found dependent element (${$dependentElement.attr('id')}) with dependency: ${dependsOnId}`);
+    console.log(`Found dependent element (${$dependentElement.attr('id')}) with dependency: ${dependsOnId}`);
     
     if (dependsOnId) {
         let $masterElement = $(`#${dependsOnId}`);
@@ -1145,7 +1069,7 @@ function createControlId(prefix, name, field) {
             updateDependencyState($dependentElement, $masterElement.is(':checked'));
             
             // Remove only this specific dependency's handlers
-            // $masterElement.off(`.${uniqueNamespace}`);
+            $masterElement.off(`.${uniqueNamespace}`);
             
             // Handle changes to the master element with unique namespace
             $masterElement.on(`change.${uniqueNamespace}`, function() {
@@ -1168,21 +1092,9 @@ function createControlId(prefix, name, field) {
         if (isEnabled) {
             console.log('Enabling dependent element');
             // $dependentElement.show();
-            if ($dependentElement.attr('type') === 'checkbox') {
-                $dependentElement.prop('disabled', false);
-            } else {
-            var found = $dependentElement.find('input, select, textarea');
-            console.log('Found dependent inputs:', found);
             $dependentElement.find('input, select, textarea').prop('disabled', false);
-            }
-            
         } else {
             console.log('Disabling dependent element');
-
-            if ($dependentElement.attr('type') === 'checkbox') {
-                $dependentElement.prop('disabled', true);
-            }
-
             // $dependentElement.hide();
             $dependentElement.find('input, select, textarea').prop('disabled', true);
             
@@ -1193,17 +1105,12 @@ function createControlId(prefix, name, field) {
     }
 
     function autoSelectScopesFromQueryParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Check for scope parameter (can be single scope or comma-separated list)
-        if (urlParams.has('scope') || urlParams.has('scopes')) {
-            const scopesToSelect = [];
-            if (urlParams.has('scope')) {
-                scopesToSelect.push(...urlParams.get('scope').split(',').map(s => s.trim().toUpperCase())); 
-            }
-            if (urlParams.has('scopes')) {
-                scopesToSelect.push(...urlParams.get('scopes').split(',').map(s => s.trim().toUpperCase()));
-            }
+        const queryParams = new URLSearchParams(window.location.search);
+        
+        // Check for scope parameter (can be single scope or comma-separated list)
+        if (queryParams.has('scope')) {
+            const scopesToSelect = queryParams.get('scope').split(',').map(s => s.trim().toUpperCase());
+            
             scopesToSelect.forEach(scope => {
                 if (scopes[scope]) {
                     // Check the scope checkbox and trigger change
@@ -1217,32 +1124,11 @@ function createControlId(prefix, name, field) {
         
         // Also support individual scope parameters (e.g., ?OCS=true&BMS=true)
         Object.keys(scopes).forEach(scope => {
-            if (urlParams.get(scope) === 'true' || urlParams.get(scope) === '1') {
+            if (queryParams.get(scope) === 'true' || queryParams.get(scope) === '1') {
                 $(`#scope-${scope}`).prop('checked', true).trigger('change');
                 console.log(`Auto-selected scope via individual parameter: ${scope}`);
             }
         });
-
-    urlParams.forEach(function(value, key) {
-        console.log(`Processing query parameter: ${key} = ${value}`);
-        // Find the element
-        let $element = $('[name="' + key + '"]');
-        
-        // Check input type
-        if ($element.attr('type') === 'radio' || $element.attr('type') === 'checkbox') {
-            $element.filter('[value="' + value + '"]').prop('checked', true);
-            // Filter to find the specific checkbox/radio with the matching value
-            if (Boolean(value) === true || value.toLocaleLowerCase() === 'true' || value === '1') {
-                $element.prop('checked', true).trigger('change');
-            }
-        } else {
-            // Standard inputs
-            $element.val(value);
-        }
-    });
-        const queryParams = new URLSearchParams(window.location.search);
-        
-        
     }
 
     function checkTabVisibility() {
@@ -2019,7 +1905,7 @@ function getServiceSettings($scopeTab, serviceName, serviceLinkTo) {
 }
 
 
-function generateScript1() {
+function generateScript() {
     const parentName = $('#parentName').val();
     // Validate required fields
     if (!parentName) {
@@ -2904,479 +2790,3 @@ $$;
 
     return finalScript.trim();
 }
-
-
-/**
- * Enhanced Site.js with Special Settings Support
- * 
- * This file adds support for:
- * - Mandate defaults configuration
- * - Manual payment reference fields
- * - Better entity linking UI
- * - Improved settings rendering
- */
-
-// Add special settings handlers
-function renderSpecialSettings($scopeTab, scopeId, setting) {
-    let html = '';
-    
-    if (setting.name === 'ocs.ed.mandate.default.details') {
-        html += renderMandateDefaultsForm(scopeId);
-    } else if (setting.name === 'manual.payments.reference.config') {
-        html += renderManualPaymentReferenceForm(scopeId);
-    }
-    
-    return html;
-}
-
-function renderMandateDefaultsForm(scopeId) {
-    let html = `
-        <div class="card mb-3">
-            <div class="card-header">
-                <h6 class="mb-0">Mandate Default Configuration</h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-    `;
-    
-    Object.keys(mandateDefaultsConfig).forEach(key => {
-        const config = mandateDefaultsConfig[key];
-        const fieldId = `mandate-default-${key}`;
-        
-        html += `<div class="col-md-6 mb-3">`;
-        html += `<label for="${fieldId}" class="form-label form-label-sm">${config.label}`;
-        if (config.description) {
-            html += ` <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" title="${config.description}"></i>`;
-        }
-        html += `</label>`;
-        
-        if (config.type === 'checkbox') {
-            html += `
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="${fieldId}" ${config.default ? 'checked' : ''}>
-                </div>
-            `;
-        } else if (config.type === 'select') {
-            html += `<select class="form-select form-select-sm" id="${fieldId}">`;
-            config.options.forEach(option => {
-                const selected = option === config.default ? 'selected' : '';
-                html += `<option value="${option}" ${selected}>${option}</option>`;
-            });
-            html += `</select>`;
-        } else if (config.type === 'number') {
-            html += `<input type="number" class="form-control form-control-sm" id="${fieldId}" value="${config.default || ''}" placeholder="${config.description || ''}">`;
-        } else {
-            html += `<input type="text" class="form-control form-control-sm" id="${fieldId}" value="${config.default || ''}" placeholder="${config.description || ''}">`;
-        }
-        
-        html += `</div>`;
-    });
-    
-    html += `
-                </div>
-            </div>
-        </div>
-    `;
-    
-    return html;
-}
-
-function renderManualPaymentReferenceForm(scopeId) {
-    let html = `
-        <div class="card mb-3">
-            <div class="card-header">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="manual-payment-ref-enabled">
-                    <label class="form-check-label" for="manual-payment-ref-enabled">
-                        <h6 class="mb-0">Enable Additional Reference Fields</h6>
-                    </label>
-                </div>
-            </div>
-            <div class="card-body" id="manual-payment-ref-fields" style="display: none;">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="manual-payment-ref-customer" class="form-label form-label-sm">Customer Reference</label>
-                        <select class="form-select form-select-sm" id="manual-payment-ref-customer">
-                            <option value="disabled" selected>Disabled</option>
-                            <option value="enabled">Enabled</option>
-                            <option value="required">Required</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="manual-payment-ref-internal" class="form-label form-label-sm">Internal Reference</label>
-                        <select class="form-select form-select-sm" id="manual-payment-ref-internal">
-                            <option value="disabled" selected>Disabled</option>
-                            <option value="enabled">Enabled</option>
-                            <option value="required">Required</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="alert alert-info alert-sm">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <small>These settings control what reference fields appear on manual payments in EasyPOS</small>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    return html;
-}
-
-// Enhanced renderGroupedSettings function to handle special settings
-function renderGroupedSettingsEnhanced(settings, prefix, type = 'scope', scope, serviceName = '') {
-    console.log(`Rendering grouped settings for type: ${type}, scope: ${scope}, service: ${serviceName}`);
-    let html = '';
-    prefix = safeRename(prefix);
-
-    if (!settings || settings.length === 0) {
-        return html;
-    }
-
-    // Group settings by their group property
-    const groupedSettings = {};
-
-    settings.forEach(setting => {
-        let groupName, settingObj;
-        
-        if (typeof setting === 'string') {
-            groupName = 'General Settings';
-            settingObj = {
-                name: setting,
-                type: 'text',
-                label: setting,
-                description: settingDescriptions[setting] || 'No description available',
-                placeholder: `Enter value for ${setting}`
-            };
-        } else if (typeof setting === 'object') {
-            groupName = setting.group || 'General Settings';
-            settingObj = setting;
-        }
-
-        if (!groupedSettings[groupName]) {
-            groupedSettings[groupName] = [];
-        }
-        groupedSettings[groupName].push(settingObj);
-    });
-
-    // Render groups
-    const mainGroupNames = Object.keys(groupedSettings);
-    const hasMultipleMainGroups = mainGroupNames.length > 1;
-
-    if (hasMultipleMainGroups) {
-        html += `<div class="accordion accordion-spaced">`;
-    }
-
-    let mainGroupIndex = 0;
-
-    mainGroupNames.forEach(mainGroupName => {
-        const groupSettings = groupedSettings[mainGroupName];
-        const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
-        
-        const isMainGroupOpen = mainGroupIndex === 0;
-        const mainGroupButtonClass = isMainGroupOpen ? '' : 'collapsed';
-        const mainGroupAriaExpanded = isMainGroupOpen ? 'true' : 'false';
-        const mainGroupShowClass = isMainGroupOpen ? 'show' : '';
-        
-        mainGroupIndex++;
-
-        if (hasMultipleMainGroups) {
-            html += `
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button ${mainGroupButtonClass} bg-none" type="button" data-bs-toggle="collapse" aria-expanded="${mainGroupAriaExpanded}" data-bs-target="#${mainGroupHtmlId}">
-                            <div class="d-flex justify-content-between w-100 me-2 align-items-center">
-                                <span>${mainGroupName}</span>
-                                <span class="badge bg-secondary rounded-pill me-3">${groupSettings.length}</span>
-                            </div>
-                        </button>
-                    </h2>
-                    <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}" data-bs-parent=".accordion">
-                        <div class="accordion-body">
-            `;
-        } else {
-            html += `<div class="p-0 mt-3"><h6>${mainGroupName}</h6>`;
-        }
-
-        // Render settings in this group
-        groupSettings.forEach(setting => {
-            if (setting.type === 'special') {
-                html += renderSpecialSettings(null, prefix, setting);
-            } else {
-                html += renderSetting(setting, prefix, serviceName);
-            }
-        });
-
-        if (hasMultipleMainGroups) {
-            html += `
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            html += `</div>`;
-        }
-    });
-
-    if (hasMultipleMainGroups) {
-        html += `</div>`;
-    }
-
-    return html;
-}
-
-function renderSetting(setting, prefix, serviceName = '') {
-    const settingId = `${prefix}-${safeRename(setting.name)}`;
-    let html = `<div class="mb-3">`;
-    
-    // Label
-    html += `<label for="${settingId}" class="form-label form-label-sm">${setting.label || setting.name}`;
-    if (setting.description) {
-        html += ` <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" title="${setting.description}"></i>`;
-    }
-    html += `</label>`;
-    
-    // Input field
-    if (setting.type === 'checkbox') {
-        html += `
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="${settingId}" ${setting.defaultValue ? 'checked' : ''}>
-            </div>
-        `;
-    } else if (setting.type === 'select') {
-        html += `<select class="form-select form-select-sm" id="${settingId}">`;
-        if (setting.options) {
-            setting.options.forEach(option => {
-                const selected = option === setting.defaultValue ? 'selected' : '';
-                html += `<option value="${option}" ${selected}>${option}</option>`;
-            });
-        }
-        html += `</select>`;
-    } else if (setting.type === 'textarea') {
-        html += `<textarea class="form-control form-control-sm" id="${settingId}" rows="3" placeholder="${setting.placeholder || ''}">${setting.defaultValue || ''}</textarea>`;
-    } else if (setting.type === 'password') {
-        html += `<input type="password" class="form-control form-control-sm" id="${settingId}" placeholder="${setting.placeholder || ''}" value="${setting.defaultValue || ''}">`;
-    } else {
-        html += `<input type="text" class="form-control form-control-sm" id="${settingId}" placeholder="${setting.placeholder || ''}" value="${setting.defaultValue || ''}">`;
-    }
-    
-    // Help text
-    if (setting.helpText) {
-        html += `<small class="form-text text-muted">${setting.helpText}</small>`;
-    }
-    
-    html += `</div>`;
-    return html;
-}
-
-// Initialize special settings handlers
-$(document).ready(function() {
-    // Manual payment reference toggle
-    $(document).on('change', '#manual-payment-ref-enabled', function() {
-        const enabled = $(this).is(':checked');
-        $('#manual-payment-ref-fields').toggle(enabled);
-    });
-    
-    // Add any other special settings initialization here
-});
-
-// Export/Import Configuration Functions
-function handleExportConfig() {
-    console.log('Exporting configuration...');
-    
-    try {
-        const config = {
-            version: '1.0',
-            timestamp: new Date().toISOString(),
-            data: collectFormData()
-        };
-        
-        const json = JSON.stringify(config, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `entity-config-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        console.log('Configuration exported successfully');
-    } catch (error) {
-        console.error('Error exporting configuration:', error);
-        alert('Failed to export configuration. Please check the console for details.');
-    }
-}
-
-function handleImportConfig() {
-    const fileInput = $('#importFile')[0];
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert('Please select a file to import');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const config = JSON.parse(e.target.result);
-            
-            if (!config.data) {
-                throw new Error('Invalid configuration file format');
-            }
-            
-            loadConfiguration(config.data);
-            alert('Configuration loaded successfully');
-        } catch (error) {
-            console.error('Error importing configuration:', error);
-            alert('Failed to import configuration. Please check the file format.');
-        }
-    };
-    
-    reader.readAsText(file);
-}
-
-function loadConfiguration(data) {
-    // Load basic entity information
-    $('#parentName').val(data.parentName || '');
-    $('#website').val(data.website || '');
-    
-    // Load integrator settings
-    $('#createIntegrator').prop('checked', data.createIntegrator || false).trigger('change');
-    
-    // Load device user settings
-    $('#createDeviceUser').prop('checked', data.createDeviceUser || false).trigger('change');
-    $('#deviceUsername').val(data.deviceUsername || '');
-    $('#devicePassword').val(data.devicePassword || '');
-    $('#deviceEmail').val(data.deviceEmail || '');
-    
-    // Load scopes
-    if (data.scopes && data.scopes.length > 0) {
-        data.scopes.forEach(scope => {
-            const $checkbox = $(`#scope-${scope.identifier}`);
-            if ($checkbox.length > 0) {
-                $checkbox.prop('checked', true).trigger('change');
-                
-                // Wait for tab to be created, then load settings
-                setTimeout(() => {
-                    loadScopeSettings(scope);
-                }, 100);
-            }
-        });
-    }
-}
-
-function loadScopeSettings(scopeConfig) {
-    const $tab = $(`#${scopeConfig.identifier}`);
-    if ($tab.length === 0) return;
-    
-    // Load rate limiting
-    $tab.find(`#${scopeConfig.identifier}-rate-limit`).prop('checked', scopeConfig.rateLimit || false);
-    $tab.find(`#${scopeConfig.identifier}-limit-count`).val(scopeConfig.limitCount || '');
-    $tab.find(`#${scopeConfig.identifier}-limit-period`).val(scopeConfig.limitPeriod || '');
-    
-    // Load settings
-    if (scopeConfig.settings && scopeConfig.settings.length > 0) {
-        scopeConfig.settings.forEach(setting => {
-            const $input = $tab.find(`#${scopeConfig.identifier}-${safeRename(setting.identifier)}`);
-            if ($input.length > 0) {
-                if ($input.attr('type') === 'checkbox') {
-                    $input.prop('checked', setting.value === 'true' || setting.value === true);
-                } else {
-                    $input.val(setting.value);
-                }
-            }
-        });
-    }
-}
-
-// Helper function for safe string replacement
-function safeReplace(str, search, replacement) {
-    if (typeof str !== 'string') return str;
-    return str.replace(new RegExp(search, 'g'), replacement);
-}
-
-// Helper function for initializing entity card tooltips
-function initializeEntityCardTooltips($card) {
-    // Dispose of existing tooltips
-    $card.find('[data-bs-toggle="tooltip"]').each(function() {
-        const tooltip = bootstrap.Tooltip.getInstance(this);
-        if (tooltip) tooltip.dispose();
-    });
-    
-    // Initialize new tooltips
-    $card.find('[data-bs-toggle="tooltip"]').each(function() {
-        new bootstrap.Tooltip(this);
-    });
-}
-
-// Check tab visibility
-function checkTabVisibility() {
-    const $tabs = $('.scope-tab-link');
-    const $noTabsMessage = $('#noTabsMessage');
-    const $noScopesInfo = $('#noScopesInfoMessage');
-    
-    if ($tabs.length > 0) {
-        $noTabsMessage.hide();
-        $noScopesInfo.hide();
-    } else {
-        $noTabsMessage.show();
-        $noScopesInfo.show();
-    }
-}
-
-// Auto-select scopes from query parameters
-function autoSelectScopesFromQueryParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const scopesParam = urlParams.get('scopes');
-    
-    if (scopesParam) {
-        const scopesToSelect = scopesParam.split(',');
-        scopesToSelect.forEach(scope => {
-            const $checkbox = $(`#scope-${scope.trim()}`);
-            if ($checkbox.length > 0) {
-                $checkbox.prop('checked', true).trigger('change');
-            }
-        });
-    }
-}
-
-// Initialize dependency handlers for conditional fields
-function initializeDependencyHandlers(container) {
-    $(container).find('[data-depends-on]').each(function() {
-        const $dependent = $(this);
-        const dependsOn = $dependent.data('depends-on');
-        const [parentId, parentValue] = dependsOn.split(':');
-        
-        const updateDependentField = () => {
-            const $parent = $(`#${parentId}`);
-            if ($parent.length === 0) return;
-            
-            let parentCurrentValue;
-            if ($parent.attr('type') === 'checkbox') {
-                parentCurrentValue = $parent.is(':checked') ? 'true' : 'false';
-            } else {
-                parentCurrentValue = $parent.val();
-            }
-            
-            if (parentCurrentValue === parentValue) {
-                $dependent.prop('disabled', false);
-                $dependent.closest('.mb-3').show();
-            } else {
-                $dependent.prop('disabled', true);
-                $dependent.closest('.mb-3').hide();
-            }
-        };
-        
-        // Initial check
-        updateDependentField();
-        
-        // Watch for changes
-        $(`#${parentId}`).on('change', updateDependentField);
-    });
-
-}
-
-
