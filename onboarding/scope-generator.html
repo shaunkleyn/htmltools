@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Scope Settings Editor</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        /* --- Main Layout --- */
+        #left-panel {
+            width: 250px;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+        #right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #main-editor {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        /* --- IO Panel (Top Right) --- */
+        #io-panel {
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-bottom: 1px solid #ddd;
+        }
+        #json-io {
+            width: 100%;
+            height: 100px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        #io-buttons { margin-top: 10px; }
+
+        /* --- Navigation (Left) --- */
+        #scopes-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        #scopes-nav h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        #scopes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #scopes-list li {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #scopes-list li:hover { background-color: #f0f0f0; }
+        #scopes-list li.active {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        #add-scope-btn {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 10px;
+        }
+
+        /* --- Editor Forms --- */
+        #scope-editor-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        #scope-editor-container h1,
+        #scope-editor-container h2,
+        #scope-editor-container h3 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #333;
+        }
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group input[type="checkbox"] {
+            width: auto;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            font-family: monospace;
+        }
+
+        /* --- Block Styles (Service, Setting) --- */
+        .block {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .block-header {
+            padding: 10px 15px;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .block-header h3, .block-header h4 {
+            margin: 0;
+        }
+        .block-content {
+            padding: 15px;
+        }
+        .block-content.nested {
+            padding-left: 30px;
+            border-left: 3px solid #007bff;
+            margin: 10px;
+        }
+
+        /* --- Buttons --- */
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 14px;
+        }
+        button:hover { background-color: #0056b3; }
+        button.btn-danger { background-color: #dc3545; }
+        button.btn-danger:hover { background-color: #c82333; }
+        button.btn-secondary { background-color: #6c757d; }
+        button.btn-secondary:hover { background-color: #5a6268; }
+        button.btn-add {
+            background-color: #28a745;
+            margin-top: 10px;
+        }
+        button.btn-add:hover { background-color: #218838; }
+
+    </style>
+</head>
+<body>
+
+    <div id="left-panel">
+        <div id="scopes-nav">
+            <h3>Scopes</h3>
+            <ul id="scopes-list">
+                </ul>
+        </div>
+        <button id="add-scope-btn" class="btn-add">Add New Scope</button>
+    </div>
+
+    <div id="right-panel">
+        
+        <div id="io-panel">
+            <textarea id="json-io" placeholder="Paste your scope_settings.json content here..."></textarea>
+            <div id="io-buttons">
+                <button id="btn-load">Load from Text Area</button>
+                <button id="btn-generate" class="btn-secondary">Generate Updated JSON</button>
+            </div>
+        </div>
+
+        <div id="main-editor">
+            <div id="scope-editor-container">
+                <p>Please load your JSON content and select a scope to begin.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Global variable to hold the entire JSON data object
+        let mainData = {};
+        // Global variable to track the currently selected scope key
+        let currentScopeKey = null;
+
+        $(document).ready(function() {
+            
+            // --- 1. TOP-LEVEL EVENT BINDINGS ---
+
+            // Load JSON from text area
+            $('#btn-load').on('click', function() {
+                try {
+                    const jsonText = $('#json-io').val();
+                    if (!jsonText) {
+                        alert("Text area is empty!");
+                        return;
+                    }
+                    mainData = JSON.parse(jsonText);
+                    currentScopeKey = null; // Reset selection
+                    renderScopesNav();
+                    $('#scope-editor-container').html('<p>JSON Loaded. Select a scope from the left to edit.</p>');
+                    alert('JSON Loaded successfully!');
+                } catch (e) {
+                    alert('Invalid JSON! Please check the syntax.\n\n' + e.message);
+                }
+            });
+
+            // Generate JSON to text area
+            $('#btn-generate').on('click', function() {
+                if (Object.keys(mainData).length === 0) {
+                    alert("No data loaded to generate.");
+                    return;
+                }
+                // Save any pending changes before generating
+                saveCurrentScope(); 
+                const jsonString = JSON.stringify(mainData, null, 2);
+                $('#json-io').val(jsonString);
+                alert('JSON generated! Content is in the text area.');
+            });
+
+            // Add new scope
+            $('#add-scope-btn').on('click', function() {
+                const newKey = prompt("Enter new scope key (e.g., 'NEW_SCOPE'):");
+                if (newKey && newKey.trim() !== "") {
+                    if (mainData[newKey]) {
+                        alert("Error: A scope with this key already exists!");
+                        return;
+                    }
+                    // Save current form before switching
+                    saveCurrentScope();
+                    
+                    mainData[newKey] = {
+                        name: "New Scope Name",
+                        allowOn: [],
+                        services: [],
+                        settings: []
+                    };
+                    currentScopeKey = newKey;
+                    renderScopesNav();
+                    renderScopeEditor(newKey);
+                }
+            });
+
+            // --- 2. DYNAMIC EVENT BINDINGS (using event delegation) ---
+
+            // Select a scope from the nav
+            $('#scopes-list').on('click', 'li', function() {
+                // Save any changes to the previously open scope
+                saveCurrentScope();
+                
+                const scopeKey = $(this).data('scope-key');
+                currentScopeKey = scopeKey;
+                
+                // Update active class
+                $('#scopes-list li').removeClass('active');
+                $(this).addClass('active');
+                
+                // Render the editor for this scope
+                renderScopeEditor(scopeKey);
+            });
+
+            // --- Editor-specific actions ---
+            const editorContainer = $('#scope-editor-container');
+
+            // Add a Service
+            editorContainer.on('click', '.btn-add-service', function() {
+                saveCurrentScope(); // Save first
+                const newService = {
+                    name: "new.service.name",
+                    description: "New service description",
+                    allowOn: [],
+                    settings: [] // Default to inline settings
+                };
+                mainData[currentScopeKey].services.push(newService);
+                renderScopeEditor(currentScopeKey); // Re-render
+            });
+            
+            // Add a Setting (to scope or service)
+            editorContainer.on('click', '.btn-add-setting', function() {
+                saveCurrentScope(); // Save first
+
+                const targetType = $(this).data('target'); // 'scope' or 'service'
+                const newSetting = {
+                    name: "new.setting.name",
+                    type: "textbox",
+                    description: "New setting description"
+                };
+
+                if (targetType === 'scope') {
+                    mainData[currentScopeKey].settings.push(newSetting);
+                } else if (targetType === 'service') {
+                    const serviceIndex = $(this).data('service-index');
+                    const service = mainData[currentScopeKey].services[serviceIndex];
+                    
+                    // Handle converting from string[] to object[]
+                    if (service.settings.length > 0 && typeof service.settings[0] === 'string') {
+                         if(confirm("This will convert the service's referenced settings into inline settings. Are you sure?")) {
+                            service.settings = service.settings.map(refName => ({ 
+                                name: "CONVERTED_REFERENCE", 
+                                description: `This was a reference to: ${refName}` 
+                            }));
+                         } else {
+                            return; // User cancelled
+                         }
+                    }
+                    service.settings.push(newSetting);
+                } else if (targetType === 'nested') {
+                    // Handle adding a setting inside another setting
+                    const path = $(this).data('path').split('.');
+                    let obj = mainData[currentScopeKey];
+                    for (let i = 0; i < path.length; i++) {
+                        obj = obj[path[i]];
+                    }
+                    if (!obj.settings) obj.settings = [];
+                    obj.settings.push(newSetting);
+                }
+
+                renderScopeEditor(currentScopeKey); // Re-render
+            });
+            
+            // Delete Scope
+            editorContainer.on('click', '.btn-delete-scope', function() {
+                const scopeKey = $(this).data('scope-key');
+                if (confirm(`Are you sure you want to permanently delete the scope "${scopeKey}"?`)) {
+                    delete mainData[scopeKey];
+                    currentScopeKey = null;
+                    renderScopesNav();
+                    $('#scope-editor-container').html('<p>Scope deleted. Select another scope.</p>');
+                }
+            });
+
+            // Delete Service
+            editorContainer.on('click', '.btn-delete-service', function() {
+                const serviceIndex = $(this).data('service-index');
+                if (confirm(`Are you sure you want to delete this service?`)) {
+                    saveCurrentScope(); // Save any pending changes
+                    mainData[currentScopeKey].services.splice(serviceIndex, 1);
+                    renderScopeEditor(currentScopeKey); // Re-render
+                }
+            });
+
+            // Delete Setting
+            editorContainer.on('click', '.btn-delete-setting', function() {
+                if (confirm(`Are you sure you want to delete this setting?`)) {
+                    saveCurrentScope(); // Save any pending changes
+                    const path = $(this).data('path').split('.');
+                    const settingIndex = path.pop(); // Get the index
+                    let parentArray = mainData[currentScopeKey];
+                    for (let i = 0; i < path.length; i++) {
+                        parentArray = parentArray[path[i]];
+                    }
+                    parentArray.splice(settingIndex, 1); // Remove from array
+                    renderScopeEditor(currentScopeKey); // Re-render
+                }
+            });
+
+        }); // --- END of document.ready ---
+
+
+        // --- 3. CORE FUNCTIONS ---
+
+        /**
+         * Reads all values from the current form and saves them to the
+         * mainData object. This is crucial before re-rendering or switching scopes.
+         */
+        function saveCurrentScope() {
+            if (!currentScopeKey || !$('#scope-form').length) {
+                return; // No scope selected or form not rendered
+            }
+
+            // Create a new object by reading from the form
+            // This is safer than modifying mainData directly on every keystroke
+            const scopeData = mainData[currentScopeKey];
+            
+            scopeData.name = $('#scope-name').val();
+            scopeData.allowOn = $('#scope-allowon').val().split(',')
+                .map(s => s.trim()).filter(s => s); // Split, trim, and remove empties
+            
+            // --- Save Scope Settings ---
+            const newScopeSettings = [];
+            $('#scope-settings-list > .setting-block').each(function() {
+                const path = $(this).data('path'); // e.g., "settings.0"
+                newScopeSettings.push(readSettingFromForm(this, path));
+            });
+            scopeData.settings = newScopeSettings;
+            
+            // --- Save Services and their settings ---
+            const newServices = [];
+            $('#services-list > .service-block').each(function(serviceIndex) {
+                const servicePath = `services.${serviceIndex}`;
+                const newService = {
+                    name: $(this).find(`[data-path="${servicePath}.name"]`).val(),
+                    description: $(this).find(`[data-path="${servicePath}.description"]`).val(),
+                    allowOn: $(this).find(`[data-path="${servicePath}.allowOn"]`).val().split(',')
+                        .map(s => s.trim()).filter(s => s)
+                };
+                
+                // Handle service settings (check if it's ref or inline)
+                const $settingsContainer = $(this).find('.service-settings-list');
+                if ($settingsContainer.find('.setting-ref-input').length) {
+                    // It's a reference (string) array
+                    newService.settings = $settingsContainer.find('.setting-ref-input').val().split(',')
+                        .map(s => s.trim()).filter(s => s);
+                } else {
+                    // It's an inline (object) array
+                    newService.settings = [];
+                    $settingsContainer.find('.setting-block').each(function() {
+                        const settingPath = $(this).data('path');
+                        newService.settings.push(readSettingFromForm(this, settingPath));
+                    });
+                }
+                newServices.push(newService);
+            });
+            scopeData.services = newServices;
+        }
+
+        /**
+         * Helper function for saveCurrentScope().
+         * Reads the form fields within a .setting-block and returns a setting object.
+         */
+        function readSettingFromForm(settingElement, path) {
+            const $el = $(settingElement);
+            const setting = {
+                name: $el.find(`[data-path="${path}.name"]`).val(),
+                type: $el.find(`[data-path="${path}.type"]`).val(),
+            };
+
+            // Read all other properties dynamically
+            // This makes it flexible for all fields in your JSON
+            $el.find('input, textarea, select').each(function() {
+                const $input = $(this);
+                const inputPath = $input.data('path');
+                if (!inputPath) return; // Skip inputs without a path
+
+                const prop = inputPath.substring(path.length + 1);
+                if (prop === 'name') return; // Already handled
+
+                let value = $input.val();
+                if ($input.is(':checkbox')) {
+                    value = $input.is(':checked');
+                }
+                // Simple way to handle options/values (assumes JSON or comma-separated)
+                if (prop === 'options' || prop === 'values') {
+                    try {
+                        value = JSON.parse(value); // Try to parse as JSON array
+                    } catch (e) {
+                        value = value.split(',').map(s => s.trim()).filter(s => s); // Fallback to comma list
+                    }
+                }
+                setting[prop] = value;
+            });
+            
+            // --- Recursive call for nested settings (like in EPOS) ---
+            const $nestedContainer = $el.children('.block-content').children('.setting-block-container');
+            if ($nestedContainer.length > 0) {
+                setting.settings = [];
+                $nestedContainer.children('.setting-block').each(function() {
+                    const nestedPath = $(this).data('path');
+                    setting.settings.push(readSettingFromForm(this, nestedPath));
+                });
+            }
+
+            return setting;
+        }
+
+
+        /**
+         * Renders the left-side navigation list of scopes
+         */
+        function renderScopesNav() {
+            const $list = $('#scopes-list');
+            $list.empty();
+            if (Object.keys(mainData).length === 0) {
+                $list.append('<li><em>No scopes loaded</em></li>');
+                return;
+            }
+            // Sort keys alphabetically
+            const sortedKeys = Object.keys(mainData).sort();
+            sortedKeys.forEach(key => {
+                const activeClass = (key === currentScopeKey) ? 'active' : '';
+                $list.append(
+                    `<li class="${activeClass}" data-scope-key="${key}">${key}</li>`
+                );
+            });
+        }
+
+        /**
+         * Renders the main editor form for a given scope key
+         */
+        function renderScopeEditor(scopeKey) {
+            const scopeData = mainData[scopeKey];
+            if (!scopeData) {
+                $('#scope-editor-container').html('<p>Error: Scope not found.</p>');
+                return;
+            }
+
+            // --- Base Scope Form ---
+            let html = `
+                <form id="scope-form" onsubmit="return false;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h1>Editing Scope: <span style="color: #007bff;">${scopeKey}</span></h1>
+                        <button class="btn-danger btn-delete-scope" data-scope-key="${scopeKey}">Delete This Scope</button>
+                    </div>
+                    
+                    <div class="block">
+                        <div class="block-content">
+                            <div class="form-group">
+                                <label for="scope-name">Name</label>
+                                <input type="text" id="scope-name" value="${scopeData.name || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label for="scope-allowon">Allow On (comma-separated)</label>
+                                <input type="text" id="scope-allowon" value="${(scopeData.allowOn || []).join(', ')}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Scope-Level Settings</h2>
+                    <div id="scope-settings-list" class="setting-block-container">
+                        ${renderSettingsList(scopeData.settings || [], 'settings')}
+                    </div>
+                    <button class="btn-add btn-add-setting" data-target="scope">Add Scope Setting</button>
+                    
+                    <hr style="margin: 30px 0;">
+
+                    <h2>Services</h2>
+                    <div id="services-list">
+                        ${(scopeData.services || []).map(renderService).join('')}
+                    </div>
+                    <button class="btn-add btn-add-service">Add Service</button>
+                </form>
+            `;
+            $('#scope-editor-container').html(html);
+        }
+
+        /**
+         * Renders the HTML for a single Service block
+         */
+        function renderService(service, index) {
+            const path = `services.${index}`;
+            
+            // Check if settings are string references or inline objects
+            let settingsHtml = '';
+            if (Array.isArray(service.settings)) {
+                if (service.settings.length > 0 && typeof service.settings[0] === 'string') {
+                    // Case 1: Array of strings (references)
+                    settingsHtml = `
+                        <div class="form-group">
+                            <label>Setting References (comma-separated)</label>
+                            <textarea class="setting-ref-input" data-path="${path}.settings">${service.settings.join(', ')}</textarea>
+                        </div>
+                    `;
+                } else {
+                    // Case 2: Array of objects (inline)
+                    settingsHtml = `
+                        <div class="setting-block-container">
+                            ${renderSettingsList(service.settings, `${path}.settings`)}
+                        </div>
+                    `;
+                }
+            }
+
+            return `
+                <div class="block service-block" data-service-index="${index}">
+                    <div class="block-header">
+                        <h3>Service</h3>
+                        <button type="button" class="btn-danger btn-delete-service" data-service-index="${index}">Delete Service</button>
+                    </div>
+                    <div class="block-content">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" data-path="${path}.name" value="${service.name || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" data-path="${path}.description" value="${service.description || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Allow On (comma-separated)</label>
+                            <input type="text" data-path="${path}.allowOn" value="${(service.allowOn || []).join(', ')}">
+                        </div>
+                        
+                        <h4>Service Settings</h4>
+                        <div class="service-settings-list">
+                            ${settingsHtml}
+                        </div>
+                        <button type="button" class="btn-add btn-add-setting" data-target="service" data-service-index="${index}">Add Service Setting</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Renders a list of setting objects.
+         * pathPrefix is the path from the scope root, e.g., "settings" or "services.0.settings"
+         */
+        function renderSettingsList(settings, pathPrefix) {
+            if (!settings || settings.length === 0) {
+                return '<p><em>No settings defined.</em></p>';
+            }
+            return settings.map((setting, index) => renderSetting(setting, `${pathPrefix}.${index}`)).join('');
+        }
+
+        /**
+         * Renders the HTML for a single Setting object.
+         * path is the full path to this setting, e.g., "settings.0" or "services.0.settings.0"
+         */
+        function renderSetting(setting, path) {
+            // Define all possible field types
+            const allTypes = ["textbox", "checkbox", "radio", "dropdown", "radio-group"];
+            // Define all possible simple properties
+            const simpleProps = [
+                { id: "description", label: "Description", tag: "input" },
+                { id: "placeholder", label: "Placeholder", tag: "input" },
+                { id: "helpText", label: "Help Text", tag: "input" },
+                { id: "group", label: "Group", tag: "input" },
+                { id: "defaultValue", label: "Default Value (string or boolean)", tag: "input" },
+                { id: "dependsOn", label: "Depends On (e.g., settingName:true)", tag: "input" },
+                { id: "options", label: "Options / Values (JSON Array or comma-list)", tag: "textarea" },
+            ];
+
+            // Helper to create <option> tags
+            const typeOptions = allTypes.map(t =>
+                `<option value="${t}" ${setting.type === t ? 'selected' : ''}>${t}</option>`
+            ).join('');
+
+            // Helper to create form groups for all other properties
+            const otherPropsHtml = simpleProps.map(prop => `
+                <div class="form-group">
+                    <label>${prop.label}</label>
+                    ${prop.tag === 'input' ? 
+                        `<input type="text" data-path="${path}.${prop.id}" value="${setting[prop.id] || ''}">` :
+                        `<textarea data-path="${path}.${prop.id}">${setting[prop.id] ? (typeof setting[prop.id] === 'object' ? JSON.stringify(setting[prop.id]) : setting[prop.id]) : ''}</textarea>`
+                    }
+                </div>
+            `).join('');
+
+            // --- Recursive check for nested settings (like in EPOS) ---
+            let nestedSettingsHtml = '';
+            if (setting.settings || setting.type === 'radio-group') {
+                nestedSettingsHtml = `
+                    <div class="block-content nested">
+                        <h4>Nested Settings</h4>
+                        <div class="setting-block-container">
+                            ${renderSettingsList(setting.settings || [], `${path}.settings`)}
+                        </div>
+                        <button type="button" class="btn-add btn-add-setting" data-target="nested" data-path="${path}.settings">Add Nested Setting</button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="block setting-block" data-path="${path}">
+                    <div class="block-header">
+                        <h4>Setting: ${setting.name || 'new.setting'}</h4>
+                        <button type="button" class="btn-danger btn-delete-setting" data-path="${path}">Delete Setting</button>
+                    </div>
+                    <div class="block-content">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 15px;">
+                            <div class="form-group">
+                                <label>Name (Unique ID)</label>
+                                <input type="text" data-path="${path}.name" value="${setting.name || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select data-path="${path}.type">${typeOptions}</select>
+                            </div>
+                        </div>
+                        ${otherPropsHtml}
+                        ${nestedSettingsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+    </script>
+</body>
+</html>

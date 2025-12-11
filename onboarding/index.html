@@ -9,6 +9,9 @@
     <script src="js/scope_settings.js"></script>
     <script src="js/generate_script.js"></script>
     <script src="js/site.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/izimodal/1.6.1/js/iziModal.min.js" integrity="sha512-lR/2z/m/AunQdfBTSR8gp9bwkrjwMq1cP0BYRIZu8zd4ycLcpRYJopB+WsBGPDjlkJUwC6VHCmuAXwwPHlacww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -19,11 +22,11 @@
     <div class="container mt-4">
         <!-- Left-hand scope panel (visible on larger screens) -->
         <div class="scope-panel-container">
-            <div class="card scope-panel">
+            <div class="card scope-panel py-0 my-0">
                 <div class="card-header">
                     <span>Select Scopes</span>
                 </div>
-                <div class="card-body scope-panel-body">
+                <div class="card-body scope-panel-body p-1">
                     <div class="list-group" id="scopeCheckboxes">
                     
                 </div>
@@ -85,12 +88,12 @@
             </div>
  
         <!-- Basic Entity Information -->
-         <div class="accordion shadow mb-4">
-            <div class="accordion-item">
+         <div class="accordion shadow mb-4 rounded-4">
+            <div class="accordion-item rounded-4">
                 <h2 class="accordion-header">
                     <button class="accordion-button bg-none" type="button" data-bs-toggle="collapse" aria-expanded="true" data-bs-target="#integrations">
                         <div class="d-flex justify-content-between w-100 me-2">
-                            <span>Entity Details</span>
+                            <h3 class="p-0 m-0">Entity Details</h3>
                         </div>
                     </button>
                 </h2>
@@ -100,18 +103,18 @@
                             <div class="row">
                                 <div class="mb-3 col-md-6">
                                     <label for="parentName" class="form-label label-sm required">Parent Entity Name</label>
-                                    <input type="text" class="form-control form-control-sm" id="parentName" placeholder="Enter parent entity name" value="">
+                                    <input type="text" class="form-control form-control-sm" name="parentName" id="parentName" placeholder="Enter parent entity name" value="">
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label for="website" class="form-label label-sm">Website</label>
-                                    <input type="text" class="form-control form-control-sm" id="website" placeholder="https://www.example.com" value="">
+                                    <input type="text" class="form-control form-control-sm" name="website" id="website" placeholder="https://www.example.com" value="">
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                     <div class="col-md-6">
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="createIntegrator">
+                            <input class="form-check-input" name="createIntegrator" type="checkbox" id="createIntegrator">
                             <label class="form-check-label label-sm" for="createIntegrator">
                                 Create Integrator
                             </label>
@@ -119,27 +122,27 @@
                         <div class="conditional-field" id="integratorFields">
                             <div class="mb-3">
                                 <label for="integratorName" class="form-label label-sm">Integrator Name</label>
-                                <input type="text" class="form-control form-control-sm" id="integratorName" disabled placeholder="Integrator name will be auto-generated">
+                                <input type="text" class="form-control form-control-sm" name="integratorName" id="integratorName" disabled placeholder="Integrator name will be auto-generated">
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="createDeviceUser">
+                            <input class="form-check-input" type="checkbox" name="createDeviceUser" id="createDeviceUser">
                             <label class="form-check-label label-sm" for="createDeviceUser">Create Device User</label>
                         </div>
                         <div class="conditional-field" id="deviceUserFields">
                             <div class="mb-3">
                                 <label for="deviceUsername" class="form-label label-sm">Username</label>
-                                <input type="text" class="form-control form-control-sm" id="deviceUsername" placeholder="Enter device username">
+                                <input type="text" class="form-control form-control-sm" name="username" id="deviceUsername" placeholder="Enter device username">
                             </div>
                             <div class="mb-3">
                                 <label for="devicePassword" class="form-label label-sm">Password</label>
-                                <input type="password" class="form-control form-control-sm" id="devicePassword" placeholder="Enter device password">
+                                <input type="password" class="form-control form-control-sm" name="password" id="devicePassword" placeholder="Enter device password">
                             </div>
                             <div class="mb-3">
                                 <label for="deviceEmail" class="form-label label-sm">Email</label>
-                                <input type="email" class="form-control form-control-sm" id="deviceEmail" placeholder="Enter user email">
+                                <input type="email" class="form-control form-control-sm" name="email" id="deviceEmail" placeholder="Enter user email">
                             </div>
                         </div>
                         </div>
@@ -151,9 +154,9 @@
          </div>
             
             <!-- Scope Settings Tabs -->
-            <div class="card mb-4" id="scopeSettingsCard">
-                <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs" id="scopeTabs" role="tablist">
+            <div class="card mb-4 rounded-4" id="scopeSettingsCard">
+                <div class="card-header rounded-top-4 sticky-top">
+                    <ul class="nav nav-tabs card-header-tabs border-0" id="scopeTabs" role="tablist">
                         <!-- Scope tabs will be populated here -->
                     </ul>                
                     <div id="noTabsMessage" class="no-tabs-placeholder text-center py-4">
