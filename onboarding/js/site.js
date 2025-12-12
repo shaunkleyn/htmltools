@@ -436,7 +436,7 @@ $('#createDeviceUser, #createIntegrator').change(function() {
                     <div class="col-auto align-content-center">
                         <div class="form-check form-check-sm">
                             <input class="form-check-input" type="checkbox" id="${scope}-rate-limit" checked>
-                            <label class="form-check-label form-check-label-sm" for="${scope}-rate-limit">
+                            <label class="form-check-label form-check-label-sm text-white" for="${scope}-rate-limit">
                                 Enable Rate Limiting
                             </label>
                         </div>
@@ -475,12 +475,13 @@ if (scopeData.services && scopeData.services.length > 0) {
                                 <h2 class="accordion-header d-flex align-items-center flex-row">
                                     <div class="accordion-button accordion-button-sm bg-light px-3">
                                         <div class="form-check form-switch">
-                                            <input class="form-check-input parent-service" type="checkbox" 
+                                            <input class="form-check-input parent-service" type="checkbox"
                                                 data-service="${service.name}"
                                                 data-entity="parent"
-                                                role="link-service-to-entity" 
-                                                data-scope="${scope}" id="${scope}-${safeRename(service.name)}-parent" 
-                                                data-entity="parent" checked="" readonly="">
+                                                role="link-service-to-entity"
+                                                data-scope="${scope}" id="${scope}-${safeRename(service.name)}-parent"
+                                                data-entity="parent"
+                                                data-table="${getEntityTable(service, 'parent')}" checked="" readonly="">
                                         </div>
                                         <div type="button" 
                                         class="w-100 ps-1 ${service.settings && service.settings.length > 0 ? '' : 'collapsed'}"
@@ -502,7 +503,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase() === 'integrator')) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase() === 'integrator')) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input integrator-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator">
+                                                    <input class="form-check-input integrator-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator" data-table="${getEntityTable(service, 'integrator')}">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-integrator">
                                                         Link to Integrator
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.name} to Integrator"></i>
@@ -511,7 +512,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase().indexOf('user') > -1)) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase().indexOf('user') > -1)) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input deviceuser-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${service.name}" data-entity="deviceuser">
+                                                    <input class="form-check-input deviceuser-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${service.name}" data-entity="deviceuser" data-table="${getEntityTable(service, 'deviceuser')}">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-deviceuser">
                                                         Link to Device User
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Device User"></i>
@@ -520,7 +521,7 @@ if (scopeData.services && scopeData.services.length > 0) {
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase().indexOf('webservice') > -1)) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase().indexOf('webservice') > -1)) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input webservice-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-webservice" data-service="${service.name}" data-entity="webservice">
+                                                    <input class="form-check-input webservice-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-webservice" data-service="${service.name}" data-entity="webservice" data-table="${getEntityTable(service, 'webservice')}">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-webservice">
                                                         Link to Web Service
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Web Service"></i>
@@ -629,7 +630,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             sort = setting.sort || false;
         } else {
             console.log('Setting is an object:', setting);
-            groupName = setting.group || 'General Settings';
+            groupName = setting.group || 'Service Settings';
             settingName = setting.name;
             name = setting.name;
             allowOn = setting.allowOn || [];
@@ -1558,6 +1559,36 @@ function initializeTooltips(container = document) {
         }
     }
 
+    // Helper function to get the appropriate table for an entity from service.entityTables
+    function getEntityTable(service, entityType) {
+        // If service doesn't have entityTables, return default tables based on entity type
+        if (!service.entityTables || !Array.isArray(service.entityTables)) {
+            // Default tables for each entity type
+            if (entityType.toLowerCase() === 'parent') {
+                return 'entity_service';
+            } else if (entityType.toLowerCase() === 'integrator' || entityType.toLowerCase() === 'deviceuser' || entityType.toLowerCase() === 'webservice') {
+                return 'entity_service_type';
+            }
+            return 'entity_service';
+        }
+
+        // Search through entityTables to find the matching table
+        for (const tableMapping of service.entityTables) {
+            if (tableMapping.entities && Array.isArray(tableMapping.entities)) {
+                // Check if the current entity type matches any in this mapping
+                const matchingEntity = tableMapping.entities.find(e =>
+                    e.toLowerCase() === entityType.toLowerCase()
+                );
+                if (matchingEntity && tableMapping.tables && tableMapping.tables.length > 0) {
+                    // Return the first table in the tables array
+                    return tableMapping.tables[0].toLowerCase();
+                }
+            }
+        }
+
+        // If no match found, return default table
+        return entityType.toLowerCase() === 'parent' ? 'entity_service' : 'entity_service_type';
+    }
 
     // Function to export configuration to JSON
     function exportConfiguration() {

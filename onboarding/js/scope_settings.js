@@ -349,7 +349,6 @@ const scopes = {
                 "name": "cms.services.cms",
                 "description": "Client Management",
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
-                //    "tables" : [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE],
                 "entityTables": [
                     {
                         "entities": [EntityType.PARENT],
@@ -360,14 +359,6 @@ const scopes = {
                         "tables": [ServiceTable.ENTITY_SERVICE_TYPE]
                     },
                 ],
-                "settings": [
-                    {
-                        "name": "cms.track.request",
-                        "allowOn": [EntityType.DEVICEUSER],
-                        "type": InputType.CHECKBOX,
-                        "table": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
-                    }
-                ]
             },
             {
                 "name": "cms.services.entity",
@@ -382,21 +373,21 @@ const scopes = {
                         "entities": [EntityType.INTEGRATOR, EntityType.DEVICEUSER],
                         "tables": [ServiceTable.ENTITY_SERVICE_TYPE]
                     }],
-                "settings": [
-                    {
-                        "name": "cms.track.request",
-                        "allowOn": [EntityType.DEVICEUSER],
-                        "type": InputType.CHECKBOX,
-                        "table": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
-                    }
-                ]
+                "settings": []
             }
         ],
         "table": [
             "entity_service",
             "entity_service_type"
         ],
-        "settings": []
+        "settings": [
+            {
+                "name": "cms.track.request",
+                "allowOn": [EntityType.DEVICEUSER],
+                "type": InputType.CHECKBOX,
+                "table": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
+            }
+        ]
     },
     "COVS": {
         "name": "Company Verification Service",

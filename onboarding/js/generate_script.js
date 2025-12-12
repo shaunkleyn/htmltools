@@ -762,12 +762,15 @@ function collectFormData() {
         
         // Collect entities for this scope
         const entities = {
-            parent: false, 
+            parent: false,
             integrator: false,
             deviceuser: false,
             webservice: false
         };
-        
+
+        // Collect service-entity-table mappings for this scope
+        const serviceEntityLinks = [];
+
         // Collect settings for this scope
         const settings = [];
         
@@ -792,17 +795,33 @@ function collectFormData() {
                 const serviceSafeName = safeRename(serviceName);
 
             // Check if service is linked to entities
-            $('[role="link-service-to-entity"]').each((i,e) => { 
+            $('[role="link-service-to-entity"]').each((i,e) => {
                 console.group(`Linking service to entity check ${i + 1}`);
                 console.log('Element data:', $(e).data());
                 var entity = $(e).data('entity');
-                if ($scopeTab.find(`#${scopeId}-${serviceSafeName}-${entity}`).is(':checked')) {
+                const $checkbox = $scopeTab.find(`#${scopeId}-${serviceSafeName}-${entity}`);
+                if ($checkbox.is(':checked')) {
                     console.log(entity + ' is checked');
                     entities[entity] = true;
+
+                    // Collect table information for this service-entity link
+                    const table = $checkbox.data('table');
+                    if (table) {
+                        serviceEntityLinks.push({
+                            service: serviceName,
+                            entity: entity,
+                            table: table
+                        });
+                        console.log(`Service ${serviceName} linked to ${entity} using table: ${table}`);
+                    }
                 }
                 console.groupEnd();
             });
-            
+
+            // Define linked entity variables for this service
+            const linkedToIntegrator = entities.integrator;
+            const linkedToDeviceUser = entities.deviceuser;
+
             // Collect service-specific settings
             if (service.settings && service.settings.length > 0) {
                 service.settings.forEach(setting => {
@@ -907,6 +926,7 @@ function collectFormData() {
             limitCount: rateLimit && limitCount ? parseInt(limitCount) : null,
             limitPeriod: rateLimit && limitPeriod ? limitPeriod : null,
             entities: entities,
+            serviceEntityLinks: serviceEntityLinks,
             settings: settings
         });
 
@@ -1488,10 +1508,151 @@ BEGIN
 						INNER JOIN entity e ON e.id = es.entity_id
 					WHERE e.identifier = parent_identifier
 				);
-		END IF;	
+		END IF;
 	-- End Entity Service Types Setup
 -------------------------
 
+	-- Service-Entity Links Setup
+	-- Link services to entities (parent, integrator, device user) based on configuration
+-------------------------`;
+
+    // Generate SQL for service-entity links
+    data.scopes.forEach(scope => {
+        if (scope.serviceEntityLinks && scope.serviceEntityLinks.length > 0) {
+            script += `\n\t-- Links for scope: ${scope.identifier}\n`;
+
+            // Group links by entity type for conditional IF blocks
+            const linksByEntity = {
+                parent: [],
+                integrator: [],
+                deviceuser: [],
+                webservice: []
+            };
+
+            scope.serviceEntityLinks.forEach(link => {
+                if (linksByEntity[link.entity]) {
+                    linksByEntity[link.entity].push(link);
+                }
+            });
+
+            // Generate links for parent (always exists)
+            if (linksByEntity.parent.length > 0) {
+                linksByEntity.parent.forEach(link => {
+                    const tableName = link.table.toLowerCase();
+
+                    if (tableName === 'entity_service') {
+                        script += `\t-- Link ${link.service} to parent in ${tableName}\n`;
+                        script += `\tINSERT INTO public.entity_service (entity_id, service_id, active, rate_limit)\n`;
+                        script += `\t\tSELECT (SELECT e.id FROM entity e WHERE e.identifier = parent_identifier) as entity_id\n`;
+                        script += `\t\t\t,(SELECT s.id FROM service s WHERE s.identifier = '${link.service}') as service_id\n`;
+                        script += `\t\t\t,true\n`;
+                        script += `\t\t\t,false\n`;
+                        script += `\t\tWHERE NOT EXISTS(\n`;
+                        script += `\t\t\tSELECT 1 FROM entity_service es\n`;
+                        script += `\t\t\t\tINNER JOIN entity e ON e.id = es.entity_id\n`;
+                        script += `\t\t\t\tINNER JOIN service s ON s.id = es.service_id\n`;
+                        script += `\t\t\tWHERE e.identifier = parent_identifier\n`;
+                        script += `\t\t\t\tAND s.identifier = '${link.service}'\n`;
+                        script += `\t\t);\n\n`;
+                    } else if (tableName === 'entity_service_type') {
+                        script += `\t-- Link ${link.service} service type to parent in ${tableName}\n`;
+                        script += `\tINSERT INTO public.entity_service_type (entity_id, service_type_id, active)\n`;
+                        script += `\t\tSELECT (SELECT e.id FROM entity e WHERE e.identifier = parent_identifier) as entity_id\n`;
+                        script += `\t\t\t,(SELECT st.id FROM service_type st \n`;
+                        script += `\t\t\t\tWHERE st.id = (SELECT s.service_type_id FROM service s WHERE s.identifier = '${link.service}')) as service_type_id\n`;
+                        script += `\t\t\t,true\n`;
+                        script += `\t\tWHERE NOT EXISTS(\n`;
+                        script += `\t\t\tSELECT 1 FROM entity_service_type est\n`;
+                        script += `\t\t\t\tINNER JOIN entity e ON e.id = est.entity_id\n`;
+                        script += `\t\t\t\tINNER JOIN service_type st ON st.id = est.service_type_id\n`;
+                        script += `\t\t\tWHERE e.identifier = parent_identifier\n`;
+                        script += `\t\t\t\tAND st.id = (SELECT s.service_type_id FROM service s WHERE s.identifier = '${link.service}')\n`;
+                        script += `\t\t);\n\n`;
+                    }
+                });
+            }
+
+            // Generate links for integrator (only if createIntegrator is true)
+            if (linksByEntity.integrator.length > 0 && data.createIntegrator) {
+                script += `\t-- Integrator entity service links\n`;
+                linksByEntity.integrator.forEach(link => {
+                    const tableName = link.table.toLowerCase();
+
+                    if (tableName === 'entity_service') {
+                        script += `\t-- Link ${link.service} to integrator in ${tableName}\n`;
+                        script += `\tINSERT INTO public.entity_service (entity_id, service_id, active, rate_limit)\n`;
+                        script += `\t\tSELECT (SELECT e.id FROM entity e WHERE e.identifier = integration_entity_identifier) as entity_id\n`;
+                        script += `\t\t\t,(SELECT s.id FROM service s WHERE s.identifier = '${link.service}') as service_id\n`;
+                        script += `\t\t\t,true\n`;
+                        script += `\t\t\t,false\n`;
+                        script += `\t\tWHERE NOT EXISTS(\n`;
+                        script += `\t\t\tSELECT 1 FROM entity_service es\n`;
+                        script += `\t\t\t\tINNER JOIN entity e ON e.id = es.entity_id\n`;
+                        script += `\t\t\t\tINNER JOIN service s ON s.id = es.service_id\n`;
+                        script += `\t\t\tWHERE e.identifier = integration_entity_identifier\n`;
+                        script += `\t\t\t\tAND s.identifier = '${link.service}'\n`;
+                        script += `\t\t);\n\n`;
+                    } else if (tableName === 'entity_service_type') {
+                        script += `\t-- Link ${link.service} service type to integrator in ${tableName}\n`;
+                        script += `\tINSERT INTO public.entity_service_type (entity_id, service_type_id, active)\n`;
+                        script += `\t\tSELECT (SELECT e.id FROM entity e WHERE e.identifier = integration_entity_identifier) as entity_id\n`;
+                        script += `\t\t\t,(SELECT st.id FROM service_type st \n`;
+                        script += `\t\t\t\tWHERE st.id = (SELECT s.service_type_id FROM service s WHERE s.identifier = '${link.service}')) as service_type_id\n`;
+                        script += `\t\t\t,true\n`;
+                        script += `\t\tWHERE NOT EXISTS(\n`;
+                        script += `\t\t\tSELECT 1 FROM entity_service_type est\n`;
+                        script += `\t\t\t\tINNER JOIN entity e ON e.id = est.entity_id\n`;
+                        script += `\t\t\t\tINNER JOIN service_type st ON st.id = est.service_type_id\n`;
+                        script += `\t\t\tWHERE e.identifier = integration_entity_identifier\n`;
+                        script += `\t\t\t\tAND st.id = (SELECT s.service_type_id FROM service s WHERE s.identifier = '${link.service}')\n`;
+                        script += `\t\t);\n\n`;
+                    }
+                });
+            }
+
+            // Generate links for device user (only if createDeviceUser is true)
+            if (linksByEntity.deviceuser.length > 0 && data.createDeviceUser) {
+                script += `\t-- Device user entity service links\n`;
+                linksByEntity.deviceuser.forEach(link => {
+                    const tableName = link.table.toLowerCase();
+
+                    if (tableName === 'entity_service') {
+                        script += `\t-- Link ${link.service} to device user in ${tableName}\n`;
+                        script += `\tINSERT INTO public.entity_service (entity_id, service_id, active, rate_limit)\n`;
+                        script += `\t\tSELECT (SELECT e.id FROM entity e WHERE e.identifier = device_user_entity_identifier) as entity_id\n`;
+                        script += `\t\t\t,(SELECT s.id FROM service s WHERE s.identifier = '${link.service}') as service_id\n`;
+                        script += `\t\t\t,true\n`;
+                        script += `\t\t\t,false\n`;
+                        script += `\t\tWHERE NOT EXISTS(\n`;
+                        script += `\t\t\tSELECT 1 FROM entity_service es\n`;
+                        script += `\t\t\t\tINNER JOIN entity e ON e.id = es.entity_id\n`;
+                        script += `\t\t\t\tINNER JOIN service s ON s.id = es.service_id\n`;
+                        script += `\t\t\tWHERE e.identifier = device_user_entity_identifier\n`;
+                        script += `\t\t\t\tAND s.identifier = '${link.service}'\n`;
+                        script += `\t\t);\n\n`;
+                    } else if (tableName === 'entity_service_type') {
+                        script += `\t-- Link ${link.service} service type to device user in ${tableName}\n`;
+                        script += `\tINSERT INTO public.entity_service_type (entity_id, service_type_id, active)\n`;
+                        script += `\t\tSELECT (SELECT e.id FROM entity e WHERE e.identifier = device_user_entity_identifier) as entity_id\n`;
+                        script += `\t\t\t,(SELECT st.id FROM service_type st \n`;
+                        script += `\t\t\t\tWHERE st.id = (SELECT s.service_type_id FROM service s WHERE s.identifier = '${link.service}')) as service_type_id\n`;
+                        script += `\t\t\t,true\n`;
+                        script += `\t\tWHERE NOT EXISTS(\n`;
+                        script += `\t\t\tSELECT 1 FROM entity_service_type est\n`;
+                        script += `\t\t\t\tINNER JOIN entity e ON e.id = est.entity_id\n`;
+                        script += `\t\t\t\tINNER JOIN service_type st ON st.id = est.service_type_id\n`;
+                        script += `\t\t\tWHERE e.identifier = device_user_entity_identifier\n`;
+                        script += `\t\t\t\tAND st.id = (SELECT s.service_type_id FROM service s WHERE s.identifier = '${link.service}')\n`;
+                        script += `\t\t);\n\n`;
+                    }
+                });
+            }
+        }
+    });
+
+    script += `-------------------------
+	-- End Service-Entity Links Setup
+-------------------------
 
 
 \t
