@@ -990,8 +990,15 @@ function getSettingValue($scopeTab, scopeId, serviceSafeName, setting) {
         return $input.val().trim();
     } else {
         console.group(`Getting value for input setting: ${setting.name}`);
+        let value = $input.val();
+
+        // Handle partial edit fields - append fixed suffix
+        if (setting.partialEdit && setting.partialEdit.fixedSuffix && value) {
+            value = value + setting.partialEdit.fixedSuffix;
+        }
+
         console.groupEnd();
-        return $input.val();
+        return value;
     }
 
     console.groupEnd();
@@ -1006,12 +1013,19 @@ function getValueFromElement($input, setting) {
     } else if (setting.type === 'textbox' || setting.type === 'textarea' || setting.type === 'number') {
         console.group(`Getting value for textarea setting: ${setting.name}`);
         console.groupEnd();
-        return $input.val().trim();
+        let value = $input.val().trim();
+
+        // Handle partial edit fields - append fixed suffix
+        if (setting.partialEdit && setting.partialEdit.fixedSuffix && value) {
+            value = value + setting.partialEdit.fixedSuffix;
+        }
+
+        return value;
     } else if (setting.type === 'dropdown' || setting.type === 'select') {
         console.group(`Getting value for textarea setting: ${setting.name}`);
         console.groupEnd();
         var value = $input.val().trim();
-       
+
         // if (setting.translateValues && setting.translateValues[value]) {
         //     return setting.translateValues[value];
         // }
@@ -1023,7 +1037,14 @@ function getValueFromElement($input, setting) {
     } else {
         console.group(`Getting value for input setting: ${setting.name}`);
         console.groupEnd();
-        return $input.val();
+        let value = $input.val();
+
+        // Handle partial edit fields - append fixed suffix
+        if (setting.partialEdit && setting.partialEdit.fixedSuffix && value) {
+            value = value + setting.partialEdit.fixedSuffix;
+        }
+
+        return value;
     }
 }
 

@@ -911,7 +911,12 @@ const scopes = {
                "defaultValue": "",
                "dependsOn": "generateContractReference:true",
                "dependencyAction": "disable",
-               "services": ["ocs.services.mandate"]
+               "services": ["ocs.services.mandate"],
+               "partialEdit": {
+                   "editableLength": 7,
+                   "fixedSuffix": "_******",
+                   "placeholder": "XXXXXXX"
+               }
             },
             {
                "group": "Default Mandate Details",
@@ -1280,6 +1285,17 @@ const scopes = {
                 "table": "entity_service_type_setting",
                 "services": ["parent","deviceuser"]
             },
+            {
+                "group": "EasyPOS Settings.Mandate Fields",
+                "name": "app.mandate.creation.fields",
+                "label": "Mandate Creation Fields",
+                "type": "text",
+                "allowOn": ["deviceuser"],
+                "table": "entity_service_type_setting",
+                "placeholder": '["debtor.email"]',
+                "description": "Allowed values: debtor.name, debtor.accountType, debtor.branchCode, debtor.mobileNumber, debtor.email",
+                "services": []
+            },
 
 
             {
@@ -1315,39 +1331,7 @@ const scopes = {
                 "services": []
             },
             
-            {
-                "group": "Mandate Features",
-                "name": "app.mandate.authentication.enabled",
-                "label": "Enable Mandate Authentication",
-                "type": "checkbox",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
-                "defaultValue": true,
-                "description": "Determines if EasyDebit menu option should show",
-                "services": []
-            },
-            {
-                "group": "Mandate Features",
-                "name": "app.mandate.creation.enabled",
-                "label": "Enable Mandate Creation",
-                "type": "checkbox",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
-                "defaultValue": true,
-                "description": "Determines if Mandate options are shown on EasyDebit menu",
-                "services": []
-            },
-            {
-                "group": "Mandate Features",
-                "name": "app.mandate.creation.fields",
-                "label": "Mandate Creation Fields",
-                "type": "text",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
-                "placeholder": '["debtor.email"]',
-                "description": "Allowed values: debtor.name, debtor.accountType, debtor.branchCode, debtor.mobileNumber, debtor.email",
-                "services": []
-            }
+          
         ]
     },
         "VMS": {

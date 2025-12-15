@@ -220,6 +220,19 @@ $(document).ready(function () {
             });
         });
 
+        // Handle partial edit inputs (fields with fixed suffix)
+        $(document).on('input', '.partial-edit-input', function() {
+            const $input = $(this);
+            const editableLength = parseInt($input.data('editable-length')) || 0;
+            let value = $input.val();
+
+            // Enforce maximum editable length
+            if (value.length > editableLength) {
+                value = value.substring(0, editableLength);
+                $input.val(value);
+            }
+        });
+
         // Update the event handler for entity toggles to refresh tooltips
     $('#createDeviceUser, #createIntegrator').change(function() {
     const createDeviceUser = $('#createDeviceUser').is(':checked');
@@ -1059,18 +1072,46 @@ console.log(settingObj);
     else {
         // Default Text Input (for 'text', 'textbox', 'password', etc.)
         const inputType = settingObj.type === 'textbox' ? 'text' : settingObj.type;
-        const maxLengthAttr = settingObj.maxLength ? `maxlength="${settingObj.maxLength}"` : '';
-        html += `
-            <div class="mb-3 col-md-6" ${dependsOnAttr}>
-                ${inputHeader}
-                <input type="${inputType}" class="form-control form-control-sm" id="${inputId}" 
-                placeholder="${safeReplace(settingObj.placeholder, '"', '&#34;')}" 
-                value="${settingObj.defaultValue || ''}" 
-                ${maxLengthAttr}
-                ${sharedAttrs}>
-                ${helpTextHtml}
-            </div>
-        `;
+
+        // Check if this is a partially editable field
+        if (settingObj.partialEdit) {
+            const editableLength = settingObj.partialEdit.editableLength || 0;
+            const fixedSuffix = settingObj.partialEdit.fixedSuffix || '';
+            const editablePlaceholder = settingObj.partialEdit.placeholder || 'X'.repeat(editableLength);
+            const maxLengthAttr = editableLength ? `maxlength="${editableLength}"` : '';
+
+            html += `
+                <div class="mb-3 col-md-6" ${dependsOnAttr}>
+                    ${inputHeader}
+                    <div class="input-group input-group-sm">
+                        <input type="${inputType}" class="form-control form-control-sm partial-edit-input"
+                        id="${inputId}"
+                        placeholder="${safeReplace(editablePlaceholder, '"', '&#34;')}"
+                        value="${settingObj.defaultValue || ''}"
+                        ${maxLengthAttr}
+                        data-fixed-suffix="${safeReplace(fixedSuffix, '"', '&#34;')}"
+                        data-editable-length="${editableLength}"
+                        ${sharedAttrs}>
+                        <span class="input-group-text">${fixedSuffix}</span>
+                    </div>
+                    ${helpTextHtml}
+                </div>
+            `;
+        } else {
+            // Standard text input
+            const maxLengthAttr = settingObj.maxLength ? `maxlength="${settingObj.maxLength}"` : '';
+            html += `
+                <div class="mb-3 col-md-6" ${dependsOnAttr}>
+                    ${inputHeader}
+                    <input type="${inputType}" class="form-control form-control-sm" id="${inputId}"
+                    placeholder="${safeReplace(settingObj.placeholder, '"', '&#34;')}"
+                    value="${settingObj.defaultValue || ''}"
+                    ${maxLengthAttr}
+                    ${sharedAttrs}>
+                    ${helpTextHtml}
+                </div>
+            `;
+        }
     }
     return html;
 }
@@ -1616,7 +1657,8 @@ function initializeTooltips(container = document) {
                                     Object.keys(scopeConfig.services[serviceName].settings).forEach(setting => {
                                         // Check if this setting exists in the service definition
                                         if (allServiceSettings.includes(setting)) {
-                                            $(`#${scope}-${serviceName}-${setting}`).val(scopeConfig.services[serviceName].settings[setting]);
+                                            const $input = $(`#${scope}-${serviceName}-${setting}`);
+                                            setInputValue($input, scopeConfig.services[serviceName].settings[setting]);
                                         }
                                     });
                                 }
@@ -1627,14 +1669,16 @@ function initializeTooltips(container = document) {
                     // Scope settings
                     if (scopeConfig.settings) {
                         Object.keys(scopeConfig.settings).forEach(setting => {
-                            $(`#${scope}-${setting}`).val(scopeConfig.settings[setting]);
+                            const $input = $(`#${scope}-${setting}`);
+                            setInputValue($input, scopeConfig.settings[setting]);
                         });
                     }
 
                     // Shared settings
                     if (scopeConfig.sharedSettings) {
                         Object.keys(scopeConfig.sharedSettings).forEach(setting => {
-                            $(`#${scope}-${setting}`).val(scopeConfig.sharedSettings[setting]);
+                            const $input = $(`#${scope}-${setting}`);
+                            setInputValue($input, scopeConfig.sharedSettings[setting]);
                         });
                     }
                 }
@@ -3348,7 +3392,28 @@ function renderSetting(setting, prefix, serviceName = '') {
     } else if (setting.type === 'password') {
         html += `<input type="password" class="form-control form-control-sm" id="${settingId}" placeholder="${setting.placeholder || ''}" value="${setting.defaultValue || ''}">`;
     } else {
-        html += `<input type="text" class="form-control form-control-sm" id="${settingId}" placeholder="${setting.placeholder || ''}" value="${setting.defaultValue || ''}">`;
+        // Check if this is a partially editable field
+        if (setting.partialEdit) {
+            const editableLength = setting.partialEdit.editableLength || 0;
+            const fixedSuffix = setting.partialEdit.fixedSuffix || '';
+            const editablePlaceholder = setting.partialEdit.placeholder || 'X'.repeat(editableLength);
+            const maxLengthAttr = editableLength ? `maxlength="${editableLength}"` : '';
+
+            html += `
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-sm partial-edit-input"
+                    id="${settingId}"
+                    placeholder="${editablePlaceholder}"
+                    value="${setting.defaultValue || ''}"
+                    ${maxLengthAttr}
+                    data-fixed-suffix="${fixedSuffix}"
+                    data-editable-length="${editableLength}">
+                    <span class="input-group-text">${fixedSuffix}</span>
+                </div>
+            `;
+        } else {
+            html += `<input type="text" class="form-control form-control-sm" id="${settingId}" placeholder="${setting.placeholder || ''}" value="${setting.defaultValue || ''}">`;
+        }
     }
     
     // Help text
@@ -3475,13 +3540,7 @@ function loadScopeSettings(scopeConfig) {
     if (scopeConfig.settings && scopeConfig.settings.length > 0) {
         scopeConfig.settings.forEach(setting => {
             const $input = $tab.find(`#${scopeConfig.identifier}-${safeRename(setting.identifier)}`);
-            if ($input.length > 0) {
-                if ($input.attr('type') === 'checkbox') {
-                    $input.prop('checked', setting.value === 'true' || setting.value === true);
-                } else {
-                    $input.val(setting.value);
-                }
-            }
+            setInputValue($input, setting.value);
         });
     }
 }
@@ -3490,6 +3549,24 @@ function loadScopeSettings(scopeConfig) {
 function safeReplace(str, search, replacement) {
     if (typeof str !== 'string') return str;
     return str.replace(new RegExp(search, 'g'), replacement);
+}
+
+// Helper function to set value on an input, handling partial edit fields
+function setInputValue($input, value) {
+    if ($input.length === 0) return;
+
+    if ($input.attr('type') === 'checkbox') {
+        $input.prop('checked', value === 'true' || value === true);
+    } else {
+        // Handle partial edit fields - strip fixed suffix when loading
+        if ($input.hasClass('partial-edit-input')) {
+            const fixedSuffix = $input.data('fixed-suffix');
+            if (fixedSuffix && value && value.endsWith(fixedSuffix)) {
+                value = value.substring(0, value.length - fixedSuffix.length);
+            }
+        }
+        $input.val(value);
+    }
 }
 
 // Helper function for initializing entity card tooltips
