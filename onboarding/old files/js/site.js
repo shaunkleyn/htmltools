@@ -695,7 +695,8 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
                 </h2>
                 <div id="${mainGroupHtmlId}" class="accordion-collapse collapse ${mainGroupShowClass}" data-bs-parent=".accordion">
                     <div class="accordion-body">`;
-        } else {
+        } 
+        else {
              // If only one main group, start the container here (no collapse/header)
              html += `<div class="p-0 mt-3"><h6>${mainGroupName}</h6>`; // Use a simple div to contain content
         }

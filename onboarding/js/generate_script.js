@@ -5,7 +5,7 @@
 //  * from the entity configuration form.
 //  */
 
-const { jsx } = require("react/jsx-runtime");
+// const { jsx } = require("react/jsx-runtime");
 
 // function generateScript() {
 //     console.log('Starting script generation...');
@@ -1737,8 +1737,9 @@ function displayScript(script) {
     // Also display in SQL output if it exists
     const $sqlOutput = $('#sqlOutput');
     if ($sqlOutput.length > 0) {
-        $sqlOutput.html(`<pre><code>${escapeHtml(script)}</code></pre>`);
+        $sqlOutput.html(`<pre><code class="language-sql">${escapeHtml(script)}</code></pre>`);
     }
+    hljs.highlightAll();
 }
 
 function escapeHtml(text) {

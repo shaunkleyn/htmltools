@@ -17,6 +17,8 @@
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
     --spacing-lg: 1.5rem;
+    --badge-wave-base-delay: 0.5s;
+    --badge-wave-increment: 0.01s;
     /* --border-radius: 15px; */
     /* --bs-border-radius: 15px; */
     --transition-speed: 0.2s;
@@ -59,14 +61,22 @@ body {
     position: fixed;
     left: 0;
     top: 0;
-    min-width: 280px;
-    width: 25%;
+    min-width: 300px;
+    min-width: 25%;
+    max-width: 350px;
     height: 100vh;
     background: white;
     border-right: 1px solid var(--border-color);
     z-index: 1000;
     overflow-y: auto;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.scope-panel-container.collapsed {
+    min-width: 100px;
+    width: 100px;
+    max-width: 100px;
 }
 
 .scope-panel {
@@ -85,18 +95,191 @@ body {
     border-radius: 0;
     font-size: 1.1rem;
     letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.scope-panel .card-header .dropdown-menu {
+    z-index: 1050;
+}
+
+/* .scope-panel-container.collapsed .card-header {
+    padding: 1rem 0.5rem;
+} */
+
+.scope-panel-container.collapsed .card-header .input-group {
+    transform: translateX(-100px) scaleX(0);
+    width: 0%;
+    opacity: 0;
+    flex-wrap: nowrap;
+}
+
+.scope-panel-container:not(.collapsed) .card-header .input-group {
+    transform: translateX(0px) scaleX(1);
+    width: 100%;
+    opacity: 1;
+    flex-wrap: nowrap;
+    transition: 0.3s 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+#toggleScopePanelCollapse i {
+    transition: transform 0.3s ease;
+}
+
+.scope-panel-container.collapsed #toggleScopePanelCollapse i::before {
+    transform: rotate(180deg);
+    transition: transform 0.3s 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.scope-panel-container:not(.collapsed) #toggleScopePanelCollapse i::before {
+    transform: rotate(0deg);
+    transition: transform 0.3s 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .scope-panel-body {
     flex: 1;
     overflow-y: auto;
     padding: 0;
+    position: relative;
+    z-index: 1;
 }
+
+/* Scope list item styles */
+.scope-item {
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.scope-item .scope-full-text {
+    display: inline-block;
+    white-space: nowrap;
+    /* position: relative; */
+    /* transform-origin: left center; */
+    /* transform: scaleX(1); */
+    /* width: 100%; */
+}
+
+.scope-item .scope-abbr {
+    display: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.scope-panel-container.collapsed .scope-item .scope-full-text {
+    /* transform: scaleX(0); */
+    letter-spacing: -10px;
+    /* width: 0%; */
+    opacity: 0;
+    transition: all 0.2s ease-in;
+}
+
+.scope-panel-container:not(.collapsed) .scope-item .scope-full-text {
+    /* transform: scaleX(1); */
+    letter-spacing: 0px;
+    /* width: 100%; */
+    opacity: 1;
+    transition: all 0.2s 0.2s ease-in-out;
+}
+/* .scope-panel-container.collapsed .scope-item .scope-abbr {
+    display: inline;
+} */
+
+.scope-panel-container.collapsed .scope-item {
+    padding: 0.5rem !important;
+    justify-content: center;
+    flex-direction: column;
+    /* text-align: center; */
+    gap: 0.25rem;
+    overflow-x: hidden;
+}
+
+
+.scope-panel-container .scope-item > div:first-child {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    /* min-height: 1rem; */
+    align-content: space-around;
+    /* justify-content: flex-start; */
+    align-items: center;
+}
+
+/* .scope-panel-container.collapsed .scope-item > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.25rem;
+} */
+
+.scope-panel-container .scope-item .form-check-input {
+    margin: 0;
+}
+
+.scope-panel-container.collapsed .scope-item .deselect-icon {
+    display: none;
+}
+
+.scope-panel-container.collapsed .scope-item {
+    display: none;
+}
+
+.scope-panel-container.collapsed .scope-item .badge {
+    margin: 0;
+    transform: scale(0);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.scope-panel-container:not(.collapsed) .scope-item .badge {
+    margin: 0;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Staggered animation delays for wave effect */
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(1) .badge { transition-delay: var(--badge-wave-base-delay); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(2) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 1); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(3) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 2); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(4) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 3); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(5) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 4); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(6) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 5); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(7) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 6); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(8) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 7); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(9) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 8); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(10) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 9); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(11) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 10); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(12) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 11); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(13) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 12); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(14) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 13); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(15) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 14); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(16) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 15); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(17) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 16); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(18) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 17); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(19) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 18); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(20) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 19); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(21) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 20); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(22) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 21); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(23) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 22); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(24) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 23); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(25) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 24); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(26) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 25); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(27) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 26); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(28) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 27); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(29) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 28); }
+.scope-panel-container:not(.collapsed) .scope-item:nth-child(30) .badge { transition-delay: calc(var(--badge-wave-base-delay) + var(--badge-wave-increment) * 29); }
 
 /* Content Area */
 .content-area {
     margin-left: 300px;
     padding: 0 1rem;
+    transition: margin-left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.scope-panel-container.collapsed ~ .content-area {
+    margin-left: 80px;
 }
 
 /* ==========================================================================
@@ -411,6 +594,7 @@ body {
 .form-control:disabled {
     background-color: #f7f7f7;
     opacity: 1;
+    color: #b3b3b3
 }
 
 .form-control-sm {
@@ -476,11 +660,11 @@ body {
    ========================================================================== */
 
 .btn {
-    font-weight: 500;
-    padding: 0.5rem 1rem;
+    /* font-weight: 500; */
+    /* padding: 0.5rem 1rem; */
     border-radius: var(--bs-border-radius);
     transition: all var(--transition-speed);
-    border: none;
+    /* border: none; */
 }
 
 .btn:not(.no-raise):hover {
@@ -733,19 +917,27 @@ body {
 @media (max-width: 992px) {
     .scope-panel-container {
         position: relative;
-        width: 100%;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
         height: auto;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
         margin-bottom: 1rem;
     }
-    
+
+    .scope-panel-container.collapsed {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
     .scope-panel {
         height: auto;
     }
-    
+
     .content-area {
-        margin-left: 0;
+        margin-left: 0 !important;
     }
     
     .header h1 {
@@ -850,9 +1042,9 @@ body {
     font-size: 0.875rem;
 }
 
-.form-check-input-light {
+.form-check-input-light:checked {
     background-color: #fff !important;
-    --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%231a70b7' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%231a70b7' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
 
 .form-check-input:checked {
@@ -966,3 +1158,4 @@ button.accordion-button:not(.collapsed) {
 button.accordion-button.collapsed {
     padding: 30px 30px 30px 30px;
 }
+

@@ -550,6 +550,143 @@ const scopes = {
         ],
        "settings": []
     },
+        "FVS": {
+        "name": "Facial Verification Service",
+        "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+        "services": [
+            {
+                "name": "fvs.services.fvs",
+                "display": "Facial Verification Service",
+                "description": "Facial Verification Service",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            },
+            {
+                "name": "fvs.services.liveness",
+                "display": "Facial Liveness & Verification Service",
+                "description": "Facial Liveness & Verification Service",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                    {
+                        "name": "fvs.liveness.logo",
+                        "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "fvs.liveness.redirect.url",
+                        "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "fvs.liveness.sms.footer",
+                        "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "fvs.liveness.sms.header",
+                        "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    }
+                ]
+            }
+        ],
+        "settings": [
+            {
+                "name": "fvs.track.request",
+                "allowOn": [EntityType.PARENT],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            }
+        ]
+    },
+    "IVS": {
+        "name": "Identity Verification Service API",
+        "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+        "services": [
+            {
+                "name": "ivs.services.bvs",
+                "display": "IVS BVS",
+                "description": "Can perform fingerprint matching",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            },
+            {
+                "name": "ivs.services.data",
+                "display": "IVS Data",
+                "description": "Can perform identity verification to return data",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            },
+            {
+                "name": "ivs.services.ivs",
+                "display": "Identity Verification",
+                "description": "Can perform identity verification",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            },
+            {
+                "name": "ivs.services.ivsf",
+                "display": "Identity Verification Foreigner",
+                "description": "Can perform identity verification on foreigners",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            },
+            {
+                "name": "ivs.services.photo",
+                "display": "IVS Photo",
+                "description": "Can perform identity verification to return photo",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            }
+        ],
+        "settings": [
+            {
+                "name": "avs.track.request",
+                "allowOn": [EntityType.PARENT],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            },
+            {
+                "name": "ivs.track.request",
+                "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            }
+        ]
+    },
+    "OBS": {
+        "name": "Online Banking Service",
+        "allowOn": [EntityType.PARENT],
+        "services": [
+            {
+                "name": "OBS",
+                "display": "Online Banking Service",
+                "description": "Online Banking Service",
+                "allowOn": [EntityType.PARENT],
+                "settings": [
+                ]
+            }
+        ],
+        "settings": [
+        ]
+    },
     "OCS": {
         "name": "Online Collections Service",
         "allowOn": ["parent", "integrator", "deviceuser"],
@@ -877,7 +1014,169 @@ const scopes = {
             }
         ]
     },
-
+    "OPS": {
+        "name": "Online Payment Service",
+        "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+        "services": [
+            {
+                "name": "ops.services.cps",
+                "display": "Card Payment Service",
+                "description": "Can initiate card payments",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                    {
+                        "name": "ops.logo",
+                        "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    }
+                ]
+            },
+            {
+                "name": "ops.services.ieft",
+                "display": "Instant EFT",
+                "description": "Instant EFT",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                    {
+                        "name": "ops.ieft.ozow.sitecode",
+                        "allowOn": [EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "ops.ieft.sms.footer",
+                        "allowOn": [EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "ops.ieft.sms.header",
+                        "allowOn": [EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    }
+                ]
+            }
+        ],
+        "settings": [
+            {
+                "name": "cps.chc.access.key",
+                "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            },
+            {
+                "name": "cps.chc.profile.id",
+                "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            },
+            {
+                "name": "cps.chc.secret.key",
+                "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            },
+            {
+                "name": "ops.logo",
+                "allowOn": [EntityType.WEBSERVICE],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            }
+        ]
+    },
+    "PUI": {
+        "name": "Phoenix User Interface",
+        "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT],
+        "services": [
+            {
+                "name": "pui.services.entity",
+                "display": "Phoenix Entity Details Service",
+                "description": "Get Details for entity including all types",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                    {
+                        "name": "pui.logo",
+                        "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    }
+                ]
+            }
+        ],
+        "settings": [
+            {
+                "name": "pui.track.request",
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            }
+        ]
+    },
+    "PVS": {
+        "name": "Person Verification Service",
+        "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT],
+        "services": [
+            {
+                "name": "pvs.services.pvs",
+                "display": "Person Verification Service",
+                "description": "Person Verification Service",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT],
+                "settings": [
+                ]
+            }
+        ],
+        "settings": [
+        ]
+    },
+    "SDS": {
+        "name": "Strike Date Service API",
+        "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+        "services": [
+            {
+                "name": "sds.services.sds",
+                "display": "Strike Date Optimization",
+                "description": "Can retrieve strike dates for an identity number",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            }
+        ],
+        "settings": [
+            {
+                "name": "sds.track.request",
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            }
+        ]
+    },
+    "SSV": {
+        "name": "SIM Swap Verification",
+        "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+        "services": [
+            {
+                "name": "ssv.services.ssv",
+                "display": "SIM Swap Verification",
+                "description": "Verify SIM swap information for a phone number",
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT, EntityType.WEBSERVICE],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                ]
+            }
+        ],
+        "settings": [
+            {
+                "name": "ssv.track.request",
+                "allowOn": [EntityType.PARENT, EntityType.WEBSERVICE],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "type": InputType.CHECKBOX
+            }
+        ]
+    },
     "TCA": {
         "name": "Transaction Card Authorisation",
         "allowOn": ["parent", "integrator", "deviceuser"],
@@ -1015,47 +1314,7 @@ const scopes = {
                 "defaultValue": "default",
                 "services": []
             },
-            {
-                "group": "EasyPOS Menu Options",
-                "name": "app.payments.enabled",
-                "label": "Show EasyPOS Menu",
-                "type": "checkbox",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
-                "defaultValue": true,
-                "services": []
-            },
-            {
-                "group": "EasyPOS Menu Options",
-                "name": "app.manual.payments.enabled",
-                "label": "Show Manual Payments Option",
-                "type": "checkbox",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
-                "defaultValue": true,
-                "dependsOn": "app.payments.enabled:true",
-                "services": []
-            },
-            {
-                "group": "EasyPOS Menu Options",
-                "name": "app.transaction.history.enabled",
-                "label": "Show Transaction History Option",
-                "type": "checkbox",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
-                "defaultValue": true,
-                "services": []
-            },
-            {
-                "group": "EasyPOS Menu Options",
-                "name": "manual.payments.reference.config",
-                "label": "Manual Payment Reference Fields",
-                "type": "special",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
-                "description": "Configure additional reference fields for manual payments",
-                "services": []
-            },
+            
             {
                 "group": "Mandate Features",
                 "name": "app.mandate.authentication.enabled",
@@ -1089,6 +1348,71 @@ const scopes = {
                 "description": "Allowed values: debtor.name, debtor.accountType, debtor.branchCode, debtor.mobileNumber, debtor.email",
                 "services": []
             }
+        ]
+    },
+        "VMS": {
+        "name": "VerifyMe Service API",
+        "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+        "services": [
+            {
+                "name": "verifyme.services.verifyme",
+                "display": "VerifyMe Service",
+                "description": "Can perform multiple verifications",
+                "allowOn": [EntityType.INTEGRATOR, EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "settings": [
+                    {
+                        "name": "entity.avs.webhook.url",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "entity.bss.redirect.url",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "entity.bss.webhook.url",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "entity.client.secret",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "entity.liveness.redirect.url",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "entity.liveness.webhook.url",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "entity.redirect.url",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    },
+                    {
+                        "name": "entity.webhook.url",
+                        "allowOn": [EntityType.INTEGRATOR],
+                        "table": SettingsTable.ENTITY_SERVICE_SETTING,
+                        "type": InputType.TEXT
+                    }
+                ]
+            }
+        ],
+        "settings": [
         ]
     }
 };

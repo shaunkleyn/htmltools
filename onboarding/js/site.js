@@ -50,9 +50,20 @@ $(document).ready(function () {
         Object.keys(scopes).forEach(scope => {
             const scopeData = scopes[scope];
             const checkboxHtml = `
-            <label class="list-group-item list-group-item-action no-text-select py-2 d-flex flex-row justify-content-between align-items-center" for="scope-${scope}">
-                <div><input class="form-check-input me-2 scope-checkbox-input" type="checkbox" value="${scope}" id="scope-${scope}">${scope} - ${scopeData.name}</div>
-                <span class="badge bg-primary rounded-pill">${scopeData.services.length}</span>
+            <label class="list-group-item list-group-item-action no-text-select scope-item py-2 d-flex flex-row justify-content-between align-items-center" for="scope-${scope}">
+                <div>
+                    <input class="form-check-input me-2 scope-checkbox-input" type="checkbox" value="${scope}" id="scope-${scope}">
+                    <span>${scope}<span class="scope-full-text">&nbsp;- ${scopeData.name}</span></span>
+                    <span class="scope-abbr d-none">${scope}</span>
+                </div>
+                <div class="scope-services-badge-wrapper">
+                    <span class="px-2 py-1 text-danger deselect-icon" data-action="deselect-scope" data-bs-toggle="tooltip"
+                    data-bs-title="Remove scope from selection"
+                    data-bs-placement="top" id="deselect-scope-${scope}" data-scope="${scope}"><i class="fa fa-times"></i></span>
+                    <span class="badge bg-primary rounded-pill" data-bs-toggle="tooltip"
+                    data-bs-title="Has ${scopeData.services.length} service${scopeData.services.length !== 1 ? 's' : ''}"
+                    data-bs-placement="top">${scopeData.services.length}</span>
+                </div>
             </label>
             `;
             scopeCheckboxesContainer.append(checkboxHtml);
@@ -62,7 +73,7 @@ $(document).ready(function () {
         // Create empty tabs container
         const scopeTabsContainer = $('#scopeTabs');
         const scopeTabContentContainer = $('#scopeTabContent');
-        
+
         // Clear any existing tabs
         scopeTabsContainer.empty();
         scopeTabContentContainer.empty();
@@ -82,6 +93,40 @@ $(document).ready(function () {
             }
 
             checkTabVisibility();
+            updateSelectAllCheckbox();
+        });
+
+        // Handle scope row clicks - navigate to tab if already selected
+        $(document).on('click', '.list-group-item', function (e) {
+            var clickedElement = $(e.target).parent();
+            if (clickedElement !== undefined && clickedElement.length > 0) {
+                if ($(clickedElement).attr('data-action') !== undefined && $(clickedElement).attr('data-action') === 'deselect-scope') {
+                    console.log(scope)
+                    removeScopeTab(scope);
+                    checkTabVisibility();
+                    updateSelectAllCheckbox();
+                    return;
+                }
+            }
+
+            // Check if the click was directly on the checkbox
+            if ($(e.target).hasClass('scope-checkbox-input')) {
+                // Let the checkbox handle its own toggle
+                return;
+            }
+
+            const $checkbox = $(this).find('.scope-checkbox-input');
+            const scope = $checkbox.val();
+            const isChecked = $checkbox.is(':checked');
+
+            // If already selected, navigate to the tab instead of deselecting
+            if (isChecked) {
+                e.preventDefault();
+                e.stopPropagation();
+                activateScopeTab(scope);
+                return false; // Prevent any default behavior including scrolling
+            }
+            // If not selected, let the label's default behavior check the checkbox
         });
 
         // Handle tab close button clicks
@@ -94,6 +139,85 @@ $(document).ready(function () {
 
             // Uncheck the corresponding checkbox
             $(`#scope-${scope}`).prop('checked', false).trigger('change');
+        });
+
+        // Handle "Select All" checkbox
+        $(document).on('change', '#selectAllScopes', function () {
+            const isChecked = $(this).is(':checked');
+            $('.scope-checkbox-input').each(function () {
+                const $checkbox = $(this);
+                const currentlyChecked = $checkbox.is(':checked');
+
+                // Only trigger change if the state is different to avoid unnecessary operations
+                if (currentlyChecked !== isChecked) {
+                    $checkbox.prop('checked', isChecked).trigger('change');
+                }
+            });
+        });
+
+        // Handle "Invert Selection" button
+        $(document).on('click', '#dd-InvertScopeSelection', function (e) {
+            e.preventDefault();
+            $('.scope-checkbox-input').each(function () {
+                const $checkbox = $(this);
+                $checkbox.prop('checked', !$checkbox.is(':checked')).trigger('change');
+            });
+            updateSelectAllCheckbox();
+        });
+
+        $(document).on('click', '#dd-SelectAllScopes', function (e) {
+            e.preventDefault();
+            $('.scope-checkbox-input').each(function () {
+                const $checkbox = $(this);
+                $checkbox.prop('checked', true).trigger('change');
+            });
+            updateSelectAllCheckbox();
+        });
+
+        $(document).on('click', '#dd-DeselectAllScopes', function (e) {
+            e.preventDefault();
+            $('.scope-checkbox-input').each(function () {
+                const $checkbox = $(this);
+                $checkbox.prop('checked', false).trigger('change');
+            });
+            updateSelectAllCheckbox();
+        });
+
+        // Handle rate limit checkbox toggle
+        $(document).on('change', '.rate-limit-toggle', function() {
+            const $checkbox = $(this);
+            const scope = $checkbox.data('scope');
+            const isEnabled = $checkbox.is(':checked');
+
+            // Get the corresponding textboxes for this scope
+            const $countInput = $(`#${scope}-limit-count`);
+            const $periodInput = $(`#${scope}-limit-period`);
+
+            if (isEnabled) {
+                // Enable the textboxes
+                $countInput.prop('disabled', false);
+                $periodInput.prop('disabled', false);
+            } else {
+                // Disable the textboxes and clear their values
+                $countInput.prop('disabled', true).val('');
+                $periodInput.prop('disabled', true).val('');
+            }
+        });
+
+        // Handle scope panel collapse/expand toggle
+        $(document).on('click', '#toggleScopePanelCollapse', function() {
+            const $scopePanel = $('.scope-panel-container');
+            $scopePanel.toggleClass('collapsed');
+
+            // Reinitialize tooltips after collapse/expand
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+                if (existingTooltip) {
+                    existingTooltip.dispose();
+                }
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         });
 
         // Update the event handler for entity toggles to refresh tooltips
@@ -321,8 +445,6 @@ $('#createDeviceUser, #createIntegrator').change(function() {
             return;
         }
 
-        const scopeData = scopes[scope];
-        
         // Create tab
         const tabHtml = `
             <li class="nav-item">
@@ -337,7 +459,8 @@ $('#createDeviceUser, #createIntegrator').change(function() {
         // Create tab content
         const tabContentHtml = `
             <div class="tab-pane fade scope-tab" id="${scope}" role="tabpanel" aria-labelledby="${scope}-tab" scope="${scope}" service-type="${scope}" service-type-identifier="${scope}">
-                ${renderScopeTab(scope)}
+                <h4 class="pb-3 mt-2 card-body-title">${scope} Configuration</h4>
+            ${renderScopeTab(scope)}
             </div>
         `;
         scopeTabContentContainer.append(tabContentHtml);
@@ -351,7 +474,7 @@ $('#createDeviceUser, #createIntegrator').change(function() {
     function activateScopeTab(scope) {
         // Show the tab
         $(`#${scope}-tab`).parent().show();
-        
+
         // Activate the tab using Bootstrap
         const tabElement = document.querySelector(`#${scope}-tab`);
         if (tabElement) {
@@ -359,16 +482,19 @@ $('#createDeviceUser, #createIntegrator').change(function() {
             tab.show();
         }
 
+        // Scroll to the scopeSettingsCard to show the settings
+        const scopeSettingsCard = document.getElementById('scopeSettingsCard');
+        if (scopeSettingsCard) {
+            scopeSettingsCard.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
         console.log(`Activated tab for scope: ${scope}`);
     }
 
-    function removeScopeTab(scope) {
-        // Remove the tab elements completely
-        $(`#${scope}-tab`).parent().remove();
-        $(`#${scope}`).remove();
-        
-        console.log(`Removed tab for scope: ${scope}`);
-    }
+
 
     function initializeTooltips(container = document) {
         // Initialize Bootstrap tooltips
@@ -435,7 +561,7 @@ $('#createDeviceUser, #createIntegrator').change(function() {
                 <div class="row">
                     <div class="col-auto align-content-center">
                         <div class="form-check form-check-sm">
-                            <input class="form-check-input" type="checkbox" id="${scope}-rate-limit" checked>
+                            <input class="form-check-input form-check-input-light rate-limit-toggle" type="checkbox" id="${scope}-rate-limit" data-scope="${scope}" checked="">
                             <label class="form-check-label form-check-label-sm text-white" for="${scope}-rate-limit">
                                 Enable Rate Limiting
                             </label>
@@ -443,9 +569,9 @@ $('#createDeviceUser, #createIntegrator').change(function() {
                     </div>
                     <div class="col">
                         <div class="input-group input-group-sm">
-                            <input type="number" class="form-control" id="${scope}-limit-count" placeholder="Number of requests" min="0" max="999" aria-label="RequestLimit" data-bs-toggle="tooltip" data-bs-placement="top" title="Leave empty for no limit">
+                            <input type="number" class="form-control rate-limit-input" id="${scope}-limit-count" data-scope="${scope}" placeholder="Number of requests" min="0" max="999" aria-label="RequestLimit" data-bs-toggle="tooltip" data-bs-placement="top" title="Leave empty for no limit">
                             <span class="input-group-text">every</span>
-                            <input type="number" class="form-control" id="${scope}-limit-period" placeholder="Number of hours" min="0" max="999" aria-label="RequestPeriod" data-bs-toggle="tooltip" data-bs-placement="top" title="Leave empty for no limit">
+                            <input type="number" class="form-control rate-limit-input" id="${scope}-limit-period" data-scope="${scope}" placeholder="Number of hours" min="0" max="999" aria-label="RequestPeriod" data-bs-toggle="tooltip" data-bs-placement="top" title="Leave empty for no limit">
                             <span class="input-group-text">hours</span>
                         </div>
                     </div>
@@ -722,7 +848,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
     mainGroupNames.forEach(mainGroupName => {
         console.group(`Rendering Main Group: ${mainGroupName}`);
         const subGroups = groupedSettings[mainGroupName];
-        const mainGroupHtmlId = safeReplace(mainGroupName.toLowerCase(), /\s/g, '_');
+        const mainGroupHtmlId = safeReplace(`${prefix}-${mainGroupName}`.toLowerCase(), /\s/g, '_');
         
         let totalSettingsCount = 0;
         Object.keys(subGroups).forEach(subGroupName => {
@@ -769,8 +895,8 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             html += `<div class="accordion accordion-flush" id="${mainGroupHtmlId}-subgroups">`;
             
             subGroupNames.forEach(subGroupName => {
-                console.group(`Rendering Subgroup: ${subGroupName}`);   
-                const subGroupHtmlId = safeReplace(`${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
+                console.group(`Rendering Subgroup: ${subGroupName}`);
+                const subGroupHtmlId = safeReplace(`${prefix}-${mainGroupName}-${subGroupName}`.toLowerCase(), /\s/g, '_');
                 const subgroupCount = subGroups[subGroupName].length;
                 
                 // Subgroup State Logic (Set to show by default)
@@ -1455,12 +1581,12 @@ function initializeTooltips(container = document) {
 
                     // Rate limiting
                     if (scopeConfig.rateLimit !== undefined) {
-                        $(`#${scope}-rate-limit`).prop('checked', scopeConfig.rateLimit);
+                        $(`#${scope}-rate-limit`).prop('checked', scopeConfig.rateLimit).trigger('change');
                     }
-                    if (scopeConfig.limitCount !== undefined) {
+                    if (scopeConfig.limitCount !== undefined && scopeConfig.rateLimit) {
                         $(`#${scope}-limit-count`).val(scopeConfig.limitCount);
                     }
-                    if (scopeConfig.limitPeriod !== undefined) {
+                    if (scopeConfig.limitPeriod !== undefined && scopeConfig.rateLimit) {
                         $(`#${scope}-limit-period`).val(scopeConfig.limitPeriod);
                     }
 
@@ -1940,6 +2066,41 @@ function extractScopeConfiguration() {
 
     return scopeConfigs;
 }
+
+$(document).on('click', 'button[id^="deselect-scope-"]', function (e) {
+    e.stopPropagation();
+    var scope = $(this).attr('id').split('-').pop();
+    console.log(scope)
+    removeScopeTab(scope);
+    checkTabVisibility();
+    updateSelectAllCheckbox();
+});
+
+    function removeScopeTab(scope) {
+        // Remove the tab elements completely
+        $(`#${scope}-tab`).parent().remove();
+        $(`#${scope}`).remove();
+        
+        console.log(`Removed tab for scope: ${scope}`);
+    }
+
+     // Function to update the "Select All" checkbox state
+        function updateSelectAllCheckbox() {
+            const totalScopes = $('.scope-checkbox-input').length;
+            const checkedScopes = $('.scope-checkbox-input:checked').length;
+
+            const $selectAll = $('#selectAllScopes');
+            if (checkedScopes === 0) {
+                $selectAll.prop('checked', false);
+                $selectAll.prop('indeterminate', false);
+            } else if (checkedScopes === totalScopes) {
+                $selectAll.prop('checked', true);
+                $selectAll.prop('indeterminate', false);
+            } else {
+                $selectAll.prop('checked', false);
+                $selectAll.prop('indeterminate', true);
+            }
+        }
 
 // Helper function to generate PostgreSQL script data
 function generatePostgresScriptData() {
@@ -3304,9 +3465,11 @@ function loadScopeSettings(scopeConfig) {
     if ($tab.length === 0) return;
     
     // Load rate limiting
-    $tab.find(`#${scopeConfig.identifier}-rate-limit`).prop('checked', scopeConfig.rateLimit || false);
-    $tab.find(`#${scopeConfig.identifier}-limit-count`).val(scopeConfig.limitCount || '');
-    $tab.find(`#${scopeConfig.identifier}-limit-period`).val(scopeConfig.limitPeriod || '');
+    $tab.find(`#${scopeConfig.identifier}-rate-limit`).prop('checked', scopeConfig.rateLimit || false).trigger('change');
+    if (scopeConfig.rateLimit) {
+        $tab.find(`#${scopeConfig.identifier}-limit-count`).val(scopeConfig.limitCount || '');
+        $tab.find(`#${scopeConfig.identifier}-limit-period`).val(scopeConfig.limitPeriod || '');
+    }
     
     // Load settings
     if (scopeConfig.settings && scopeConfig.settings.length > 0) {

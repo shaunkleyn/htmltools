@@ -1,0 +1,2821 @@
+{
+  "AML": {
+    "name": "Anti-Money Laundering Service",
+    "entities": [
+      "integrator",
+      "parent"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "aml.service.aml",
+        "display": "Anti-Money Laundering Service",
+        "description": "Designed to detect risks associated with money laundering activities",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "AVS": {
+    "name": "Account Verification Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "avs.services.avs",
+        "display": "Account Verification",
+        "description": "Can perform account verification",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "avs.easydebit.profile",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "avs.track.request",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ivs.track.request",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "BIVS": {
+    "name": "Batch Identity Verification Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "bivs.services.bivs",
+        "display": "Batch IVS",
+        "description": "Can upload ivs batch",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "bivs.track.request",
+        "allowOn": [],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "BMS": {
+    "name": "Messaging Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "bms.services.bms",
+        "display": "Messaging Service",
+        "description": "Can perform the sending of sms",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "BPS": {
+    "name": "Bitventure Payment Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "bps.services.rtc",
+        "display": "Realtime Payments",
+        "description": "Realtime Payments Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "bps.ed.ws.gc",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "bps.ed.ws.pwd",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "bps.ed.ws.usr",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "bps.entity.reference",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "BSS": {
+    "name": "Bank Statement Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_setting",
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "bss.services.bss",
+        "display": "Bank Statements Service",
+        "description": "Can perform the retrievel of bank statements",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "entity.redirect.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.webhook.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "message.footer",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "message.header",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "bss.redirect.url",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "bss.sms.footer",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "bss.sms.header",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "BVS": {
+    "name": "Biometric Verification Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent",
+      "webservice"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "bvs.services.bvs",
+        "display": "Biometric Verification Service",
+        "description": "Biometric Verification Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "CDS": {
+    "name": "Card Disbursement Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "cds.services.cds",
+        "display": "Card Disbursement",
+        "description": "Card Disbursement",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "CDVS": {
+    "name": "Check-Digit Validation Service",
+    "entities": [
+      "integrator",
+      "parent"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "cdvs.services.cdvs",
+        "display": "Check-Digit Validation Service",
+        "description": "Can perform a check-digit validation check",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "CMS": {
+    "name": "Client Management Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "cms.services.cms",
+        "display": "Client Management Service",
+        "description": "Client Management Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "cms.services.entity",
+        "display": "Entity Management",
+        "description": "Entity Management",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "cms.track.request",
+        "allowOn": [],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "COVS": {
+    "name": "Company Verification Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "covs.services.covs",
+        "display": "Company Verification",
+        "description": "Company Verification",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "CRS": {
+    "name": "Credit Rating Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent",
+      "webservice"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "crs.service.afa",
+        "display": "Affordability Assessment Service",
+        "description": "Can perform affordability assessment check",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "crs.services.crs",
+        "display": "Credit Rating Service",
+        "description": "Credit Rating Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "crs.services.report",
+        "display": "Credit Report Service",
+        "description": "Can perform credit report check",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "afa.disposable.income.threshold.percentage",
+        "allowOn": [
+          "integrator",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "afa.threshold.percentage",
+        "allowOn": [
+          "integrator",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "afa.track.request",
+        "allowOn": [
+          "integrator",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "crs.cpb.enquiry.done.by",
+        "allowOn": [
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "crs.track.request",
+        "allowOn": [
+          "integrator",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "CVS": {
+    "name": "Contact Verification Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "cvs.services.cvs",
+        "display": "Contact Verification Service",
+        "description": "Can perform retrieval of contact information",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "cvs.track.request",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "FMS": {
+    "name": "Fingerprint Matching Service",
+    "entities": [
+      "webservice"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "fms.services.match",
+        "display": "Fingerprint Matching Service - Fingerprint Matching",
+        "description": "Can perform fingerprint matching",
+        "allowOn": [
+          "webservice"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "fms.services.register",
+        "display": "Fingerprint Matching Service - Fingerprint Registration",
+        "description": "Can register a new fingerprint into the fingerprint store",
+        "allowOn": [
+          "webservice"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "FVS": {
+    "name": "Facial Verification Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent",
+      "webservice"
+    ],
+    "tables": [
+      "entity_service_setting",
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "fvs.services.fvs",
+        "display": "Facial Verification Service",
+        "description": "Facial Verification Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "fvs.services.liveness",
+        "display": "Facial Liveness & Verification Service",
+        "description": "Facial Liveness & Verification Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "fvs.liveness.logo",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "fvs.liveness.redirect.url",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "fvs.liveness.sms.footer",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "fvs.liveness.sms.header",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "fvs.track.request",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "IVS": {
+    "name": "Identity Verification Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent",
+      "webservice"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "ivs.services.bvs",
+        "display": "IVS BVS",
+        "description": "Can perform fingerprint matching",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "ivs.services.data",
+        "display": "IVS Data",
+        "description": "Can perform identity verification to return data",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "ivs.services.ivs",
+        "display": "Identity Verification",
+        "description": "Can perform identity verification",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "ivs.services.ivsf",
+        "display": "Identity Verification Foreigner",
+        "description": "Can perform identity verification on foreigners",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      },
+      {
+        "name": "ivs.services.photo",
+        "display": "IVS Photo",
+        "description": "Can perform identity verification to return photo",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "avs.track.request",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ivs.track.request",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "OBS": {
+    "name": "Online Banking Service",
+    "entities": [
+      "parent"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "OBS",
+        "display": "Online Banking Service",
+        "description": "Online Banking Service",
+        "allowOn": [
+          "parent"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "OCS": {
+    "name": "Online Collection Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_setting",
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "ocs.services.collection",
+        "display": "Collection",
+        "description": "Collection submission",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "ocs.easy.loan.webhook.url",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {
+          "ocs.ed.mandate.default.details": {
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "adjustmentFrequency",
+                "defaultValue": "ANUALLY",
+                "label": "Adjustment Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ANNUALLY",
+                  "BIANNUALLY",
+                  "QUARTERLY",
+                  "REPO",
+                  "NEVER",
+                  "OTHER"
+                ]
+              },
+              {
+                "field": "adjustmentType",
+                "defaultValue": "RATE",
+                "label": "Adjustment Type",
+                "type": "radio",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "RATE"
+                  },
+                  {
+                    "key": 2,
+                    "value": "AMOUNT"
+                  }
+                ]
+              },
+              {
+                "field": "adjustmentValue",
+                "defaultValue": "1",
+                "label": "Adjustment Value",
+                "type": "textbox"
+              },
+              {
+                "field": "calculateInstallment",
+                "defaultValue": false,
+                "label": "Calculate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "dateAdjustmentAllowed",
+                "defaultValue": "Y",
+                "label": "Date Adjustment Allowed",
+                "type": "checkbox",
+                "translateValues": {
+                  "true": "Y",
+                  "false": "N"
+                }
+              },
+              {
+                "field": "debitClassification",
+                "defaultValue": "LRM",
+                "label": "Debit Classification",
+                "type": "dropdown",
+                "sort": true
+              },
+              {
+                "field": "frequency",
+                "defaultValue": "MONTHLY",
+                "label": "Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ADHOC",
+                  "WEEKLY",
+                  "FORTNIGHTLY",
+                  "MONTHLY",
+                  "QUARTERLY",
+                  "BIANUALLY",
+                  "ANNUALLY",
+                  "ONCE_OFF"
+                ]
+              },
+              {
+                "field": "generateContractReference",
+                "defaultValue": true,
+                "label": "Generate Contract Reference",
+                "type": "checkbox"
+              },
+              {
+                "field": "generateInstallment",
+                "defaultValue": true,
+                "label": "Generate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "mandateType",
+                "defaultValue": "Usage",
+                "label": "Mandate Type",
+                "type": "dropdown",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "Fixed"
+                  },
+                  {
+                    "key": 2,
+                    "value": "Variable"
+                  },
+                  {
+                    "key": 3,
+                    "value": "Usage"
+                  }
+                ]
+              },
+              {
+                "field": "maximumInstallmentAmount",
+                "defaultValue": "10000",
+                "label": "Maximum Installment Amount",
+                "type": "number"
+              },
+              {
+                "field": "referenceFormat",
+                "defaultValue": "Group5_*******",
+                "label": "Contract Reference Format",
+                "type": "textbox",
+                "maxLength": 14,
+                "dependsOn": "generateContractReference:true"
+              },
+              {
+                "field": "scheme",
+                "defaultValue": "GRPFVPRTN",
+                "label": "Scheme",
+                "type": "textbox"
+              },
+              {
+                "field": "tracking",
+                "defaultValue": true,
+                "label": "Tracking",
+                "type": "checkbox"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "ocs.services.debitorder",
+        "display": "Debit Order",
+        "description": "Debit Order Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "ocs.easy.loan.webhook.url",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {
+          "ocs.ed.mandate.default.details": {
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "adjustmentFrequency",
+                "defaultValue": "ANUALLY",
+                "label": "Adjustment Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ANNUALLY",
+                  "BIANNUALLY",
+                  "QUARTERLY",
+                  "REPO",
+                  "NEVER",
+                  "OTHER"
+                ]
+              },
+              {
+                "field": "adjustmentType",
+                "defaultValue": "RATE",
+                "label": "Adjustment Type",
+                "type": "radio",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "RATE"
+                  },
+                  {
+                    "key": 2,
+                    "value": "AMOUNT"
+                  }
+                ]
+              },
+              {
+                "field": "adjustmentValue",
+                "defaultValue": "1",
+                "label": "Adjustment Value",
+                "type": "textbox"
+              },
+              {
+                "field": "calculateInstallment",
+                "defaultValue": false,
+                "label": "Calculate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "dateAdjustmentAllowed",
+                "defaultValue": "Y",
+                "label": "Date Adjustment Allowed",
+                "type": "checkbox",
+                "translateValues": {
+                  "true": "Y",
+                  "false": "N"
+                }
+              },
+              {
+                "field": "debitClassification",
+                "defaultValue": "LRM",
+                "label": "Debit Classification",
+                "type": "dropdown",
+                "sort": true
+              },
+              {
+                "field": "frequency",
+                "defaultValue": "MONTHLY",
+                "label": "Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ADHOC",
+                  "WEEKLY",
+                  "FORTNIGHTLY",
+                  "MONTHLY",
+                  "QUARTERLY",
+                  "BIANUALLY",
+                  "ANNUALLY",
+                  "ONCE_OFF"
+                ]
+              },
+              {
+                "field": "generateContractReference",
+                "defaultValue": true,
+                "label": "Generate Contract Reference",
+                "type": "checkbox"
+              },
+              {
+                "field": "generateInstallment",
+                "defaultValue": true,
+                "label": "Generate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "mandateType",
+                "defaultValue": "Usage",
+                "label": "Mandate Type",
+                "type": "dropdown",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "Fixed"
+                  },
+                  {
+                    "key": 2,
+                    "value": "Variable"
+                  },
+                  {
+                    "key": 3,
+                    "value": "Usage"
+                  }
+                ]
+              },
+              {
+                "field": "maximumInstallmentAmount",
+                "defaultValue": "10000",
+                "label": "Maximum Installment Amount",
+                "type": "number"
+              },
+              {
+                "field": "referenceFormat",
+                "defaultValue": "Group5_*******",
+                "label": "Contract Reference Format",
+                "type": "textbox",
+                "maxLength": 14,
+                "dependsOn": "generateContractReference:true"
+              },
+              {
+                "field": "scheme",
+                "defaultValue": "GRPFVPRTN",
+                "label": "Scheme",
+                "type": "textbox"
+              },
+              {
+                "field": "tracking",
+                "defaultValue": true,
+                "label": "Tracking",
+                "type": "checkbox"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "ocs.services.mandate",
+        "display": "Mandate Creation",
+        "description": "Submit and create a Mandate",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "ocs.easy.loan.webhook.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "ocs.ed.sc.gc.map",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "ocs.ed.ws.gc",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {
+          "ocs.ed.mandate.default.details": {
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "adjustmentFrequency",
+                "defaultValue": "ANUALLY",
+                "label": "Adjustment Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ANNUALLY",
+                  "BIANNUALLY",
+                  "QUARTERLY",
+                  "REPO",
+                  "NEVER",
+                  "OTHER"
+                ]
+              },
+              {
+                "field": "adjustmentType",
+                "defaultValue": "RATE",
+                "label": "Adjustment Type",
+                "type": "radio",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "RATE"
+                  },
+                  {
+                    "key": 2,
+                    "value": "AMOUNT"
+                  }
+                ]
+              },
+              {
+                "field": "adjustmentValue",
+                "defaultValue": "1",
+                "label": "Adjustment Value",
+                "type": "textbox"
+              },
+              {
+                "field": "calculateInstallment",
+                "defaultValue": false,
+                "label": "Calculate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "dateAdjustmentAllowed",
+                "defaultValue": "Y",
+                "label": "Date Adjustment Allowed",
+                "type": "checkbox",
+                "translateValues": {
+                  "true": "Y",
+                  "false": "N"
+                }
+              },
+              {
+                "field": "debitClassification",
+                "defaultValue": "LRM",
+                "label": "Debit Classification",
+                "type": "dropdown",
+                "sort": true
+              },
+              {
+                "field": "frequency",
+                "defaultValue": "MONTHLY",
+                "label": "Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ADHOC",
+                  "WEEKLY",
+                  "FORTNIGHTLY",
+                  "MONTHLY",
+                  "QUARTERLY",
+                  "BIANUALLY",
+                  "ANNUALLY",
+                  "ONCE_OFF"
+                ]
+              },
+              {
+                "field": "generateContractReference",
+                "defaultValue": true,
+                "label": "Generate Contract Reference",
+                "type": "checkbox"
+              },
+              {
+                "field": "generateInstallment",
+                "defaultValue": true,
+                "label": "Generate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "mandateType",
+                "defaultValue": "Usage",
+                "label": "Mandate Type",
+                "type": "dropdown",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "Fixed"
+                  },
+                  {
+                    "key": 2,
+                    "value": "Variable"
+                  },
+                  {
+                    "key": 3,
+                    "value": "Usage"
+                  }
+                ]
+              },
+              {
+                "field": "maximumInstallmentAmount",
+                "defaultValue": "10000",
+                "label": "Maximum Installment Amount",
+                "type": "number"
+              },
+              {
+                "field": "referenceFormat",
+                "defaultValue": "Group5_*******",
+                "label": "Contract Reference Format",
+                "type": "textbox",
+                "maxLength": 14,
+                "dependsOn": "generateContractReference:true"
+              },
+              {
+                "field": "scheme",
+                "defaultValue": "GRPFVPRTN",
+                "label": "Scheme",
+                "type": "textbox"
+              },
+              {
+                "field": "tracking",
+                "defaultValue": true,
+                "label": "Tracking",
+                "type": "checkbox"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "settings": [
+      {
+        "name": "app.mandate.creation.enabled",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "app.transaction.history.enabled",
+        "allowOn": [],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "external.status.webhook.url",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.df.scheme",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.do.gc",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.do.sc.gc.map",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.passthrough",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.sc.gc.map",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.ul.gc.map",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.ws.gc",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.ws.pwd",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ocs.ed.ws.usr",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {
+      "ocs.ed.mandate.default.details": {
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "table": "entity_service_type_setting",
+        "fields": [
+          {
+            "field": "adjustmentFrequency",
+            "defaultValue": "ANUALLY",
+            "label": "Adjustment Frequency",
+            "type": "dropdown",
+            "values": [
+              "ANNUALLY",
+              "BIANNUALLY",
+              "QUARTERLY",
+              "REPO",
+              "NEVER",
+              "OTHER"
+            ]
+          },
+          {
+            "field": "adjustmentType",
+            "defaultValue": "RATE",
+            "label": "Adjustment Type",
+            "type": "radio",
+            "values": [
+              {
+                "key": 1,
+                "value": "RATE"
+              },
+              {
+                "key": 2,
+                "value": "AMOUNT"
+              }
+            ]
+          },
+          {
+            "field": "adjustmentValue",
+            "defaultValue": "1",
+            "label": "Adjustment Value",
+            "type": "textbox"
+          },
+          {
+            "field": "calculateInstallment",
+            "defaultValue": false,
+            "label": "Calculate Installment",
+            "type": "checkbox"
+          },
+          {
+            "field": "dateAdjustmentAllowed",
+            "defaultValue": "Y",
+            "label": "Date Adjustment Allowed",
+            "type": "checkbox",
+            "translateValues": {
+              "true": "Y",
+              "false": "N"
+            }
+          },
+          {
+            "field": "debitClassification",
+            "defaultValue": "LRM",
+            "label": "Debit Classification",
+            "type": "dropdown",
+            "sort": true
+          },
+          {
+            "field": "frequency",
+            "defaultValue": "MONTHLY",
+            "label": "Frequency",
+            "type": "dropdown",
+            "values": [
+              "ADHOC",
+              "WEEKLY",
+              "FORTNIGHTLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "BIANUALLY",
+              "ANNUALLY",
+              "ONCE_OFF"
+            ]
+          },
+          {
+            "field": "generateContractReference",
+            "defaultValue": true,
+            "label": "Generate Contract Reference",
+            "type": "checkbox"
+          },
+          {
+            "field": "generateInstallment",
+            "defaultValue": true,
+            "label": "Generate Installment",
+            "type": "checkbox"
+          },
+          {
+            "field": "mandateType",
+            "defaultValue": "Usage",
+            "label": "Mandate Type",
+            "type": "dropdown",
+            "values": [
+              {
+                "key": 1,
+                "value": "Fixed"
+              },
+              {
+                "key": 2,
+                "value": "Variable"
+              },
+              {
+                "key": 3,
+                "value": "Usage"
+              }
+            ]
+          },
+          {
+            "field": "maximumInstallmentAmount",
+            "defaultValue": "10000",
+            "label": "Maximum Installment Amount",
+            "type": "number"
+          },
+          {
+            "field": "referenceFormat",
+            "defaultValue": "Group5_*******",
+            "label": "Contract Reference Format",
+            "type": "textbox",
+            "maxLength": 14,
+            "dependsOn": "generateContractReference:true"
+          },
+          {
+            "field": "scheme",
+            "defaultValue": "GRPFVPRTN",
+            "label": "Scheme",
+            "type": "textbox"
+          },
+          {
+            "field": "tracking",
+            "defaultValue": true,
+            "label": "Tracking",
+            "type": "checkbox"
+          }
+        ]
+      }
+    }
+  },
+  "OPS": {
+    "name": "Online Payment Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent",
+      "webservice"
+    ],
+    "tables": [
+      "entity_service_setting",
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "ops.services.cps",
+        "display": "Card Payment Service",
+        "description": "Can initiate card payments",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "ops.logo",
+            "allowOn": [
+              "integrator",
+              "parent",
+              "webservice"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {}
+      },
+      {
+        "name": "ops.services.ieft",
+        "display": "Instant EFT",
+        "description": "Instant EFT",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "ops.ieft.ozow.sitecode",
+            "allowOn": [
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "ops.ieft.sms.footer",
+            "allowOn": [
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "ops.ieft.sms.header",
+            "allowOn": [
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "cps.chc.access.key",
+        "allowOn": [
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "cps.chc.profile.id",
+        "allowOn": [
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "cps.chc.secret.key",
+        "allowOn": [
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "ops.logo",
+        "allowOn": [
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "PUI": {
+    "name": "Phoenix User Interface",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_setting",
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "pui.services.entity",
+        "display": "Phoenix Entity Details Service",
+        "description": "Get Details for entity including all types",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "pui.logo",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "pui.track.request",
+        "allowOn": [],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "PVS": {
+    "name": "Person Verification Service",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [],
+    "services": [
+      {
+        "name": "pvs.services.pvs",
+        "display": "Person Verification Service",
+        "description": "Person Verification Service",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  },
+  "SDS": {
+    "name": "Strike Date Service API",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent",
+      "webservice"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "sds.services.sds",
+        "display": "Strike Date Optimization",
+        "description": "Can retrieve strike dates for an identity number",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "sds.track.request",
+        "allowOn": [],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "SSV": {
+    "name": "SIM Swap Verification",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent",
+      "webservice"
+    ],
+    "tables": [
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "ssv.services.ssv",
+        "display": "SIM Swap Verification",
+        "description": "Verify SIM swap information for a phone number",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent",
+          "webservice"
+        ],
+        "tables": [
+          "entity_service_type_setting"
+        ],
+        "settings": [],
+        "json_settings": {}
+      }
+    ],
+    "settings": [
+      {
+        "name": "ssv.track.request",
+        "allowOn": [
+          "parent",
+          "webservice"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {}
+  },
+  "TCA": {
+    "name": "Transaction Card Authorisation",
+    "entities": [
+      "deviceuser",
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_setting",
+      "entity_service_type_setting"
+    ],
+    "services": [
+      {
+        "name": "tca.services.mca",
+        "display": "Mandate Card Authorisation",
+        "description": "Mandate Card Authorisation",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "webservice.password",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "webservice.username",
+            "allowOn": [
+              "integrator",
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {
+          "manual.payments.reference.config": {
+            "allowOn": [],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "app.manual.payments.reference.customer",
+                "defaultValue": "disabled",
+                "label": "Customer Reference",
+                "type": "select",
+                "values": [
+                  "enabled",
+                  "disabled",
+                  "required"
+                ]
+              },
+              {
+                "field": "app.manual.payments.reference.internal",
+                "defaultValue": "disabled",
+                "label": "Internal Reference",
+                "type": "select",
+                "values": [
+                  "enabled",
+                  "disabled",
+                  "required"
+                ]
+              }
+            ]
+          },
+          "ocs.ed.mandate.default.details": {
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "adjustmentFrequency",
+                "defaultValue": "ANUALLY",
+                "label": "Adjustment Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ANNUALLY",
+                  "BIANNUALLY",
+                  "QUARTERLY",
+                  "REPO",
+                  "NEVER",
+                  "OTHER"
+                ]
+              },
+              {
+                "field": "adjustmentType",
+                "defaultValue": "RATE",
+                "label": "Adjustment Type",
+                "type": "radio",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "RATE"
+                  },
+                  {
+                    "key": 2,
+                    "value": "AMOUNT"
+                  }
+                ]
+              },
+              {
+                "field": "adjustmentValue",
+                "defaultValue": "1",
+                "label": "Adjustment Value",
+                "type": "textbox"
+              },
+              {
+                "field": "calculateInstallment",
+                "defaultValue": false,
+                "label": "Calculate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "dateAdjustmentAllowed",
+                "defaultValue": "Y",
+                "label": "Date Adjustment Allowed",
+                "type": "checkbox",
+                "translateValues": {
+                  "true": "Y",
+                  "false": "N"
+                }
+              },
+              {
+                "field": "debitClassification",
+                "defaultValue": "LRM",
+                "label": "Debit Classification",
+                "type": "dropdown",
+                "sort": true
+              },
+              {
+                "field": "frequency",
+                "defaultValue": "MONTHLY",
+                "label": "Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ADHOC",
+                  "WEEKLY",
+                  "FORTNIGHTLY",
+                  "MONTHLY",
+                  "QUARTERLY",
+                  "BIANUALLY",
+                  "ANNUALLY",
+                  "ONCE_OFF"
+                ]
+              },
+              {
+                "field": "generateContractReference",
+                "defaultValue": true,
+                "label": "Generate Contract Reference",
+                "type": "checkbox"
+              },
+              {
+                "field": "generateInstallment",
+                "defaultValue": true,
+                "label": "Generate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "mandateType",
+                "defaultValue": "Usage",
+                "label": "Mandate Type",
+                "type": "dropdown",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "Fixed"
+                  },
+                  {
+                    "key": 2,
+                    "value": "Variable"
+                  },
+                  {
+                    "key": 3,
+                    "value": "Usage"
+                  }
+                ]
+              },
+              {
+                "field": "maximumInstallmentAmount",
+                "defaultValue": "10000",
+                "label": "Maximum Installment Amount",
+                "type": "number"
+              },
+              {
+                "field": "referenceFormat",
+                "defaultValue": "Group5_*******",
+                "label": "Contract Reference Format",
+                "type": "textbox",
+                "maxLength": 14,
+                "dependsOn": "generateContractReference:true"
+              },
+              {
+                "field": "scheme",
+                "defaultValue": "GRPFVPRTN",
+                "label": "Scheme",
+                "type": "textbox"
+              },
+              {
+                "field": "tracking",
+                "defaultValue": true,
+                "label": "Tracking",
+                "type": "checkbox"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "tca.services.pca",
+        "display": "Payment Card Authorisation",
+        "description": "Payment Card Authorisation",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "itensityonline.auth.client.id",
+            "allowOn": [
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "itensityonline.auth.client.secret",
+            "allowOn": [
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {
+          "manual.payments.reference.config": {
+            "allowOn": [],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "app.manual.payments.reference.customer",
+                "defaultValue": "disabled",
+                "label": "Customer Reference",
+                "type": "select",
+                "values": [
+                  "enabled",
+                  "disabled",
+                  "required"
+                ]
+              },
+              {
+                "field": "app.manual.payments.reference.internal",
+                "defaultValue": "disabled",
+                "label": "Internal Reference",
+                "type": "select",
+                "values": [
+                  "enabled",
+                  "disabled",
+                  "required"
+                ]
+              }
+            ]
+          },
+          "ocs.ed.mandate.default.details": {
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "adjustmentFrequency",
+                "defaultValue": "ANUALLY",
+                "label": "Adjustment Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ANNUALLY",
+                  "BIANNUALLY",
+                  "QUARTERLY",
+                  "REPO",
+                  "NEVER",
+                  "OTHER"
+                ]
+              },
+              {
+                "field": "adjustmentType",
+                "defaultValue": "RATE",
+                "label": "Adjustment Type",
+                "type": "radio",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "RATE"
+                  },
+                  {
+                    "key": 2,
+                    "value": "AMOUNT"
+                  }
+                ]
+              },
+              {
+                "field": "adjustmentValue",
+                "defaultValue": "1",
+                "label": "Adjustment Value",
+                "type": "textbox"
+              },
+              {
+                "field": "calculateInstallment",
+                "defaultValue": false,
+                "label": "Calculate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "dateAdjustmentAllowed",
+                "defaultValue": "Y",
+                "label": "Date Adjustment Allowed",
+                "type": "checkbox",
+                "translateValues": {
+                  "true": "Y",
+                  "false": "N"
+                }
+              },
+              {
+                "field": "debitClassification",
+                "defaultValue": "LRM",
+                "label": "Debit Classification",
+                "type": "dropdown",
+                "sort": true
+              },
+              {
+                "field": "frequency",
+                "defaultValue": "MONTHLY",
+                "label": "Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ADHOC",
+                  "WEEKLY",
+                  "FORTNIGHTLY",
+                  "MONTHLY",
+                  "QUARTERLY",
+                  "BIANUALLY",
+                  "ANNUALLY",
+                  "ONCE_OFF"
+                ]
+              },
+              {
+                "field": "generateContractReference",
+                "defaultValue": true,
+                "label": "Generate Contract Reference",
+                "type": "checkbox"
+              },
+              {
+                "field": "generateInstallment",
+                "defaultValue": true,
+                "label": "Generate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "mandateType",
+                "defaultValue": "Usage",
+                "label": "Mandate Type",
+                "type": "dropdown",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "Fixed"
+                  },
+                  {
+                    "key": 2,
+                    "value": "Variable"
+                  },
+                  {
+                    "key": 3,
+                    "value": "Usage"
+                  }
+                ]
+              },
+              {
+                "field": "maximumInstallmentAmount",
+                "defaultValue": "10000",
+                "label": "Maximum Installment Amount",
+                "type": "number"
+              },
+              {
+                "field": "referenceFormat",
+                "defaultValue": "Group5_*******",
+                "label": "Contract Reference Format",
+                "type": "textbox",
+                "maxLength": 14,
+                "dependsOn": "generateContractReference:true"
+              },
+              {
+                "field": "scheme",
+                "defaultValue": "GRPFVPRTN",
+                "label": "Scheme",
+                "type": "textbox"
+              },
+              {
+                "field": "tracking",
+                "defaultValue": true,
+                "label": "Tracking",
+                "type": "checkbox"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "tca.services.rcp",
+        "display": "Recurring Card Payment",
+        "description": "Recurring Card Payment",
+        "allowOn": [
+          "deviceuser",
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting",
+          "entity_service_type_setting"
+        ],
+        "settings": [
+          {
+            "name": "iveri.auth.app.id",
+            "allowOn": [
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "iveri.auth.certificate.id",
+            "allowOn": [
+              "parent"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {
+          "manual.payments.reference.config": {
+            "allowOn": [],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "app.manual.payments.reference.customer",
+                "defaultValue": "disabled",
+                "label": "Customer Reference",
+                "type": "select",
+                "values": [
+                  "enabled",
+                  "disabled",
+                  "required"
+                ]
+              },
+              {
+                "field": "app.manual.payments.reference.internal",
+                "defaultValue": "disabled",
+                "label": "Internal Reference",
+                "type": "select",
+                "values": [
+                  "enabled",
+                  "disabled",
+                  "required"
+                ]
+              }
+            ]
+          },
+          "ocs.ed.mandate.default.details": {
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_type_setting",
+            "fields": [
+              {
+                "field": "adjustmentFrequency",
+                "defaultValue": "ANUALLY",
+                "label": "Adjustment Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ANNUALLY",
+                  "BIANNUALLY",
+                  "QUARTERLY",
+                  "REPO",
+                  "NEVER",
+                  "OTHER"
+                ]
+              },
+              {
+                "field": "adjustmentType",
+                "defaultValue": "RATE",
+                "label": "Adjustment Type",
+                "type": "radio",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "RATE"
+                  },
+                  {
+                    "key": 2,
+                    "value": "AMOUNT"
+                  }
+                ]
+              },
+              {
+                "field": "adjustmentValue",
+                "defaultValue": "1",
+                "label": "Adjustment Value",
+                "type": "textbox"
+              },
+              {
+                "field": "calculateInstallment",
+                "defaultValue": false,
+                "label": "Calculate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "dateAdjustmentAllowed",
+                "defaultValue": "Y",
+                "label": "Date Adjustment Allowed",
+                "type": "checkbox",
+                "translateValues": {
+                  "true": "Y",
+                  "false": "N"
+                }
+              },
+              {
+                "field": "debitClassification",
+                "defaultValue": "LRM",
+                "label": "Debit Classification",
+                "type": "dropdown",
+                "sort": true
+              },
+              {
+                "field": "frequency",
+                "defaultValue": "MONTHLY",
+                "label": "Frequency",
+                "type": "dropdown",
+                "values": [
+                  "ADHOC",
+                  "WEEKLY",
+                  "FORTNIGHTLY",
+                  "MONTHLY",
+                  "QUARTERLY",
+                  "BIANUALLY",
+                  "ANNUALLY",
+                  "ONCE_OFF"
+                ]
+              },
+              {
+                "field": "generateContractReference",
+                "defaultValue": true,
+                "label": "Generate Contract Reference",
+                "type": "checkbox"
+              },
+              {
+                "field": "generateInstallment",
+                "defaultValue": true,
+                "label": "Generate Installment",
+                "type": "checkbox"
+              },
+              {
+                "field": "mandateType",
+                "defaultValue": "Usage",
+                "label": "Mandate Type",
+                "type": "dropdown",
+                "values": [
+                  {
+                    "key": 1,
+                    "value": "Fixed"
+                  },
+                  {
+                    "key": 2,
+                    "value": "Variable"
+                  },
+                  {
+                    "key": 3,
+                    "value": "Usage"
+                  }
+                ]
+              },
+              {
+                "field": "maximumInstallmentAmount",
+                "defaultValue": "10000",
+                "label": "Maximum Installment Amount",
+                "type": "number"
+              },
+              {
+                "field": "referenceFormat",
+                "defaultValue": "Group5_*******",
+                "label": "Contract Reference Format",
+                "type": "textbox",
+                "maxLength": 14,
+                "dependsOn": "generateContractReference:true"
+              },
+              {
+                "field": "scheme",
+                "defaultValue": "GRPFVPRTN",
+                "label": "Scheme",
+                "type": "textbox"
+              },
+              {
+                "field": "tracking",
+                "defaultValue": true,
+                "label": "Tracking",
+                "type": "checkbox"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "settings": [
+      {
+        "name": "app.mandate.authentication.enabled",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "app.mandate.creation.enabled",
+        "allowOn": [],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "app.mandate.creation.fields",
+        "allowOn": [],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "app.manual.payments.enabled",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "app.payments.enabled",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "app.transaction.history.enabled",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "tca.application.key",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "tca.merchant.id",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      },
+      {
+        "name": "tca.merchant.username",
+        "allowOn": [
+          "parent"
+        ],
+        "table": "entity_service_type_setting"
+      }
+    ],
+    "json_settings": {
+      "manual.payments.reference.config": {
+        "allowOn": [],
+        "table": "entity_service_type_setting",
+        "fields": [
+          {
+            "field": "app.manual.payments.reference.customer",
+            "defaultValue": "disabled",
+            "label": "Customer Reference",
+            "type": "select",
+            "values": [
+              "enabled",
+              "disabled",
+              "required"
+            ]
+          },
+          {
+            "field": "app.manual.payments.reference.internal",
+            "defaultValue": "disabled",
+            "label": "Internal Reference",
+            "type": "select",
+            "values": [
+              "enabled",
+              "disabled",
+              "required"
+            ]
+          }
+        ]
+      },
+      "ocs.ed.mandate.default.details": {
+        "allowOn": [
+          "integrator"
+        ],
+        "table": "entity_service_type_setting",
+        "fields": [
+          {
+            "field": "adjustmentFrequency",
+            "defaultValue": "ANUALLY",
+            "label": "Adjustment Frequency",
+            "type": "dropdown",
+            "values": [
+              "ANNUALLY",
+              "BIANNUALLY",
+              "QUARTERLY",
+              "REPO",
+              "NEVER",
+              "OTHER"
+            ]
+          },
+          {
+            "field": "adjustmentType",
+            "defaultValue": "RATE",
+            "label": "Adjustment Type",
+            "type": "radio",
+            "values": [
+              {
+                "key": 1,
+                "value": "RATE"
+              },
+              {
+                "key": 2,
+                "value": "AMOUNT"
+              }
+            ]
+          },
+          {
+            "field": "adjustmentValue",
+            "defaultValue": "1",
+            "label": "Adjustment Value",
+            "type": "textbox"
+          },
+          {
+            "field": "calculateInstallment",
+            "defaultValue": false,
+            "label": "Calculate Installment",
+            "type": "checkbox"
+          },
+          {
+            "field": "dateAdjustmentAllowed",
+            "defaultValue": "Y",
+            "label": "Date Adjustment Allowed",
+            "type": "checkbox",
+            "translateValues": {
+              "true": "Y",
+              "false": "N"
+            }
+          },
+          {
+            "field": "debitClassification",
+            "defaultValue": "LRM",
+            "label": "Debit Classification",
+            "type": "dropdown",
+            "sort": true
+          },
+          {
+            "field": "frequency",
+            "defaultValue": "MONTHLY",
+            "label": "Frequency",
+            "type": "dropdown",
+            "values": [
+              "ADHOC",
+              "WEEKLY",
+              "FORTNIGHTLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "BIANUALLY",
+              "ANNUALLY",
+              "ONCE_OFF"
+            ]
+          },
+          {
+            "field": "generateContractReference",
+            "defaultValue": true,
+            "label": "Generate Contract Reference",
+            "type": "checkbox"
+          },
+          {
+            "field": "generateInstallment",
+            "defaultValue": true,
+            "label": "Generate Installment",
+            "type": "checkbox"
+          },
+          {
+            "field": "mandateType",
+            "defaultValue": "Usage",
+            "label": "Mandate Type",
+            "type": "dropdown",
+            "values": [
+              {
+                "key": 1,
+                "value": "Fixed"
+              },
+              {
+                "key": 2,
+                "value": "Variable"
+              },
+              {
+                "key": 3,
+                "value": "Usage"
+              }
+            ]
+          },
+          {
+            "field": "maximumInstallmentAmount",
+            "defaultValue": "10000",
+            "label": "Maximum Installment Amount",
+            "type": "number"
+          },
+          {
+            "field": "referenceFormat",
+            "defaultValue": "Group5_*******",
+            "label": "Contract Reference Format",
+            "type": "textbox",
+            "maxLength": 14,
+            "dependsOn": "generateContractReference:true"
+          },
+          {
+            "field": "scheme",
+            "defaultValue": "GRPFVPRTN",
+            "label": "Scheme",
+            "type": "textbox"
+          },
+          {
+            "field": "tracking",
+            "defaultValue": true,
+            "label": "Tracking",
+            "type": "checkbox"
+          }
+        ]
+      }
+    }
+  },
+  "VMS": {
+    "name": "VerifyMe Service API",
+    "entities": [
+      "integrator",
+      "parent"
+    ],
+    "tables": [
+      "entity_service_setting"
+    ],
+    "services": [
+      {
+        "name": "verifyme.services.verifyme",
+        "display": "VerifyMe Service",
+        "description": "Can perform multiple verifications",
+        "allowOn": [
+          "integrator",
+          "parent"
+        ],
+        "tables": [
+          "entity_service_setting"
+        ],
+        "settings": [
+          {
+            "name": "entity.avs.webhook.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.bss.redirect.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.bss.webhook.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.client.secret",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.liveness.redirect.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.liveness.webhook.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.redirect.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          },
+          {
+            "name": "entity.webhook.url",
+            "allowOn": [
+              "integrator"
+            ],
+            "table": "entity_service_setting"
+          }
+        ],
+        "json_settings": {}
+      }
+    ],
+    "settings": [],
+    "json_settings": {}
+  }
+}
