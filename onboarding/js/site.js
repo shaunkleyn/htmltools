@@ -442,10 +442,72 @@ $('#createDeviceUser, #createIntegrator').change(function() {
             e.preventDefault();
             e.stopPropagation();
             $(this).validate();
-            $(this).valid();            
-        });   
-        
+            $(this).valid();
+        });
+
+        // Array of Objects event handlers
+
+        // Add item button click handler
+        $(document).on('click', '.add-array-row', function() {
+            const inputId = $(this).data('input-id');
+            const fields = $(this).data('fields');
+            const $list = $(`#${inputId}-list`);
+
+            addArrayRow($list, fields);
+        });
+
+        // Remove item button click handler
+        $(document).on('click', '.remove-array-row', function() {
+            const $item = $(this).closest('.array-item');
+            $item.remove();
+        });
+
         checkTabVisibility();
+    }
+
+    /**
+     * Initialize SortableJS on a list for drag-and-drop reordering
+     */
+    function initializeSortableOnList(listElement) {
+        // Check if already initialized
+        if (listElement.sortableInstance) {
+            return;
+        }
+
+        // Initialize Sortable
+        listElement.sortableInstance = new Sortable(listElement, {
+            animation: 200,
+            handle: '.array-item-handle',
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            chosenClass: 'sortable-chosen',
+            onEnd: function(evt) {
+                // Update item indices after reordering
+                $(listElement).find('.array-item').each(function(index) {
+                    $(this).attr('data-row-index', index);
+                });
+            }
+        });
+    }
+
+    /**
+     * Initialize all array-of-objects fields in a scope tab with one empty row
+     */
+    function initializeArrayOfObjectsFields($scopeTab) {
+        $scopeTab.find('.array-of-objects-list').each(function() {
+            const $list = $(this);
+            const listId = $list.attr('id');
+
+            // Find the corresponding "Add Item" button to get the fields configuration
+            const $addButton = $scopeTab.find(`.add-array-row[data-input-id="${listId.replace('-list', '')}"]`);
+            if ($addButton.length > 0) {
+                const fields = $addButton.data('fields');
+                if (fields && fields.length > 0) {
+                    // Add one initial empty row
+                    addArrayRow($list, fields);
+                }
+            }
+        });
     }
 
     function createScopeTab(scope) {
@@ -480,7 +542,10 @@ $('#createDeviceUser, #createIntegrator').change(function() {
 
         // Initialize tooltips and dependencies for the new tab
         initializeTooltips($(`#${scope}`));
-        
+
+        // Initialize array-of-objects fields with one empty row
+        initializeArrayOfObjectsFields($(`#${scope}`));
+
         console.log(`Created tab for scope: ${scope}`);
     }
 
@@ -718,31 +783,32 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         console.group('Processing setting:');
         console.log('Processing setting:', setting);
         // ... (Parsing logic remains the same, assuming it correctly extracts properties)
-        let groupName, 
-        settingName, 
-        description, 
-        placeholder, 
-        helpText, 
-        inputType, 
-        dependsOn, 
-        options, 
-        checkboxes, 
-        label, 
-        defaultValue, 
-        settingField, 
-        settingTableName, 
-        currentServiceName, 
-        values, 
-        dependencyAction, 
+        let groupName,
+        settingName,
+        description,
+        placeholder,
+        helpText,
+        inputType,
+        dependsOn,
+        options,
+        checkboxes,
+        label,
+        defaultValue,
+        settingField,
+        settingTableName,
+        currentServiceName,
+        values,
+        dependencyAction,
         services,
         allowOn,
         sort,
-        name;
+        name,
+        arrayConfig;
         console.log(setting.name);
         if (typeof setting === 'string') {
             console.log('Setting is a string:', setting);
             groupName = 'General Settings';
-            settingName = setting;  
+            settingName = setting;
             description = settingDescriptions[setting] || 'No description available';
             placeholder = `Enter value for ${setting}`;
             helpText = null;
@@ -757,6 +823,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             services = services || [currentServiceName];
             name = setting;
             allowOn = ["parent"];
+            arrayConfig = null;
         } else if (typeof setting === 'object' && Array.isArray(setting)) {
             console.log('Setting is an array:', setting);
             groupName = setting.group || 'General Settings';
@@ -767,6 +834,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             services = services || [serviceName];
             allowOn = setting.allowOn || [];
             sort = setting.sort || false;
+            arrayConfig = null;
         } else {
             console.log('Setting is an object:', setting);
             groupName = setting.group || 'Service Settings';
@@ -789,6 +857,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             values = setting.values;
             sort = setting.sort || false;
             services = setting.services || [serviceName];
+            arrayConfig = setting.arrayConfig || null;
         }
 
         
@@ -835,7 +904,8 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             values: values,
             services: services,
             sort: sort,
-            allowOn: allowOn
+            allowOn: allowOn,
+            arrayConfig: arrayConfig
         });
 
         console.groupEnd();
@@ -1066,8 +1136,11 @@ console.log(settingObj);
         
     } else if (settingObj.type === 'checkbox') {
         // Updated call to pass dependsOnAttr for the container div
-        html += renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs); 
-    } 
+        html += renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs);
+    } else if (settingObj.type === 'array-of-objects') {
+        // Render array-of-objects type (dynamic list with add/remove/reorder)
+        html += renderArrayOfObjectsSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs);
+    }
     // ... (other types like dual-checkbox, radio-button-group, etc.)
     else {
         // Default Text Input (for 'text', 'textbox', 'password', etc.)
@@ -1211,7 +1284,7 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
 // elsewhere in your scope for the full code to run.
 
     function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs) {
-       
+
         return `
             <div class="mb-3 col-md-12">
                 <div class="form-check form-switch">
@@ -1224,6 +1297,98 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
                 ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
             </div>
         `;
+    }
+
+    /**
+     * Renders an array-of-objects setting as a dynamic list with add/remove/reorder functionality
+     */
+    function renderArrayOfObjectsSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs) {
+        const arrayConfig = settingObj.arrayConfig || { fields: [] };
+        const fields = arrayConfig.fields || [];
+
+        if (fields.length === 0) {
+            return `<div class="alert alert-warning">Array configuration is missing fields definition</div>`;
+        }
+
+        // Create header labels
+        let headerLabelsHtml = '';
+        fields.forEach(field => {
+            headerLabelsHtml += `<div class="array-header-label">${field.label}</div>`;
+        });
+
+        return `
+            <div class="mb-3 col-md-12" ${dependsOnAttr}>
+                <label class="form-label label-sm">
+                    ${settingObj.label || settingObj.settingName}
+                    ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${safeReplace(settingObj.description, '"', '&#34;')}"></i>` : ''}
+                </label>
+                ${settingObj.helpText ? `<div class="form-text text-muted mb-2">${settingObj.helpText}</div>` : ''}
+
+                <div class="array-of-objects-container"
+                     data-setting-name="${settingObj.settingName}"
+                     data-input-id="${inputId}"
+                     ${sharedAttrs}>
+                    <div class="array-of-objects-header">
+                        <div class="array-item-handle-spacer"></div>
+                        <div class="array-header-content">
+                            ${headerLabelsHtml}
+                        </div>
+                        <div class="array-item-remove-spacer"></div>
+                    </div>
+                    <div class="array-of-objects-list sortable-list" id="${inputId}-list">
+                        <!-- Items will be added dynamically -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success add-array-row mt-2"
+                            data-input-id="${inputId}"
+                            data-fields='${JSON.stringify(fields)}'>
+                        <i class="bi bi-plus-circle"></i> Add Item
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Helper function to add a new item to an array-of-objects list
+     */
+    function addArrayRow($list, fields) {
+        if (!fields || fields.length === 0) return;
+
+        const rowIndex = $list.find('.array-item').length;
+
+        // Create input fields HTML (without labels)
+        let fieldsHtml = '';
+        fields.forEach((field, index) => {
+            fieldsHtml += `
+                <div class="array-item-field">
+                    <input type="text"
+                           class="form-control form-control-sm array-field-input"
+                           data-field-key="${field.key}"
+                           placeholder="${field.placeholder || ''}"
+                           value="">
+                </div>
+            `;
+        });
+
+        // Create the list item with inline drag handle and delete button
+        const itemHtml = `
+            <div class="array-item" data-row-index="${rowIndex}">
+                <div class="array-item-handle drag-handle" title="Drag to reorder">
+                    <i class="bi bi-grip-vertical"></i>
+                </div>
+                <div class="array-item-content">
+                    ${fieldsHtml}
+                </div>
+                <button type="button" class="array-item-remove remove-array-row" title="Remove">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        `;
+
+        $list.append(itemHtml);
+
+        // Initialize Sortable on this list if not already initialized
+        initializeSortableOnList($list[0]);
     }
 
     // function renderDualCheckboxSetting(settingObj, inputId, prefix) {

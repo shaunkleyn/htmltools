@@ -845,6 +845,18 @@ function collectFormData() {
                             });
                         }
                     } else if (typeof setting === 'object' && setting.name) {
+                        // Skip special settings that are handled separately - check for 'field' property
+                        if (setting.name === 'ocs.ed.mandate.default.details' && setting.field) {
+                            console.log(`Skipping mandate default field setting: ${setting.field} - handled by collectMandateDefaults()`);
+                            console.groupEnd();
+                            return;
+                        }
+                        if (setting.name === 'manual.payments.reference.config' && setting.field) {
+                            console.log(`Skipping manual payment reference field setting: ${setting.field} - handled by collectManualPaymentReference()`);
+                            console.groupEnd();
+                            return;
+                        }
+
                         console.log(`Collecting value for object setting ${setting.name}`);
                         const value = getSettingValue($scopeTab, scopeId, serviceSafeName, setting);
                         if (value !== null && value !== undefined && value !== '') {
@@ -890,19 +902,21 @@ function collectFormData() {
                         });
                     }
                 } else if (typeof setting === 'object' && setting.name) {
+                    // Skip special settings that are handled separately - check for 'field' property
+                    if (setting.name === 'ocs.ed.mandate.default.details' && setting.field) {
+                        console.log(`Skipping mandate default field setting: ${setting.field} - handled by collectMandateDefaults()`);
+                        console.groupEnd();
+                        return; // Use return instead of continue in forEach
+                    }
+                    if (setting.name === 'manual.payments.reference.config' && setting.field) {
+                        console.log(`Skipping manual payment reference field setting: ${setting.field} - handled by collectManualPaymentReference()`);
+                        console.groupEnd();
+                        return; // Use return instead of continue in forEach
+                    }
+
                     const value = getSettingValue($scopeTab, scopeId, '', setting);
                     console.info(`Collected value for setting ${setting.name} in scope ${scopeId}:`, value);
                     if (value !== null && value !== undefined && value !== '') {
-                        // Handle special settings
-                        if (setting.name === 'ocs.ed.mandate.default.details' && setting.type === 'special') {
-                            // This will be handled separately in the mandate defaults section
-                            return; // Use return instead of continue in forEach
-                        }
-                        if (setting.name === 'manual.payments.reference.config' && setting.type === 'special') {
-                            // This will be handled separately in the payment reference section
-                            return; // Use return instead of continue in forEach
-                        }
-                        
                         settings.push({
                             scope: scopeId,
                             identifier: setting.name,
@@ -959,7 +973,42 @@ function getSettingValue($scopeTab, scopeId, serviceSafeName, setting) {
     const settingId = `#${prefix}-${safeRename(setting.name)}`;
     const $input = $scopeTab.find(settingId);
     console.group(`Getting value for element: ${settingId}`);
-    
+
+    // Handle array-of-objects type
+    if (setting.type === 'array-of-objects') {
+        console.log(`Collecting array-of-objects value for setting: ${setting.name}`);
+        const $list = $scopeTab.find(`${settingId}-list`);
+
+        if ($list.length === 0) {
+            console.warn(`List not found for array-of-objects setting: ${setting.name}`);
+            console.groupEnd();
+            return null;
+        }
+
+        const arrayData = [];
+        $list.find('.array-item').each(function() {
+            const rowObj = {};
+            $(this).find('.array-field-input').each(function() {
+                const fieldKey = $(this).data('field-key');
+                const fieldValue = $(this).val().trim();
+                if (fieldValue) { // Only add if value is not empty
+                    rowObj[fieldKey] = fieldValue;
+                }
+            });
+
+            // Only add the item if it has at least one field with a value
+            if (Object.keys(rowObj).length > 0) {
+                arrayData.push(rowObj);
+            }
+        });
+
+        console.log(`Collected array data:`, arrayData);
+        console.groupEnd();
+
+        // Return the array (it will be JSON.stringify'd in the caller if needed)
+        return arrayData.length > 0 ? arrayData : null;
+    }
+
     if ($input.length === 0) {
         if ($('[service-setting="' + setting.name + '"]').length > 0) {
             console.warn(`Element for setting "${setting.name}" not found under expected ID "${settingId}", but found with service-setting attribute.`);
@@ -1218,6 +1267,40 @@ DECLARE
                 });
             }
         });
+
+        // Add mandate defaults as a single JSON object entry for OCS scope
+        if (scope.identifier === 'OCS' && data.mandateDefaults) {
+            // Add for parent
+            allSettings.push({
+                scope: 'OCS',
+                entity: 'p',
+                identifier: 'ocs.ed.mandate.default.details',
+                value: data.mandateDefaults,
+                table: 'entity_service_type_setting'
+            });
+
+            // Add for integrator if enabled
+            if (data.createIntegrator && scope.entities.integrator) {
+                allSettings.push({
+                    scope: 'OCS',
+                    entity: 'i',
+                    identifier: 'ocs.ed.mandate.default.details',
+                    value: data.mandateDefaults,
+                    table: 'entity_service_type_setting'
+                });
+            }
+
+            // Add for device user if enabled
+            if (data.createDeviceUser && scope.entities.deviceuser) {
+                allSettings.push({
+                    scope: 'OCS',
+                    entity: 'd',
+                    identifier: 'ocs.ed.mandate.default.details',
+                    value: data.mandateDefaults,
+                    table: 'entity_service_type_setting'
+                });
+            }
+        }
     });
 
     console.info('All settings', allSettings);

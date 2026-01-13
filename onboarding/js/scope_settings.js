@@ -760,22 +760,35 @@ const scopes = {
                 "group": "EasyDebit Configuration",
                 "name": "ocs.ed.sc.gc.map",
                 "label": "Scheme to Group Code Map",
-                "type": "textarea",
+                "type": "array-of-objects",
                 "allowOn": ["parent", "integrator"],
                 "table": "entity_service_type_setting",
                 "placeholder": '[{"map": "SCHEME1", "gc": "GC1"}]',
                 "description": "JSON mapping of scheme names to group codes",
-                "services": []
+                "services": [],
+                "arrayConfig": {
+                    "fields": [
+                        { "key": "map", "label": "Scheme Name", "placeholder": "e.g., SCHEME1" },
+                        { "key": "gc", "label": "Group Code", "placeholder": "e.g., GC1" }
+                    ]
+                }
             },
             {
                 "group": "EasyDebit Configuration",
                 "name": "ocs.ed.ul.gc.map",
                 "label": "Ultimate Creditor to Group Code Map",
-                "type": "textarea",
+                "type": "array-of-objects",
                 "allowOn": ["parent", "integrator"],
                 "table": "entity_service_type_setting",
                 "placeholder": "Leave blank if not used",
-                "services": []
+                "description": "JSON mapping of ultimate creditor to group codes",
+                "services": [],
+                "arrayConfig": {
+                    "fields": [
+                        { "key": "ultimateCreditor", "label": "Ultimate Creditor", "placeholder": "e.g., CREDITOR1" },
+                        { "key": "gc", "label": "Group Code", "placeholder": "e.g., GC1" }
+                    ]
+                }
             },
             {
                 "group": "EasyDebit Configuration",
