@@ -1,0 +1,12 @@
+onboarding/tmpclaude-24b2-cwd
+**/tmpclaude-*-cwd
+.vs/*
+*/~$*
+pull.log
+push.log
+gwatch.exe
+run_gwatch.bat
+gwatch.log
+*.log
+**/*.log
+/.vs
