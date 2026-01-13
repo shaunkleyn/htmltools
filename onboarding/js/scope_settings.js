@@ -59,7 +59,8 @@ const InputType = Object.freeze({
     TEXT: 'text',
     PASSWORD: 'password',
     CHECKBOX: 'checkbox',
-    NUMBER: 'number'
+    NUMBER: 'number',
+    DROPDOWN: 'dropdown'
 });
 
 
@@ -122,6 +123,9 @@ const scopes = {
                 "name": "avs.easydebit.profile",
                 "label": "EasyDebit Profile",
                 "type": InputType.CHECKBOX,
+                "defaultValue": null,
+                "ignoreIfNull": true,
+                "required": false,
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR],
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING],
                 "services": []
@@ -130,6 +134,9 @@ const scopes = {
                 "name": "avs.track.request",
                 "label": "Track AVS Requests",
                 "type": InputType.CHECKBOX,
+                "defaultValue": null,
+                "ignoreIfNull": true,
+                "required": false,
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR],
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING],
                 "services": []
@@ -137,7 +144,10 @@ const scopes = {
             {
                 "name": "ivs.track.request",
                 "label": "Track IVS Requests",
+                "defaultValue": null,
                 "type": InputType.CHECKBOX,
+                "ignoreIfNull": true,
+                "required": false,
                 "allowOn": [EntityType.PARENT],
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING],
                 "services": []
@@ -177,7 +187,7 @@ const scopes = {
             {
                 "name": "bms.services.bms",
                 "description": "Bitventure Messaging Service",
-                "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
+                "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR],
                 "tables": [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE],
                 "settings": [
                     {
@@ -185,6 +195,7 @@ const scopes = {
                         "placeholder": "SMS status webhook",
                         "description": "Webhook URL for SMS status updates",
                         "helpText": "Enter the webhook URL for SMS status updates",
+                        
                         "tables": [SettingsTable.ENTITY_SERVICE_SETTING],
                         "type": InputType.TEXT,
                         "allowOn": [EntityType.INTEGRATOR],
@@ -216,6 +227,9 @@ const scopes = {
                         "helpText": "Enter the EasyDebit Username for web service authentication",
                         "tables": [SettingsTable.ENTITY_SERVICE_SETTING],
                         "type": InputType.TEXT,
+                        "defaultValue": null,
+                        "ignoreIfNull": true,
+                        "required": false,
                         "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR],
                     },
                     {
@@ -225,6 +239,9 @@ const scopes = {
                         "helpText": "Enter the EasyDebit Password for web service authentication",
                         "tables": [SettingsTable.ENTITY_SERVICE_SETTING],
                         "type": InputType.TEXT,
+                        "defaultValue": null,
+                        "ignoreIfNull": true,
+                        "required": false,
                         "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR],
                     },
                     {
@@ -234,6 +251,9 @@ const scopes = {
                         "helpText": "Enter the EasyDebit Group Code for web service authentication",
                         "tables": [SettingsTable.ENTITY_SERVICE_SETTING],
                         "type": InputType.TEXT,
+                        "defaultValue": null,
+                        "ignoreIfNull": true,
+                        "required": false,
                         "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR],
                     },
                     {
@@ -243,6 +263,9 @@ const scopes = {
                         "helpText": "Enter the reference for payment transactions",
                         "tables": [SettingsTable.ENTITY_SERVICE_SETTING],
                         "type": InputType.TEXT,
+                        "defaultValue": null,
+                        "ignoreIfNull": true,
+                        "required": false,
                         "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR],
                     },
                 ]
@@ -349,6 +372,7 @@ const scopes = {
                 "name": "cms.services.cms",
                 "description": "Client Management",
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE],
                 "entityTables": [
                     {
                         "entities": [EntityType.PARENT],
@@ -364,6 +388,7 @@ const scopes = {
                 "name": "cms.services.entity",
                 "description": "Entity Management",
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE, ServiceTable.ENTITY_SERVICE],
                 "entityTables": [
                     {
                         "entities": [EntityType.PARENT],
@@ -385,6 +410,9 @@ const scopes = {
                 "name": "cms.track.request",
                 "allowOn": [EntityType.DEVICEUSER],
                 "type": InputType.CHECKBOX,
+                "defaultValue": null,
+                "ignoreIfNull": true,
+                "required": false,
                 "table": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
             }
         ]
@@ -411,7 +439,7 @@ const scopes = {
                 "display": "Affordability Assessment Service",
                 "description": "Can perform affordability assessment check",
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
-                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "tables": [ServiceTable.ENTITY_SERVICE, ServiceTable.ENTITY_SERVICE_TYPE],
                 "entityTables": [
                     {
                         "entities": [EntityType.PARENT],
@@ -428,7 +456,7 @@ const scopes = {
                 "display": "Credit Rating Service",
                 "description": "Credit Rating Service",
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
-                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "tables": [ServiceTable.ENTITY_SERVICE, ServiceTable.ENTITY_SERVICE_TYPE],
                 "entityTables": [
                     {
                         "entities": [EntityType.PARENT],
@@ -446,7 +474,7 @@ const scopes = {
                 "display": "Credit Report Service",
                 "description": "Can perform credit report check",
                 "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
-                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "tables": [ServiceTable.ENTITY_SERVICE, ServiceTable.ENTITY_SERVICE_TYPE],
                 "entityTables": [
                     {
                         "entities": [EntityType.PARENT],
@@ -466,6 +494,9 @@ const scopes = {
                 "allowOn": [EntityType.INTEGRATOR, EntityType.WEBSERVICE],
                 "applyToServices": ["crs.service.afa", "crs.services.crs", "crs.services.report"],
                 "type": InputType.NUMBER,
+                "defaultValue": null,
+                "ignoreIfNull": true,
+                "required": false,
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
             },
             {
@@ -474,6 +505,9 @@ const scopes = {
                 "applyToEntities": [EntityType.INTEGRATOR, EntityType.WEBSERVICE],
                 "applyToServices": ["crs.service.afa", "crs.services.crs", "crs.services.report"],
                 "type": InputType.NUMBER,
+                "defaultValue": null,
+                "ignoreIfNull": true,
+                "required": false,
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
             },
             {
@@ -482,13 +516,19 @@ const scopes = {
                 "applyToEntities": [EntityType.INTEGRATOR, EntityType.WEBSERVICE],
                 "applyToServices": ["crs.service.afa", "crs.services.crs", "crs.services.report"],
                 "type": InputType.CHECKBOX,
+                "defaultValue": null,
+                "ignoreIfNull": true,
+                "required": false,
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
             },
             {
                 "name": "crs.cpb.enquiry.done.by",
-                "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.WEBSERVICE],
-                "applyToEntities": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.WEBSERVICE],
+                "allowOn": [EntityType.PARENT],
+                "applyToEntities": [EntityType.PARENT],
                 "applyToServices": ["crs.service.afa", "crs.services.crs", "crs.services.report"],
+                "type": InputType.TEXT,
+                "ignoreIfNull": false,
+                "required": true,
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
             },
             {
@@ -497,6 +537,9 @@ const scopes = {
                 "applyToEntities": [EntityType.INTEGRATOR, EntityType.WEBSERVICE, EntityType.DEVICEUSER],
                 "applyToServices": ["crs.service.afa", "crs.services.crs", "crs.services.report"],
                 "type": InputType.CHECKBOX,
+                "defaultValue": null,
+                "ignoreIfNull": true,
+                "required": false,
                 "tables": [SettingsTable.ENTITY_SERVICE_TYPE_SETTING]
             },
         ],
@@ -696,42 +739,37 @@ const scopes = {
                 "name": "ocs.services.mandate",
                 "display": "Mandate Management",
                 "description": "Create and manage debit order mandates",
-                "allowOn": ["parent", "integrator", "deviceuser"],
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE, ServiceTable.ENTITY_SERVICE_TYPE],
                 "settings": []
             },
             {
                 "name": "ocs.services.collection",
                 "display": "Collection Processing",
                 "description": "Process debit order collections",
-                "allowOn": ["parent", "integrator", "deviceuser"],
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE, ServiceTable.ENTITY_SERVICE_TYPE],
                 "settings": []
             },
             {
                 "name": "ocs.services.debitorder",
                 "display": "Debit Order Management",
                 "description": "Manage debit order transactions",
-                "allowOn": ["parent", "integrator", "deviceuser"],
+                "allowOn": [EntityType.DEVICEUSER, EntityType.INTEGRATOR, EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE, ServiceTable.ENTITY_SERVICE_TYPE],
                 "settings": []
             }
         ],
         "settings": [
             {
                 "group": "EasyDebit Connection",
-                "name": "ocs.ed.ws.gc",
-                "label": "Group Code",
-                "type": InputType.TEXT,
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
-                "placeholder": "Enter group code",
-                "services": []
-            },
-            {
-                "group": "EasyDebit Connection",
                 "name": "ocs.ed.ws.usr",
                 "label": "Username",
                 "type": InputType.TEXT,
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                 "placeholder": "Enter username",
                 "services": []
             },
@@ -739,9 +777,11 @@ const scopes = {
                 "group": "EasyDebit Connection",
                 "name": "ocs.ed.ws.pwd",
                 "label": "Password",
-                "type": "password",
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
+                "type": InputType.PASSWORD,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                 "placeholder": "Enter password",
                 "services": []
             },
@@ -749,11 +789,25 @@ const scopes = {
                 "group": "EasyDebit Configuration",
                 "name": "ocs.df.scheme",
                 "label": "Default Scheme",
-                "type": "text",
-                "allowOn": ["parent"],
-                "table": "entity_service_type_setting",
+                "type": InputType.TEXT,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                 "placeholder": "Enter scheme name",
                 "description": "Default scheme name for this entity",
+                "services": []
+            },
+            {
+                "group": "EasyDebit Configuration",
+                "name": "ocs.ed.ws.gc",
+                "label": "Group Code",
+                "type": InputType.TEXT,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
+                "placeholder": "Enter group code",
                 "services": []
             },
             {
@@ -761,8 +815,10 @@ const scopes = {
                 "name": "ocs.ed.sc.gc.map",
                 "label": "Scheme to Group Code Map",
                 "type": "array-of-objects",
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                 "placeholder": '[{"map": "SCHEME1", "gc": "GC1"}]',
                 "description": "JSON mapping of scheme names to group codes",
                 "services": [],
@@ -778,9 +834,12 @@ const scopes = {
                 "name": "ocs.ed.ul.gc.map",
                 "label": "Ultimate Creditor to Group Code Map",
                 "type": "array-of-objects",
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
-                "placeholder": "Leave blank if not used",
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "defaultValue": "",
+                "ignoreIfNull": false,
+                "required": false,
+                "helpText": "Leave blank if not used",
                 "description": "JSON mapping of ultimate creditor to group codes",
                 "services": [],
                 "arrayConfig": {
@@ -794,9 +853,11 @@ const scopes = {
                 "group": "EasyDebit Configuration",
                 "name": "ocs.ed.passthrough",
                 "label": "Passthrough Mode",
-                "type": "checkbox",
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
+                "type": InputType.CHECKBOX,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": true,
+                "required": true,
                 "defaultValue": true,
                 "services": []
             },
@@ -804,9 +865,11 @@ const scopes = {
                 "group": "Webhooks",
                 "name": "ocs.webhook.url.mandate",
                 "label": "Mandate Webhook URL",
-                "type": "text",
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
+                "type": InputType.TEXT,
+                "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": true,
+                "required": false,
                 "placeholder": "https://example.com/webhook/mandate",
                 "services": []
             },
@@ -814,9 +877,11 @@ const scopes = {
                 "group": "Webhooks",
                 "name": "ocs.webhook.url.collection",
                 "label": "Collection Webhook URL",
-                "type": "text",
-                "allowOn": ["parent", "integrator"],
-                "table": "entity_service_type_setting",
+                "type": InputType.TEXT,
+                "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": true,
+                "required": false,
                 "placeholder": "https://example.com/webhook/collection",
                 "services": []
             },
@@ -824,9 +889,11 @@ const scopes = {
                 "group": "Webhooks",
                 "name": "ocs.easy.loan.webhook.url",
                 "label": "Easy Loan Webhook URL",
-                "type": "text",
-                "allowOn": ["integrator"],
-                "table": "entity_service_setting",
+                "type": InputType.TEXT,
+                "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": true,
+                "required": false,
                 "placeholder": "https://example.com/webhook/easyloan",
                 "description": "Webhook for Easy Loan integration",
                 "services": ["ocs.services.collection", "ocs.services.mandate", "ocs.services.debitorder"]
@@ -838,7 +905,11 @@ const scopes = {
                "label": "Tracking",
                "placeholder": "Enable tracking",
                "description": "Enable tracking",
-               "type": "checkbox",
+               "type": InputType.CHECKBOX,
+                "allowOn": [EntityType.PARENT, EntityType.INTEGRATOR, EntityType.DEVICEUSER],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": true,
+                "required": false,
                "defaultValue": true,
                "services": ["ocs.services.mandate"]
             },
@@ -849,7 +920,11 @@ const scopes = {
                "label": "Frequency",
                "placeholder": "Enter Frequency",
                "description": "Enter default frequency for mandates",
-               "type": "dropdown",
+                "type": InputType.DROPDOWN,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                "defaultValue": "MONTHLY",
                "values": ["ADHOC", "WEEKLY", "FORTNIGHTLY", "MONTHLY", "QUARTERLY", "BIANUALLY", "ANNUALLY", "ONCE_OFF"],
                "services": ["ocs.services.mandate"]
@@ -861,7 +936,11 @@ const scopes = {
                "label": "Mandate Type",
                "placeholder": "Enter Mandate Type",
                "description": "Enter default mandate type for mandates",
-               "type": "dropdown",
+                "type": InputType.DROPDOWN,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                "defaultValue": "Usage",
                "values": [{"key": 1,"value": "Fixed" }, {"key": 2,"value": "Variable" }, {"key": 3,"value": "Usage" }],
                "services": ["ocs.services.mandate"]
@@ -873,7 +952,11 @@ const scopes = {
                "label": "Adjustment Type",
                "placeholder": "Enter Adjustment Type",
                "description": "Enter default adjustment type for mandates",
-               "type": "radio",
+               "type": InputType.DROPDOWN,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                "defaultValue": "RATE",
                "values": [{"key": 1,"value": "RATE" }, {"key": 2,"value": "AMOUNT" }],
                "services": ["ocs.services.mandate"]
@@ -885,7 +968,11 @@ const scopes = {
                "label": "Adjustment Value",
                "placeholder": "Enter Adjustment Value",
                "description": "Enter default adjustment value for mandates",
-               "type": "textbox",
+               "type": InputType.TEXT,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                "defaultValue": "1",
                "services": ["ocs.services.mandate"]
             },
@@ -896,7 +983,11 @@ const scopes = {
                "label": "Adjustment Frequency",
                "placeholder": "Enter Adjustment Frequency",
                "description": "Enter default adjustment frequency for mandates",
-               "type": "dropdown",
+               "type": InputType.DROPDOWN,
+                "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+                "ignoreIfNull": false,
+                "required": true,
                "defaultValue": "ANNUALLY",
                "values": ["ANNUALLY", "BIANNUALLY", "QUARTERLY", "REPO", "NEVER", "OTHER"],
                "services": ["ocs.services.mandate"]
@@ -908,8 +999,12 @@ const scopes = {
                "label": "Generate Contract Reference",
                "placeholder": "Enter Generate Contract Reference",
                "description": "Enter default generate contract reference for mandates",
-               "type": "checkbox",
-               "defaultValue": "true",
+               "type": InputType.CHECKBOX,
+               "ignoreIfNull": true,
+               "required": false,
+               "defaultValue": true,
+               "allowOn": [EntityType.PARENT],
+                "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
                "services": ["ocs.services.mandate"]
             },
             {
@@ -919,7 +1014,12 @@ const scopes = {
                "label": "Contract Reference Format",
                "placeholder": "XXXXXXX_******",
                "description": "Enter default contract reference format for mandates",
-               "type": "textbox",
+               "type": InputType.TEXT,
+               "allowOn": [EntityType.PARENT],
+               "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+               "ignoreIfNull": false,
+               "required": true,
+               "helpText": "No special characters allowed",
                "maxLength": 14,
                "defaultValue": "",
                "dependsOn": "generateContractReference:true",
@@ -938,7 +1038,11 @@ const scopes = {
                "label": "Debit Classification",
                "placeholder": "Enter Debit Classification",
                "description": "Enter default debit classification for mandates",
-               "type": "dropdown",
+               "type": InputType.DROPDOWN,
+               "allowOn": [EntityType.PARENT],
+               "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+               "ignoreIfNull": false,
+               "required": true,
                "defaultValue": "LRM",
                "sort": true,
                "values" : [
@@ -969,7 +1073,11 @@ const scopes = {
                "label": "Generate Installment",
                "placeholder": "Generate Installment",
                "description": "generate installment for mandates",
-               "type": "checkbox",
+               "type": InputType.CHECKBOX,
+               "allowOn": [EntityType.PARENT],
+               "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+               "ignoreIfNull": false,
+               "required": true,
                "defaultValue": true,
                "services": ["ocs.services.mandate"]
             },
@@ -980,7 +1088,11 @@ const scopes = {
                "label": "Calculate Installment",
                "placeholder": "Calculate Installment",
                "description": "calculate installment for mandates",
-               "type": "checkbox",
+               "type": InputType.CHECKBOX,
+               "allowOn": [EntityType.PARENT],
+               "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+               "ignoreIfNull": false,
+               "required": true,
                "defaultValue": false,
                "services": ["ocs.services.mandate"]
             },
@@ -991,7 +1103,11 @@ const scopes = {
                "label": "Date Adjustment Allowed",
                "placeholder": "Date Adjustment Allowed",
                "description": "Allow date adjustment for mandates",
-               "type": "checkbox",
+               "type": InputType.CHECKBOX,
+               "allowOn": [EntityType.PARENT],
+               "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+               "ignoreIfNull": false,
+               "required": true,
                "translateValues": {"true": "Y", "false": "N"},
                "defaultValue": true,
                "services": ["ocs.services.mandate"]
@@ -1003,8 +1119,12 @@ const scopes = {
                "label": "Maximum Installment Amount",
                "placeholder": "Enter Maximum Installment Amount",
                "description": "Enter default maximum installment amount for mandates",
-               "type": "number",
-               "defaultValue": "1000",
+               "type": InputType.NUMBER,
+               "allowOn": [EntityType.PARENT],
+               "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+               "ignoreIfNull": false,
+               "required": true,
+               "defaultValue": "10000",
                "services": ["ocs.services.mandate"]
             },
             {
@@ -1015,17 +1135,23 @@ const scopes = {
                "placeholder": "Enter Scheme",
                "description": "Enter default scheme for mandates",
                "helpText": "This is used to retrieve mandates with the same scheme from TCA",
-               "type": "textbox",
+               "type": InputType.TEXT,
+               "allowOn": [EntityType.PARENT],
+               "tables": [ServiceTable.ENTITY_SERVICE_TYPE],
+               "ignoreIfNull": false,
+               "required": false,
                "defaultValue": "",
                "services": ["ocs.services.mandate"]
             },
             {
-                "group": "Device User",
+                "group": "POS Device Integration",
                 "name": "external.status.webhook.url",
                 "label": "External Status Webhook URL",
-                "type": "text",
-                "allowOn": ["deviceuser"],
-                "table": "entity_service_type_setting",
+                "type": InputType.TEXT,
+                "allowOn": [EntityType.DEVICEUSER],
+                "table": SettingsTable.ENTITY_SERVICE_TYPE_SETTING,
+                "ignoreIfNull": true,
+                "required": false,
                 "placeholder": "https://api.bitventure.co.za/tca/webhook/easydebit/",
                 "description": "Integration with RabbitMQ for TT3 receipt printing",
                 "services": []
@@ -1245,7 +1371,7 @@ const scopes = {
                 "name": "app.mandate.authentication.enabled",
                 "label": "Show EasyDebit Menu",
                 "type": "checkbox",
-                "allowOn": ["parent","deviceuser"],
+                "allowOn": ["deviceuser"],
                 "table": "entity_service_type_setting",
                 "services": []
             },

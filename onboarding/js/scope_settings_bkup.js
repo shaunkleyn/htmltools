@@ -733,6 +733,7 @@ const scopes = {
                "label": "Contract Reference Format",
                "placeholder": "XXXXXXX_******",
                "description": "Enter default contract reference format for mandates",
+               "helpText": "No special characters allowed",
                "type": "textbox",
                "maxLength": 14,
                "defaultValue": "",

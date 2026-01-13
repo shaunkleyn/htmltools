@@ -462,6 +462,38 @@ $('#createDeviceUser, #createIntegrator').change(function() {
             $item.remove();
         });
 
+        // Dropdown sort toggle button click handler
+        $(document).on('click', '.dropdown-sort-toggle', function() {
+            const $button = $(this);
+            const $select = $button.siblings('.sortable-dropdown');
+            const currentValue = $select.val(); // Preserve selection
+            const isSorted = $select.attr('data-is-sorted') === 'true';
+            const originalValues = JSON.parse($select.attr('data-original-values'));
+            const defaultValue = $select.attr('data-default-value');
+
+            if (isSorted) {
+                // Switch to original order
+                const optionsHtml = renderOptionsHtml(originalValues, defaultValue, true, false);
+                $select.html(optionsHtml);
+                $select.attr('data-is-sorted', 'false');
+                $button.find('i').removeClass('bi-sort-alpha-down').addClass('bi-sort-alpha-down');
+                $button.removeClass('active');
+            } else {
+                // Switch to alphabetically sorted
+                const sortedValues = sortDropdownValues(originalValues);
+                const optionsHtml = renderOptionsHtml(sortedValues, defaultValue, true, false);
+                $select.html(optionsHtml);
+                $select.attr('data-is-sorted', 'true');
+                $button.find('i').removeClass('bi-sort-alpha-down').addClass('bi-sort-alpha-up');
+                $button.addClass('active');
+            }
+
+            // Restore the previously selected value if it still exists
+            if (currentValue && $select.find(`option[value="${currentValue}"]`).length > 0) {
+                $select.val(currentValue);
+            }
+        });
+
         checkTabVisibility();
     }
 
@@ -683,7 +715,9 @@ if (scopeData.services && scopeData.services.length > 0) {
                                                 data-service="${service.name}"
                                                 data-entity="parent"
                                                 role="link-service-to-entity"
-                                                data-scope="${scope}" id="${scope}-${safeRename(service.name)}-parent"
+                                                data-scope="${scope}" 
+                                                id="${scope}-${safeRename(service.name)}-parent"
+                                                name="${scope}-${safeRename(service.name)}-parent"
                                                 data-entity="parent"
                                                 data-table="${getEntityTable(service, 'parent')}" checked="" readonly="">
                                         </div>
@@ -707,7 +741,9 @@ if (scopeData.services && scopeData.services.length > 0) {
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase() === 'integrator')) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase() === 'integrator')) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input integrator-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator" data-table="${getEntityTable(service, 'integrator')}">
+                                                    <input class="form-check-input integrator-service me-2" type="checkbox" role="link-service-to-entity" 
+                                                        id="${scope}-${safeRename(service.name)}-integrator"
+                                                        name="${scope}-${safeRename(service.name)}-integrator" data-service="${service.name}" data-entity="integrator" data-table="${getEntityTable(service, 'integrator')}">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-integrator">
                                                         Link to Integrator
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.name} to Integrator"></i>
@@ -716,7 +752,9 @@ if (scopeData.services && scopeData.services.length > 0) {
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase().indexOf('user') > -1)) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase().indexOf('user') > -1)) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input deviceuser-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-deviceuser" data-service="${service.name}" data-entity="deviceuser" data-table="${getEntityTable(service, 'deviceuser')}">
+                                                    <input class="form-check-input deviceuser-service me-2" type="checkbox" role="link-service-to-entity" 
+                                                    id="${scope}-${safeRename(service.name)}-deviceuser" 
+                                                    name="${scope}-${safeRename(service.name)}-deviceuser" data-service="${service.name}" data-entity="deviceuser" data-table="${getEntityTable(service, 'deviceuser')}">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-deviceuser">
                                                         Link to Device User
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Device User"></i>
@@ -725,7 +763,9 @@ if (scopeData.services && scopeData.services.length > 0) {
                                             ${(typeof scopeData.allowOn === 'undefined' || (scopeData.allowOn || []).some((x) => x.toLowerCase().indexOf('webservice') > -1)) &&
                                                 (typeof service.allowOn === 'undefined' || (service.allowOn || []).some((x) => x.toLowerCase().indexOf('webservice') > -1)) ? `
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input webservice-service me-2" type="checkbox" role="link-service-to-entity" id="${scope}-${safeRename(service.name)}-webservice" data-service="${service.name}" data-entity="webservice" data-table="${getEntityTable(service, 'webservice')}">
+                                                    <input class="form-check-input webservice-service me-2" type="checkbox" role="link-service-to-entity" 
+                                                    id="${scope}-${safeRename(service.name)}-webservice" 
+                                                    name="${scope}-${safeRename(service.name)}-webservice" data-service="${service.name}" data-entity="webservice" data-table="${getEntityTable(service, 'webservice')}">
                                                     <label class="form-check-label form-check-label-sm" for="${scope}-${safeRename(service.name)}-webservice">
                                                         Link to Web Service
                                                         <i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="Link ${service.description} to Web Service"></i>
@@ -803,7 +843,11 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         allowOn,
         sort,
         name,
-        arrayConfig;
+        required,
+        arrayConfig,
+        partialEdit,
+        maxLength,
+        minLength;
         console.log(setting.name);
         if (typeof setting === 'string') {
             console.log('Setting is a string:', setting);
@@ -822,8 +866,12 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             sort = false;
             services = services || [currentServiceName];
             name = setting;
+            required = false,
             allowOn = ["parent"];
             arrayConfig = null;
+            partialEdit = null;
+            maxLength = null;
+            minLength = null;
         } else if (typeof setting === 'object' && Array.isArray(setting)) {
             console.log('Setting is an array:', setting);
             groupName = setting.group || 'General Settings';
@@ -834,7 +882,11 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             services = services || [serviceName];
             allowOn = setting.allowOn || [];
             sort = setting.sort || false;
+            required = false,
             arrayConfig = null;
+            partialEdit = null;
+            maxLength = null;
+            minLength = null;
         } else {
             console.log('Setting is an object:', setting);
             groupName = setting.group || 'Service Settings';
@@ -856,8 +908,12 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             currentServiceName = setting.serviceName || serviceName;
             values = setting.values;
             sort = setting.sort || false;
+            required = setting.required || false;
             services = setting.services || [serviceName];
             arrayConfig = setting.arrayConfig || null;
+            partialEdit = setting.partialEdit || null;
+            maxLength = setting.maxLength || null;
+            minLength = setting.minLength || null;
         }
 
         
@@ -904,8 +960,12 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             values: values,
             services: services,
             sort: sort,
+            required: required,
             allowOn: allowOn,
-            arrayConfig: arrayConfig
+            arrayConfig: arrayConfig,
+            partialEdit: partialEdit,
+            maxLength: maxLength,
+            minLength: minLength
         });
 
         console.groupEnd();
@@ -1121,12 +1181,24 @@ console.log(settingObj);
 
     if (settingObj.type === 'dropdown') {
         console.error(settingObj.sort);
+        // Store original values order as JSON string for toggling
+        const originalValuesJson = JSON.stringify(settingObj.values || []);
         html += `
             <div class="mb-3 col-md-6" ${dependsOnAttr}>
                 ${inputHeader}
-                <select class="form-select form-select-sm" id="${inputId}" ${sharedAttrs}>
-                    ${renderOptionsHtml(settingObj.values, settingObj.defaultValue, true, settingObj.sort)}
-                </select>
+                <div class="input-group input-group-sm">
+                    <select class="form-select form-select-sm sortable-dropdown" id="${inputId}"
+                            data-original-values='${originalValuesJson.replace(/'/g, '&#39;')}'
+                            data-default-value="${settingObj.defaultValue || ''}"
+                            data-is-sorted="false"
+                            ${sharedAttrs}>
+                        ${renderOptionsHtml(settingObj.values, settingObj.defaultValue, true, settingObj.sort)}
+                    </select>
+                    <button class="btn btn-light no-raise dropdown-sort-toggle pe-3 ps-3" type="button"
+                            title="Toggle alphabetical sorting">
+                        <i class="bi bi-sort-alpha-down position-absolute"></i>
+                    </button>
+                </div>
                 ${helpTextHtml}
             </div>
         `;
@@ -1145,6 +1217,7 @@ console.log(settingObj);
     else {
         // Default Text Input (for 'text', 'textbox', 'password', etc.)
         const inputType = settingObj.type === 'textbox' ? 'text' : settingObj.type;
+        const requiredAttr = settingObj.required ? 'required' : '';
 
         // Check if this is a partially editable field
         if (settingObj.partialEdit) {
@@ -1152,6 +1225,8 @@ console.log(settingObj);
             const fixedSuffix = settingObj.partialEdit.fixedSuffix || '';
             const editablePlaceholder = settingObj.partialEdit.placeholder || 'X'.repeat(editableLength);
             const maxLengthAttr = editableLength ? `maxlength="${editableLength}"` : '';
+            const minLengthAttr = settingObj.minLength ? `minlength="${settingObj.minLength}"` : '';
+            
 
             html += `
                 <div class="mb-3 col-md-6" ${dependsOnAttr}>
@@ -1162,9 +1237,11 @@ console.log(settingObj);
                         placeholder="${safeReplace(editablePlaceholder, '"', '&#34;')}"
                         value="${settingObj.defaultValue || ''}"
                         ${maxLengthAttr}
+                        ${minLengthAttr}
                         data-fixed-suffix="${safeReplace(fixedSuffix, '"', '&#34;')}"
                         data-editable-length="${editableLength}"
-                        ${sharedAttrs}>
+                        ${sharedAttrs}
+                        ${requiredAttr}>
                         <span class="input-group-text">${fixedSuffix}</span>
                     </div>
                     ${helpTextHtml}
@@ -1173,6 +1250,7 @@ console.log(settingObj);
         } else {
             // Standard text input
             const maxLengthAttr = settingObj.maxLength ? `maxlength="${settingObj.maxLength}"` : '';
+            const minLengthAttr = settingObj.minLength ? `minlength="${settingObj.minLength}"` : '';
             html += `
                 <div class="mb-3 col-md-6" ${dependsOnAttr}>
                     ${inputHeader}
@@ -1180,7 +1258,9 @@ console.log(settingObj);
                     placeholder="${safeReplace(settingObj.placeholder, '"', '&#34;')}"
                     value="${settingObj.defaultValue || ''}"
                     ${maxLengthAttr}
-                    ${sharedAttrs}>
+                    ${minLengthAttr}
+                    ${sharedAttrs}
+                    ${requiredAttr}>
                     ${helpTextHtml}
                 </div>
             `;
@@ -1190,6 +1270,43 @@ console.log(settingObj);
 }
 
 // --- New Reusable Options Renderer ---
+
+/**
+ * Sorts dropdown values alphabetically.
+ * @param {Array<string|object>} values - Array of values or {key, value} objects.
+ * @returns {Array} Sorted copy of the values array.
+ */
+function sortDropdownValues(values) {
+    if (!values || values.length === 0) {
+        return values;
+    }
+
+    // Create a copy to avoid mutating the original
+    const valuesCopy = [...values];
+    const isKeyValObject = typeof valuesCopy[0] === 'object' && valuesCopy[0] !== null;
+
+    if (isKeyValObject) {
+        // Sort by the 'value' property
+        valuesCopy.sort((a, b) => {
+            const valueA = (a.value || '').toUpperCase();
+            const valueB = (b.value || '').toUpperCase();
+            if (valueA < valueB) return -1;
+            if (valueA > valueB) return 1;
+            return 0;
+        });
+    } else {
+        // Sort simple string array
+        valuesCopy.sort((a, b) => {
+            const strA = String(a).toUpperCase();
+            const strB = String(b).toUpperCase();
+            if (strA < strB) return -1;
+            if (strA > strB) return 1;
+            return 0;
+        });
+    }
+
+    return valuesCopy;
+}
 
 /**
  * Generates HTML options for a <select> or radio group.
@@ -1264,7 +1381,7 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
     
     return `
         <div class="mb-3 col-md-12" ${dependsOnAttr}>
-            <label class="form-label mb-2">
+            <label class="form-label form-label-sm" for="${inputId}-radio-group">
                 ${settingObj.label}
                 ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
             </label>
@@ -1341,7 +1458,7 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
                     <button type="button" class="btn btn-sm btn-success add-array-row mt-2"
                             data-input-id="${inputId}"
                             data-fields='${JSON.stringify(fields)}'>
-                        <i class="bi bi-plus-circle"></i> Add Item
+                        <i class="bi bi-plus-circle me-3"></i> Add Item
                     </button>
                 </div>
             </div>
@@ -1359,12 +1476,17 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
         // Create input fields HTML (without labels)
         let fieldsHtml = '';
         fields.forEach((field, index) => {
+            const maxLengthAttr = field.maxLength ? `maxlength="${field.maxLength}"` : '';
+            const minLengthAttr = field.minLength ? `minlength="${field.minLength}"` : '';
+
             fieldsHtml += `
                 <div class="array-item-field">
                     <input type="text"
                            class="form-control form-control-sm array-field-input"
                            data-field-key="${field.key}"
                            placeholder="${field.placeholder || ''}"
+                           ${maxLengthAttr}
+                           ${minLengthAttr}
                            value="">
                 </div>
             `;
@@ -3563,6 +3685,7 @@ function renderSetting(setting, prefix, serviceName = '') {
             const fixedSuffix = setting.partialEdit.fixedSuffix || '';
             const editablePlaceholder = setting.partialEdit.placeholder || 'X'.repeat(editableLength);
             const maxLengthAttr = editableLength ? `maxlength="${editableLength}"` : '';
+            const helpTextHtml = setting.helpText ? `<div class="form-text text-muted">${setting.helpText}</div>` : '';
 
             html += `
                 <div class="input-group input-group-sm">
@@ -3575,6 +3698,7 @@ function renderSetting(setting, prefix, serviceName = '') {
                     data-editable-length="${editableLength}">
                     <span class="input-group-text">${fixedSuffix}</span>
                 </div>
+                ${helpTextHtml}
             `;
         } else {
             html += `<input type="text" class="form-control form-control-sm" id="${settingId}" placeholder="${setting.placeholder || ''}" value="${setting.defaultValue || ''}">`;

@@ -973,42 +973,7 @@ function getSettingValue($scopeTab, scopeId, serviceSafeName, setting) {
     const settingId = `#${prefix}-${safeRename(setting.name)}`;
     const $input = $scopeTab.find(settingId);
     console.group(`Getting value for element: ${settingId}`);
-
-    // Handle array-of-objects type
-    if (setting.type === 'array-of-objects') {
-        console.log(`Collecting array-of-objects value for setting: ${setting.name}`);
-        const $list = $scopeTab.find(`${settingId}-list`);
-
-        if ($list.length === 0) {
-            console.warn(`List not found for array-of-objects setting: ${setting.name}`);
-            console.groupEnd();
-            return null;
-        }
-
-        const arrayData = [];
-        $list.find('.array-item').each(function() {
-            const rowObj = {};
-            $(this).find('.array-field-input').each(function() {
-                const fieldKey = $(this).data('field-key');
-                const fieldValue = $(this).val().trim();
-                if (fieldValue) { // Only add if value is not empty
-                    rowObj[fieldKey] = fieldValue;
-                }
-            });
-
-            // Only add the item if it has at least one field with a value
-            if (Object.keys(rowObj).length > 0) {
-                arrayData.push(rowObj);
-            }
-        });
-
-        console.log(`Collected array data:`, arrayData);
-        console.groupEnd();
-
-        // Return the array (it will be JSON.stringify'd in the caller if needed)
-        return arrayData.length > 0 ? arrayData : null;
-    }
-
+    
     if ($input.length === 0) {
         if ($('[service-setting="' + setting.name + '"]').length > 0) {
             console.warn(`Element for setting "${setting.name}" not found under expected ID "${settingId}", but found with service-setting attribute.`);
@@ -1032,11 +997,21 @@ function getSettingValue($scopeTab, scopeId, serviceSafeName, setting) {
     if (setting.type === 'checkbox') {
         console.group(`Getting value for checkbox setting: ${setting.name}`);
         console.groupEnd();
-        return $input.is(':checked') ? 'true' : 'false';
+        // Return actual boolean, not string
+        return $input.is(':checked');
     } else if (setting.type === 'textarea') {
         console.group(`Getting value for textarea setting: ${setting.name}`);
         console.groupEnd();
         return $input.val().trim();
+    } else if (setting.type === 'dropdown' || setting.type === 'select' || setting.type === 'radio') {
+        console.group(`Getting value for ${setting.type} setting: ${setting.name}`);
+        let value = $input.val();
+        // Apply translation if defined
+        if (setting.translateValues) {
+            value = getTranslatedSettingValue(value, setting.translateValues);
+        }
+        console.groupEnd();
+        return value;
     } else {
         console.group(`Getting value for input setting: ${setting.name}`);
         let value = $input.val();
@@ -1054,13 +1029,14 @@ function getSettingValue($scopeTab, scopeId, serviceSafeName, setting) {
 }
 
 function getValueFromElement($input, setting) {
-    console.log(`Getting value for setting: ${JSON.stringify( setting)}`);
+    console.log(`Getting value for setting: ${JSON.stringify(setting)}`);
     if (setting.type === 'checkbox') {
         console.group(`Getting value for checkbox setting: ${setting.name}`);
         console.groupEnd();
-        return $input.is(':checked') ? 'true' : 'false';
+        // Return actual boolean, not string
+        return $input.is(':checked');
     } else if (setting.type === 'textbox' || setting.type === 'textarea' || setting.type === 'number') {
-        console.group(`Getting value for textarea setting: ${setting.name}`);
+        console.group(`Getting value for ${setting.type} setting: ${setting.name}`);
         console.groupEnd();
         let value = $input.val().trim();
 
@@ -1071,18 +1047,23 @@ function getValueFromElement($input, setting) {
 
         return value;
     } else if (setting.type === 'dropdown' || setting.type === 'select') {
-        console.group(`Getting value for textarea setting: ${setting.name}`);
+        console.group(`Getting value for ${setting.type} setting: ${setting.name}`);
         console.groupEnd();
         var value = $input.val().trim();
-
-        // if (setting.translateValues && setting.translateValues[value]) {
-        //     return setting.translateValues[value];
-        // }
-        return getTranslatedSettingValue(value, setting.translateValues || {"on": true, "off": false});
-    } else if (setting.type === 'radio' || setting.type === 'textarea') {
-        console.group(`Getting value for textarea setting: ${setting.name}`);
+        // Apply translation if defined
+        if (setting.translateValues) {
+            return getTranslatedSettingValue(value, setting.translateValues);
+        }
+        return value;
+    } else if (setting.type === 'radio') {
+        console.group(`Getting value for radio setting: ${setting.name}`);
         console.groupEnd();
-        return getTranslatedSettingValue(value, setting.translateValues || {"on": true, "off": false});
+        var value = $input.val().trim();
+        // Apply translation if defined
+        if (setting.translateValues) {
+            return getTranslatedSettingValue(value, setting.translateValues);
+        }
+        return value;
     } else {
         console.group(`Getting value for input setting: ${setting.name}`);
         console.groupEnd();
@@ -1113,9 +1094,18 @@ function getSettingEntitiesFromAllowOn(allowOn, integratorLinked, deviceUserLink
 
 function getTranslatedSettingValue(value, translateValues) {
     console.log('Translating value:', value, 'with map:', translateValues);
-    if (translateValues && translateValues[value]) {
-        return translateValues[value];
+    if (!translateValues) {
+        return value;
     }
+
+    // Convert value to string for lookup since object keys are always strings
+    const stringValue = String(value);
+
+    // Check if translation exists
+    if (translateValues.hasOwnProperty(stringValue)) {
+        return translateValues[stringValue];
+    }
+
     return value;
 }
 
@@ -1134,27 +1124,65 @@ function collectMandateDefaults() {
     if (!ocsSelected) {
         return null;
     }
-    
-    // Collect mandate default values
+
+    // Get OCS scope settings configuration
+    const ocsScope = scopes['OCS'];
+    if (!ocsScope || !ocsScope.settings) {
+        return null;
+    }
+
+    // Collect mandate default values from form elements with service-setting attribute
     const defaults = {};
-    Object.keys(mandateDefaultsConfig).forEach(key => {
-        const config = mandateDefaultsConfig[key];
-        const $input = $(`#mandate-default-${key}`);
-        
-        if ($input.length > 0) {
-            if (config.type === 'checkbox') {
-                defaults[key] = $input.is(':checked');
-            } else {
-                const value = $input.val();
-                if (value) {
-                    defaults[key] = value;
-                }
+    $('[service-setting="ocs.ed.mandate.default.details"]').each((i, element) => {
+        const field = $(element).attr('service-setting-field');
+        if (!field) return;
+
+        // Find the setting configuration for this field
+        const settingConfig = ocsScope.settings.find(s =>
+            s.name === 'ocs.ed.mandate.default.details' && s.field === field
+        );
+
+        // Get the element type to determine how to extract the value
+        const $input = $(element);
+        let value;
+
+        if ($input.is(':checkbox')) {
+            value = $input.is(':checked');
+            // Apply translation if defined in setting config
+            if (settingConfig && settingConfig.translateValues) {
+                value = getTranslatedSettingValue(value, settingConfig.translateValues);
             }
-        } else if (config.default !== undefined) {
-            defaults[key] = config.default;
+        } else if ($input.is('select') || $input.is('input[type="radio"]:checked')) {
+            value = $input.val();
+            // Apply translation if defined in setting config
+            if (settingConfig && settingConfig.translateValues) {
+                value = getTranslatedSettingValue(value, settingConfig.translateValues);
+            }
+        } else if ($input.is('input') || $input.is('textarea')) {
+            value = $input.val();
+            // Don't add empty values
+            if (value === '' || value === null || value === undefined) {
+                return;
+            }
+            // Apply partial edit suffix if defined
+            if (settingConfig && settingConfig.partialEdit && settingConfig.partialEdit.fixedSuffix && value) {
+                value = value + settingConfig.partialEdit.fixedSuffix;
+            }
         }
+
+        defaults[field] = value;
     });
-    
+
+    // If no values collected from form, use defaults from config
+    if (Object.keys(defaults).length === 0) {
+        Object.keys(mandateDefaultsConfig).forEach(key => {
+            const config = mandateDefaultsConfig[key];
+            if (config.default !== undefined) {
+                defaults[key] = config.default;
+            }
+        });
+    }
+
     return Object.keys(defaults).length > 0 ? defaults : null;
 }
 
@@ -1805,9 +1833,30 @@ function escapeSqlValue(value) {
     if (value === null || value === undefined) {
         return 'NULL';
     }
-    
-    // Check if it's a JSON object or array
-    if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+
+    // Check if it's an actual boolean type
+    if (typeof value === 'boolean') {
+        return `'${value}'`;
+    }
+
+    // Check if it's an object or array (convert to JSON string)
+    if (typeof value === 'object') {
+        return `'${escapeSql(JSON.stringify(value))}'`;
+    }
+
+    // Check if it's a number type
+    if (typeof value === 'number') {
+        return `'${value}'`;
+    }
+
+    // From here on, we know it's a string
+    if (typeof value !== 'string') {
+        // Fallback for unexpected types
+        return `'${escapeSql(String(value))}'`;
+    }
+
+    // Check if it's a JSON string (object or array)
+    if (value.startsWith('{') || value.startsWith('[')) {
         try {
             JSON.parse(value);
             return `'${escapeSql(value)}'`;
@@ -1815,17 +1864,18 @@ function escapeSqlValue(value) {
             // Not valid JSON, treat as regular string
         }
     }
-    
-    // Check if it's a boolean
+
+    // Check if it's a boolean string
     if (value === 'true' || value === 'false') {
         return `'${value}'`;
     }
-    
-    // Check if it's a number
+
+    // Check if it's a numeric string
     if (!isNaN(value) && value.trim() !== '') {
         return `'${value}'`;
     }
-    
+
+    // Regular string
     return `'${escapeSql(value)}'`;
 }
 
