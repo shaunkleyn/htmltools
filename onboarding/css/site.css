@@ -1382,3 +1382,39 @@ button.accordion-button.collapsed {
 .input-group-sm>.btn, .input-group-sm>.form-control, .input-group-sm>.form-select, .input-group-sm>.input-group-text {
     /* border-radius: var(--bs-border-radius); */
 }
+
+/* ==========================================================================
+   Tri-State Checkbox
+   ========================================================================== */
+
+.tri-state-checkbox:indeterminate {
+    background-color: #d1d1d1;
+    border-color: #6c757d;
+        background-position: center center;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M5 8h6'/%3e%3c/svg%3e");
+}
+
+.tri-state-reset {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    border-radius: 0.25rem;
+}
+
+.tri-state-reset i {
+    font-size: 0.875rem;
+}
+
+.tri-state-reset:hover {
+    background-color: #6c757d;
+    color: white;
+    border-color: #6c757d;
+}
+
+.form-check.d-flex.align-items-center {
+    gap: 0;
+}
+
+.form-check.d-flex.align-items-center .form-check-label {
+    flex: 1;
+}

@@ -494,6 +494,57 @@ $('#createDeviceUser, #createIntegrator').change(function() {
             }
         });
 
+        // Tri-state checkbox click handler
+        $(document).on('click', '.tri-state-checkbox', function(e) {
+            e.preventDefault(); // Prevent default FIRST
+            e.stopPropagation(); // Stop event from bubbling
+            e.stopImmediatePropagation(); // Stop other handlers on this element
+
+            const $checkbox = $(this);
+            const currentState = $checkbox.attr('data-state');
+
+            console.log('Tri-state clicked, current state:', currentState);
+
+            // Use setTimeout to ensure state changes happen AFTER Bootstrap's handlers
+            setTimeout(() => {
+                // Cycle through states: null -> false -> true -> null
+                if (currentState === 'null') {
+                    // Set to unchecked (false)
+                    $checkbox.prop('checked', false);
+                    $checkbox.prop('indeterminate', false);
+                    $checkbox.attr('data-state', 'false');
+                    console.log('Changed to false');
+                } else if (currentState === 'false') {
+                    // Set to checked (true)
+                    $checkbox.prop('checked', true);
+                    $checkbox.prop('indeterminate', false);
+                    $checkbox.attr('data-state', 'true');
+                    console.log('Changed to true');
+                } else {
+                    // Set to indeterminate (null)
+                    $checkbox.prop('checked', false);
+                    $checkbox.prop('indeterminate', true);
+                    $checkbox.attr('data-state', 'null');
+                    console.log('Changed to null');
+                }
+            }, 0);
+
+            return false;
+        });
+
+        // Tri-state reset button click handler
+        $(document).on('click', '.tri-state-reset', function(e) {
+            e.preventDefault();
+            const targetId = $(this).attr('data-target');
+            const $checkbox = $(`#${targetId}`);
+
+            if ($checkbox.length > 0 && $checkbox.hasClass('tri-state-checkbox')) {
+                $checkbox.prop('checked', false);
+                $checkbox.prop('indeterminate', true);
+                $checkbox.attr('data-state', 'null');
+            }
+        });
+
         checkTabVisibility();
     }
 
@@ -518,6 +569,28 @@ $('#createDeviceUser, #createIntegrator').change(function() {
                 $(listElement).find('.array-item').each(function(index) {
                     $(this).attr('data-row-index', index);
                 });
+            }
+        });
+    }
+
+    /**
+     * Initialize all tri-state checkboxes to indeterminate state
+     */
+    function initializeTriStateCheckboxes($scopeTab) {
+        console.log('Initializing tri-state checkboxes in tab:', $scopeTab.attr('id'));
+        const $checkboxes = $scopeTab.find('.tri-state-checkbox');
+        console.log('Found', $checkboxes.length, 'tri-state checkboxes');
+
+        $checkboxes.each(function() {
+            const $checkbox = $(this);
+            const state = $checkbox.attr('data-state');
+
+            console.log('Checkbox ID:', $checkbox.attr('id'), 'State:', state, 'Has class:', $checkbox.hasClass('tri-state-checkbox'));
+
+            if (state === 'null') {
+                $checkbox.prop('indeterminate', true);
+                $checkbox.prop('checked', false);
+                console.log('Set checkbox to indeterminate');
             }
         });
     }
@@ -574,6 +647,9 @@ $('#createDeviceUser, #createIntegrator').change(function() {
 
         // Initialize tooltips and dependencies for the new tab
         initializeTooltips($(`#${scope}`));
+
+        // Initialize tri-state checkboxes
+        initializeTriStateCheckboxes($(`#${scope}`));
 
         // Initialize array-of-objects fields with one empty row
         initializeArrayOfObjectsFields($(`#${scope}`));
@@ -719,7 +795,9 @@ if (scopeData.services && scopeData.services.length > 0) {
                                                 id="${scope}-${safeRename(service.name)}-parent"
                                                 name="${scope}-${safeRename(service.name)}-parent"
                                                 data-entity="parent"
-                                                data-table="${getEntityTable(service, 'parent')}" checked="" readonly="">
+                                                data-table="${getEntityTable(service, 'parent')}" 
+                                                checked="" 
+                                                readonly="">
                                         </div>
                                         <div type="button" 
                                         class="w-100 ps-1 ${service.settings && service.settings.length > 0 ? '' : 'collapsed'}"
@@ -847,7 +925,8 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
         arrayConfig,
         partialEdit,
         maxLength,
-        minLength;
+        minLength,
+        ignoreIfNull;
         console.log(setting.name);
         if (typeof setting === 'string') {
             console.log('Setting is a string:', setting);
@@ -872,6 +951,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             partialEdit = null;
             maxLength = null;
             minLength = null;
+            ignoreIfNull = false;
         } else if (typeof setting === 'object' && Array.isArray(setting)) {
             console.log('Setting is an array:', setting);
             groupName = setting.group || 'General Settings';
@@ -887,6 +967,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             partialEdit = null;
             maxLength = null;
             minLength = null;
+            ignoreIfNull = false;
         } else {
             console.log('Setting is an object:', setting);
             groupName = setting.group || 'Service Settings';
@@ -914,6 +995,7 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             partialEdit = setting.partialEdit || null;
             maxLength = setting.maxLength || null;
             minLength = setting.minLength || null;
+            ignoreIfNull = setting.ignoreIfNull || false;
         }
 
         
@@ -965,7 +1047,8 @@ function renderGroupedSettings(settings, prefix, type = 'scope', scope, serviceN
             arrayConfig: arrayConfig,
             partialEdit: partialEdit,
             maxLength: maxLength,
-            minLength: minLength
+            minLength: minLength,
+            ignoreIfNull: ignoreIfNull
         });
 
         console.groupEnd();
@@ -1401,15 +1484,25 @@ function renderRadioSetting(settingObj, inputId, prefix, serviceName) {
 // elsewhere in your scope for the full code to run.
 
     function renderCheckboxSetting(settingObj, inputId, prefix, dependsOnAttr, sharedAttrs) {
+        const isTriState = settingObj.ignoreIfNull && settingObj.defaultValue === null;
+        const triStateAttr = isTriState ? 'data-tri-state="true" data-state="null"' : '';
+        const resetButton = isTriState ? `<button type="button" class="btn btn-sm btn-outline-secondary tri-state-reset ms-2" data-target="${inputId}" title="Reset to not set"><i class="bi bi-arrow-counterclockwise"></i></button>` : '';
 
+        console.log('Applying default value:', settingObj.defaultValue, 'isTriState:', isTriState);
         return `
             <div class="mb-3 col-md-12">
-                <div class="form-check form-switch">
-                    <input class="form-check-input setting-checkbox" type="checkbox" id="${inputId}" ${sharedAttrs} ${dependsOnAttr}>
+                <div class="form-check form-switch d-flex align-items-center">
+                    <input class="form-check-input setting-checkbox ${isTriState ? 'tri-state-checkbox' : ''}"
+                           type="checkbox"
+                           id="${inputId}"
+                           ${triStateAttr}
+                           ${sharedAttrs}
+                           ${dependsOnAttr}>
                     <label class="form-check-label form-check-label-sm" for="${inputId}">
                         ${settingObj.label}
                         ${settingObj.description ? `<i class="bi bi-info-circle setting-info text-info" data-bs-toggle="tooltip" data-bs-title="${settingObj.description}"></i>` : ''}
                     </label>
+                    ${resetButton}
                 </div>
                 ${settingObj.helpText ? `<div class="form-text text-muted">${settingObj.helpText}</div>` : ''}
             </div>

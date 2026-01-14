@@ -859,7 +859,14 @@ function collectFormData() {
 
                         console.log(`Collecting value for object setting ${setting.name}`);
                         const value = getSettingValue($scopeTab, scopeId, serviceSafeName, setting);
-                        if (value !== null && value !== undefined && value !== '') {
+
+                        // Skip if value is null and ignoreIfNull is true
+                        const shouldSkip = (value === null && setting.ignoreIfNull === true);
+                        if (shouldSkip) {
+                            console.log(`Skipping setting ${setting.name} (value is null and ignoreIfNull is true)`);
+                        }
+
+                        if (!shouldSkip && value !== undefined && value !== '') {
                             settings.push({
                                 scope: scopeId,
                                 identifier: setting.name,
@@ -916,7 +923,14 @@ function collectFormData() {
 
                     const value = getSettingValue($scopeTab, scopeId, '', setting);
                     console.info(`Collected value for setting ${setting.name} in scope ${scopeId}:`, value);
-                    if (value !== null && value !== undefined && value !== '') {
+
+                    // Skip if value is null and ignoreIfNull is true
+                    const shouldSkip = (value === null && setting.ignoreIfNull === true);
+                    if (shouldSkip) {
+                        console.log(`Skipping setting ${setting.name} (value is null and ignoreIfNull is true)`);
+                    }
+
+                    if (!shouldSkip && value !== undefined && value !== '') {
                         settings.push({
                             scope: scopeId,
                             identifier: setting.name,
@@ -968,12 +982,59 @@ function getSettingValue($scopeTab, scopeId, serviceSafeName, setting) {
         console.warn('Invalid setting object:', setting);
         return null;
     }
-    
+
     const prefix = serviceSafeName ? `${scopeId}-${serviceSafeName}` : scopeId;
     const settingId = `#${prefix}-${safeRename(setting.name)}`;
+
+    // Special handling for array-of-objects type
+    if (setting.type === 'array-of-objects' && setting.arrayConfig) {
+        console.group(`Getting value for array-of-objects setting: ${setting.name}`);
+
+        const listId = `${settingId}-list`;
+        const $list = $scopeTab.find(listId);
+
+        if ($list.length === 0) {
+            console.warn(`Array list not found for ID: ${listId}`);
+            console.groupEnd();
+            return [];
+        }
+
+        const arrayValues = [];
+        const fields = setting.arrayConfig.fields || [];
+
+        $list.find('.array-item').each(function() {
+            const $item = $(this);
+            const rowIndex = $item.attr('data-row-index');
+            const rowData = {};
+
+            fields.forEach(field => {
+                const fieldInputId = `${settingId.substring(1)}-${rowIndex}-${safeRename(field.name)}`;
+                const $fieldInput = $item.find(`#${fieldInputId}`);
+
+                if ($fieldInput.length > 0) {
+                    let value = $fieldInput.val();
+
+                    // Skip if value is empty
+                    if (value && value.trim() !== '') {
+                        rowData[field.name] = value.trim();
+                    }
+                }
+            });
+
+            // Only add row if it has at least one non-empty value
+            if (Object.keys(rowData).length > 0) {
+                arrayValues.push(rowData);
+            }
+        });
+
+        console.log(`Collected ${arrayValues.length} items:`, arrayValues);
+        console.groupEnd();
+        return arrayValues.length > 0 ? arrayValues : null;
+    }
+
     const $input = $scopeTab.find(settingId);
     console.group(`Getting value for element: ${settingId}`);
-    
+
     if ($input.length === 0) {
         if ($('[service-setting="' + setting.name + '"]').length > 0) {
             console.warn(`Element for setting "${setting.name}" not found under expected ID "${settingId}", but found with service-setting attribute.`);
@@ -992,12 +1053,30 @@ function getSettingValue($scopeTab, scopeId, serviceSafeName, setting) {
         }
         console.groupEnd();
         return null;
-    }   
-    
+    }
+
     if (setting.type === 'checkbox') {
         console.group(`Getting value for checkbox setting: ${setting.name}`);
+
+        // Check if this is a tri-state checkbox
+        if ($input.hasClass('tri-state-checkbox')) {
+            const state = $input.attr('data-state');
+            console.log('Tri-state checkbox state:', state);
+
+            if (state === 'null') {
+                console.groupEnd();
+                return null; // Return null for indeterminate state
+            } else if (state === 'true') {
+                console.groupEnd();
+                return true;
+            } else {
+                console.groupEnd();
+                return false;
+            }
+        }
+
         console.groupEnd();
-        // Return actual boolean, not string
+        // Return actual boolean for regular checkboxes
         return $input.is(':checked');
     } else if (setting.type === 'textarea') {
         console.group(`Getting value for textarea setting: ${setting.name}`);
@@ -1032,8 +1111,26 @@ function getValueFromElement($input, setting) {
     console.log(`Getting value for setting: ${JSON.stringify(setting)}`);
     if (setting.type === 'checkbox') {
         console.group(`Getting value for checkbox setting: ${setting.name}`);
+
+        // Check if this is a tri-state checkbox
+        if ($input.hasClass('tri-state-checkbox')) {
+            const state = $input.attr('data-state');
+            console.log('Tri-state checkbox state:', state);
+
+            if (state === 'null') {
+                console.groupEnd();
+                return null; // Return null for indeterminate state
+            } else if (state === 'true') {
+                console.groupEnd();
+                return true;
+            } else {
+                console.groupEnd();
+                return false;
+            }
+        }
+
         console.groupEnd();
-        // Return actual boolean, not string
+        // Return actual boolean for regular checkboxes
         return $input.is(':checked');
     } else if (setting.type === 'textbox' || setting.type === 'textarea' || setting.type === 'number') {
         console.group(`Getting value for ${setting.type} setting: ${setting.name}`);
